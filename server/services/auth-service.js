@@ -116,7 +116,8 @@ class AuthService {
     }
 
     clearCookie(res, name, options = {}){
-        res.clearCookie(name, {...cookieOptions, ...options})
+        const {maxAge, otherOptions} = cookieOptions
+        res.clearCookie(name, {...otherOptions, ...options, expires: new Date(0)})
     }
 
 }
