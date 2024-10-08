@@ -6,6 +6,19 @@ const UserDto = require('../dtos/user-dto')
 const ApiError = require('../exceptions/api-errors')
 const {prisma} = require("../prisma/prisma-client");
 const {OAuth2Client} = require('google-auth-library')
+const env = process.env.NODE_ENV || 'development';
+
+const cookieOptions = {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60 * 24
+};
+
+if(env === 'production'){
+    cookieOptions.secure = true
+    cookieOptions.sameSite = 'none'
+}
 
 class AuthService {
 
@@ -96,6 +109,10 @@ class AuthService {
         const tokens = tokenService.generateTokens({...userDto})
         await tokenService.saveToken(userDto.id, tokens.refreshToken)
         return {...tokens}
+    }
+
+    setCookie(res, name, value, options = {}) {
+        res.cookie(name, value, { ...cookieOptions, ...options });
     }
 
 }

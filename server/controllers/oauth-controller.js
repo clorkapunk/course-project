@@ -5,6 +5,7 @@ const {OAuth2Client} = require("google-auth-library");
 const {prisma} = require("../prisma/prisma-client");
 const UserDto = require("../dtos/user-dto");
 const tokenService = require("../services/token-service");
+const authService = require("../services/auth-service");
 
 
 class OAuthController {
@@ -52,35 +53,13 @@ class OAuthController {
             const tokens = tokenService.generateTokens({...userDto})
             await tokenService.saveToken(userDto.id, tokens.refreshToken)
 
-            res.cookie('refreshToken',
-                tokens.refreshToken,
-                {
-                    maxAge: 60 * 60 * 1000,
-                    httpOnly: process.env.COOKIE_HTTP_ONLY,
-                    secure: process.env.COOKIE_SECURE,
-                    sameSite: process.env.COOKIE_SAME_SITE
-                })
-            res.cookie('google_refresh_token',
-                response.tokens.refresh_token,
-                {
-                    maxAge: 60 * 60 * 1000,
-                    httpOnly: process.env.COOKIE_HTTP_ONLY,
-                    secure: process.env.COOKIE_SECURE,
-                    sameSite: process.env.COOKIE_SAME_SITE
-                })
-            res.cookie('google_id_token',
-                response.tokens.id_token,
-                {
-                    maxAge: 60 * 60 * 1000,
-                    httpOnly: process.env.COOKIE_HTTP_ONLY,
-                    secure: process.env.COOKIE_SECURE,
-                    sameSite: process.env.COOKIE_SAME_SITE
-                })
+            authService.setCookie(res, 'refreshToken', tokens.refreshToken)
+            authService.setCookie(res, 'google_refresh_token',  response.tokens.refresh_token)
+            authService.setCookie(res, 'google_id_token', response.tokens.id_token)
 
             return res.json({
                 accessToken: tokens.accessToken
             });
-            // return res.redirect(303, `${process.env.CLIENT_URL}`)
         }
         catch (err){
             console.log('Error when sign in with Google', err)
