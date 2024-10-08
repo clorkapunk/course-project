@@ -19,7 +19,7 @@ class AuthController {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
                 httpOnly: true,
                 secure: true,
-                sameSite: false
+                sameSite: 'none'
             })
             return res.json({
                 accessToken: tokens.accessToken
@@ -45,7 +45,7 @@ class AuthController {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
                 httpOnly: true,
                 secure: true,
-                sameSite: false
+                sameSite: 'none'
             })
 
             return res.json({
@@ -87,7 +87,7 @@ class AuthController {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
                 httpOnly: true,
                 secure: true,
-                sameSite: false
+                sameSite: 'none'
             })
             return res.json({
                 accessToken: tokens.accessToken
