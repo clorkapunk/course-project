@@ -115,6 +115,10 @@ class AuthService {
         res.cookie(name, value, { ...cookieOptions, ...options });
     }
 
+    clearCookie(res, name, options = {}){
+        res.clearCookie(name, {...cookieOptions, ...options})
+    }
+
 }
 
 module.exports = new AuthService();

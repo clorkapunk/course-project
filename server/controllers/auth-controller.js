@@ -49,6 +49,7 @@ class AuthController {
         try {
             const {refreshToken} = req.cookies
             const token = await authService.logout(refreshToken)
+            authService.clearCookie(res, 'refreshToken')
             res.clearCookie('refreshToken')
             res.clearCookie('google_id_token')
             res.clearCookie('google_refresh_token')
