@@ -8,6 +8,15 @@ const app = require('../app');
 const debug = require('debug')('server:server');
 const http = require('http');
 
+const https = require('https');
+const fs = require('fs');
+
+// This line is from the Node.js HTTPS documentation.
+// const options = {
+//   key: fs.readFileSync('./cert/key.pem'),
+//   cert: fs.readFileSync('./cert/cert.pem')
+// };
+
 /**
  * Get port from environment and store in Express.
  */
@@ -20,6 +29,7 @@ app.set('port', port);
  */
 
 const server = http.createServer(app);
+// const server = https.createServer(options, app)
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -27,7 +37,7 @@ const server = http.createServer(app);
 
 server.listen(port);
 server.on('error', onError);
-server.on('listening', onListening);
+server.on('listening', onListening)
 
 /**
  * Normalize a port into a number, string, or false.
