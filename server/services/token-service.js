@@ -12,7 +12,6 @@ class TokenService {
     validateAccessToken(token){
         try{
             const result = jwt.verify(token, process.env.JWT_ACCESS_TOKEN_SECRET)
-            console.log(result)
             return result
         }catch(err){
             return null
@@ -30,8 +29,6 @@ class TokenService {
     async saveToken(userId, refreshToken){
         const tokenData = await prisma.token.findFirst({where: {userId}})
         if(tokenData){
-            console.log('updated rToken', refreshToken)
-
             return prisma.token.update({
                 where: {id: tokenData.id},
                 data: {refreshToken},

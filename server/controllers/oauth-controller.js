@@ -30,7 +30,6 @@ class OAuthController {
                 redirectUrl
             );
             const response = await oAuth2Client.getToken(code)
-            console.log('response tokens', response.tokens)
             await oAuth2Client.setCredentials(response.tokens)
             const userCredentials = oAuth2Client.credentials
             const userData = await oAuthService.getGoogleUserData(userCredentials.access_token)
@@ -53,9 +52,30 @@ class OAuthController {
             const tokens = tokenService.generateTokens({...userDto})
             await tokenService.saveToken(userDto.id, tokens.refreshToken)
 
-            res.cookie('refreshToken', tokens.refreshToken, {maxAge: 60 * 60 * 1000, httpOnly: true})
-            res.cookie('google_refresh_token', response.tokens.refresh_token, {maxAge: 60 * 60 * 1000, httpOnly: true})
-            res.cookie('google_id_token', response.tokens.id_token, {maxAge: 60 * 60 * 1000, httpOnly: true})
+            res.cookie('refreshToken',
+                tokens.refreshToken,
+                {
+                    maxAge: 60 * 60 * 1000,
+                    httpOnly: true,
+                    secure: true,
+
+                })
+            res.cookie('google_refresh_token',
+                response.tokens.refresh_token,
+                {
+                    maxAge: 60 * 60 * 1000,
+                    httpOnly: true,
+                    secure: true,
+
+                })
+            res.cookie('google_id_token',
+                response.tokens.id_token,
+                {
+                    maxAge: 60 * 60 * 1000,
+                    httpOnly: true,
+                    secure: true,
+
+                })
 
             return res.json({
                 accessToken: tokens.accessToken

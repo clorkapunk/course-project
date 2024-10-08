@@ -4,7 +4,8 @@ import Login from "@/pages/Login.tsx";
 import {
     ADMIN_ROUTE,
     HOME_ROUTE,
-    LOGIN_ROUTE, OAUTH_LOGIN_ROUTE,
+    LOGIN_ROUTE,
+    OAUTH_CALLBACK,
     REGISTER_ROUTE,
     UNAUTHORIZED_ROUTE
 } from "@/utils/consts.ts";
@@ -23,20 +24,19 @@ const App = () => {
         <Routes>
             <Route path="/" element={<Layout/>}>
                 {/* oauth handle route */}
-                <Route path={'oauth'} element={<OAuthHandler/>}/>
+                <Route path={OAUTH_CALLBACK} element={<OAuthHandler/>}/>
 
                 {/* public routes */}
                 <Route path={LOGIN_ROUTE} element={<Login/>}/>
-                <Route path={OAUTH_LOGIN_ROUTE} element={<Login/>}/>
                 <Route path={REGISTER_ROUTE} element={<Register/>}/>
-                <Route path={UNAUTHORIZED_ROUTE} element={<Unauthorized />}/>
+                <Route path={UNAUTHORIZED_ROUTE} element={<Unauthorized/>}/>
 
-                <Route element={<PersistLogin />}>
+                <Route element={<PersistLogin/>}>
                     <Route element={<RequireAuth allowedRoles={['USER', 'ADMIN']}/>}>
-                        <Route path={HOME_ROUTE} element={<Home />}/>
+                        <Route path={HOME_ROUTE} element={<Home/>}/>
                     </Route>
                     <Route element={<RequireAuth allowedRoles={['ADMIN']}/>}>
-                        <Route path={ADMIN_ROUTE} element={<Admin />}/>
+                        <Route path={ADMIN_ROUTE} element={<Admin/>}/>
                     </Route>
                 </Route>
 

@@ -15,7 +15,12 @@ class AuthController {
             }
 
             const tokens = await authService.registration(email, password, username);
-            res.cookie('refreshToken', tokens.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
+            res.cookie('refreshToken', tokens.refreshToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                secure: true,
+
+            })
             return res.json({
                 accessToken: tokens.accessToken
             });
@@ -25,7 +30,7 @@ class AuthController {
     }
 
     async login(req, res, next) {
-        console.log('comes here')
+
 
         try {
             const errors = validationResult(req)
@@ -36,11 +41,11 @@ class AuthController {
             }
 
             const tokens = await authService.login(email, password);
-            res.cookie('refreshToken', tokens.refreshToken,
-                {
-                    maxAge: 30 * 24 * 60 * 60 * 1000,
-                    httpOnly: true
-                })
+            res.cookie('refreshToken', tokens.refreshToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                secure: true
+            })
 
             return res.json({
                 accessToken: tokens.accessToken
@@ -53,7 +58,6 @@ class AuthController {
     async logout(req, res, next) {
         try {
             const {refreshToken} = req.cookies
-            console.log('refreshToken', refreshToken)
             const token = await authService.logout(refreshToken)
             res.clearCookie('refreshToken')
             res.clearCookie('google_id_token')
@@ -77,9 +81,13 @@ class AuthController {
     async refresh(req, res, next) {
         try {
             const {refreshToken} = req.cookies
-            console.log('refreshToken', refreshToken)
             const tokens = await authService.refresh(refreshToken)
-            res.cookie('refreshToken', tokens.refreshToken, {maxAge: 30 * 24 * 60 * 60 * 1000, httpOnly: true})
+            res.cookie('refreshToken', tokens.refreshToken, {
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+                httpOnly: true,
+                secure: true,
+
+            })
             return res.json({
                 accessToken: tokens.accessToken
             });

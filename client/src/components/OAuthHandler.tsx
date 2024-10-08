@@ -23,7 +23,6 @@ const OAuthHandler = () => {
             } catch (err) {
                 console.log(err)
             } finally {
-                console.log('here')
                 if(isMounted) setIsLoading(false)
             }
         }

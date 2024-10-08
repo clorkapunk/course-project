@@ -1,5 +1,5 @@
 export const LOGIN_ROUTE = "/login"
-export const OAUTH_LOGIN_ROUTE = "/login/:accessToken"
+export const OAUTH_CALLBACK = "/oauth"
 export const REGISTER_ROUTE = "/register"
 export const HOME_ROUTE = "/"
 export const ADMIN_ROUTE = "/admin"
