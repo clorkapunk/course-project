@@ -19,7 +19,7 @@ class AuthController {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
                 httpOnly: true,
                 secure: true,
-
+                sameSite: false
             })
             return res.json({
                 accessToken: tokens.accessToken
@@ -44,7 +44,8 @@ class AuthController {
             res.cookie('refreshToken', tokens.refreshToken, {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
                 httpOnly: true,
-                secure: true
+                secure: true,
+                sameSite: false
             })
 
             return res.json({
@@ -86,7 +87,7 @@ class AuthController {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
                 httpOnly: true,
                 secure: true,
-
+                sameSite: false
             })
             return res.json({
                 accessToken: tokens.accessToken
