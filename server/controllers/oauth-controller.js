@@ -56,25 +56,25 @@ class OAuthController {
                 tokens.refreshToken,
                 {
                     maxAge: 60 * 60 * 1000,
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: false
+                    httpOnly: process.env.COOKIE_HTTP_ONLY,
+                    secure: process.env.COOKIE_SECURE,
+                    sameSite: process.env.COOKIE_SAME_SITE
                 })
             res.cookie('google_refresh_token',
                 response.tokens.refresh_token,
                 {
                     maxAge: 60 * 60 * 1000,
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: false
+                    httpOnly: process.env.COOKIE_HTTP_ONLY,
+                    secure: process.env.COOKIE_SECURE,
+                    sameSite: process.env.COOKIE_SAME_SITE
                 })
             res.cookie('google_id_token',
                 response.tokens.id_token,
                 {
                     maxAge: 60 * 60 * 1000,
-                    httpOnly: true,
-                    secure: true,
-                    sameSite: false
+                    httpOnly: process.env.COOKIE_HTTP_ONLY,
+                    secure: process.env.COOKIE_SECURE,
+                    sameSite: process.env.COOKIE_SAME_SITE
                 })
 
             return res.json({

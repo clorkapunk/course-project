@@ -13,8 +13,8 @@ const fs = require('fs');
 
 // This line is from the Node.js HTTPS documentation.
 // const options = {
-//   key: fs.readFileSync('./cert/key.pem'),
-//   cert: fs.readFileSync('./cert/cert.pem')
+//   key: fs.readFileSync('./cert/key.pem', 'utf8'),
+//   cert: fs.readFileSync('./cert/cert.pem', 'utf8')
 // };
 
 /**
@@ -23,7 +23,7 @@ const fs = require('fs');
 
 const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
-
+app.set('trust proxy', 1);
 /**
  * Create HTTP server.
  */

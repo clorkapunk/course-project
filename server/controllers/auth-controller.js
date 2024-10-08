@@ -17,9 +17,9 @@ class AuthController {
             const tokens = await authService.registration(email, password, username);
             res.cookie('refreshToken', tokens.refreshToken, {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
-                httpOnly: true,
-                secure: true,
-                sameSite: false
+                httpOnly: process.env.COOKIE_HTTP_ONLY,
+                secure: process.env.COOKIE_SECURE,
+                sameSite: process.env.COOKIE_SAME_SITE
             })
             return res.json({
                 accessToken: tokens.accessToken
@@ -43,9 +43,9 @@ class AuthController {
             const tokens = await authService.login(email, password);
             res.cookie('refreshToken', tokens.refreshToken, {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
-                httpOnly: true,
-                secure: true,
-                sameSite: false
+                httpOnly: process.env.COOKIE_HTTP_ONLY,
+                secure: process.env.COOKIE_SECURE,
+                sameSite: process.env.COOKIE_SAME_SITE
             })
 
             return res.json({
@@ -85,9 +85,9 @@ class AuthController {
             const tokens = await authService.refresh(refreshToken)
             res.cookie('refreshToken', tokens.refreshToken, {
                 maxAge: 30 * 24 * 60 * 60 * 1000,
-                httpOnly: true,
-                secure: true,
-                sameSite: false
+                httpOnly: process.env.COOKIE_HTTP_ONLY,
+                secure: process.env.COOKIE_SECURE,
+                sameSite: process.env.COOKIE_SAME_SITE
             })
             return res.json({
                 accessToken: tokens.accessToken
