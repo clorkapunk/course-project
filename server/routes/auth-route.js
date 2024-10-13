@@ -1,18 +1,23 @@
 const Router = require('express').Router
 const authController = require('../controllers/auth-controller')
-const {body} = require('express-validator')
+const {body, checkSchema} = require('express-validator')
 
 const router = new Router()
 
 router.post('/sign-up',
-    body('username').not().isEmpty(),
-    body('email').isEmail(),
-    body('password').isLength({min: 3}),
+    checkSchema({
+        username: {notEmpty: true},
+        email: {isEmail: true},
+        password: {notEmpty: true, isLength: {options: {min: 3}}},
+    }),
     authController.registration
 )
-router.post('/login',
-    body('email').isEmail(),
-    body('password').not().isEmpty(),
+router.post(
+    '/login',
+    checkSchema({
+        email: {isEmail: true},
+        password: {notEmpty: true},
+    }),
     authController.login
 )
 router.get('/logout', authController.logout)

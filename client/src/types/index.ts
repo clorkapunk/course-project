@@ -1,17 +1,18 @@
+export type UserData = {
+    id: number;
+    isActive: boolean;
+    role: number;
+    username: string;
+    email: string;
+}
+
 export type ApiErrorResponse = {
     status: number,
     data: {
         errors: [],
-        message: string
-    }
-}
-
-export type UserData = {
-    username: string;
-    id: number;
-    isActivated: boolean;
-    email: string;
-    roles: number[]
+        message: string,
+        code: string;
+    },
 }
 
 export type AuthResponse = {
@@ -19,9 +20,28 @@ export type AuthResponse = {
 }
 
 export interface JwtPayload {
-    roles: string[];
+    role: number;
     username: string;
     id: number;
+    email: string;
+}
+
+export type AdminHistoryResponseData = {
+    page: number;
+    pages: number;
+    total: number;
+    limit: number;
+    data: AdminHistoryData[]
+}
+
+export type AdminHistoryData = {
+    id: number;
+    initiator: UserData,
+    victim: UserData,
+    action_type: string,
+    new_value: string,
+    createdAt: Date,
+
 }
 
 

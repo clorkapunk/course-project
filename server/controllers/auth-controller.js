@@ -2,6 +2,7 @@ const {validationResult} = require('express-validator')
 const ApiError = require("../exceptions/api-errors");
 const authService = require("../services/auth-service");
 const {OAuth2Client} = require("google-auth-library");
+const {checkSchema} = require("express-validator");
 
 
 class AuthController {
@@ -11,7 +12,12 @@ class AuthController {
             const {username, email, password} = req.body
 
             if (!errors.isEmpty()) {
-                return next(ApiError.BadRequest("Validation failed.", errors.array()))
+                const firstErrorCode = errors.array()[0].path
+                return next(ApiError.BadRequest(
+                    "Validation failed.",
+                    `validation_failed_${firstErrorCode}`,
+                    errors.array())
+                )
             }
 
             const tokens = await authService.registration(email, password, username);
@@ -19,20 +25,25 @@ class AuthController {
             return res.json({
                 accessToken: tokens.accessToken
             });
+
         } catch (err) {
             next(err)
         }
     }
 
     async login(req, res, next) {
-
-
         try {
             const errors = validationResult(req)
             const {email, password} = req.body
 
+
             if (!errors.isEmpty()) {
-                return next(ApiError.BadRequest("Validation failed.", errors.array()))
+                const firstErrorCode = errors.array()[0].path
+                return next(ApiError.BadRequest(
+                    "Validation failed.",
+                    `validation_failed_${firstErrorCode}`,
+                    errors.array())
+                )
             }
 
             const tokens = await authService.login(email, password);

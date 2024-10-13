@@ -35,23 +35,16 @@ class OAuthController {
             const userCredentials = oAuth2Client.credentials
             const userData = await oAuthService.getGoogleUserData(userCredentials.access_token)
 
-
             let user = await prisma.user.findFirst({where: {email: userData.email}})
-
+            let tokens;
             if(!user){
-                user = await prisma.user.create({
-                    data: {
-                        email: userData.email,
-                        isActivated: userData.isActivated,
-                        username: userData.username,
-                    }
-                })
+                tokens = await authService.registration(userData.email, null, userData.username, true)
             }
-
-
-            const userDto = new UserDto(user)
-            const tokens = tokenService.generateTokens({...userDto})
-            await tokenService.saveToken(userDto.id, tokens.refreshToken)
+            else {
+                const userDto = new UserDto(user)
+                tokens = tokenService.generateTokens({...userDto})
+                await tokenService.saveToken(userDto.id, tokens.refreshToken)
+            }
 
             authService.setCookie(res, 'refreshToken', tokens.refreshToken)
             authService.setCookie(res, 'google_refresh_token',  response.tokens.refresh_token)

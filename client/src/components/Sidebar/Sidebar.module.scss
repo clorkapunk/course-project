@@ -1,0 +1,226 @@
+.container {
+  width: 250px;
+  flex-shrink: 0;
+  position: sticky;
+  z-index: 10;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: solid 1px;
+  overflow: hidden;
+  left: 0;
+  top: 0;
+  transition: width 0.2s;
+  background-color: theme('colors.zinc.900');
+  border-color: theme('colors.zinc.600');
+
+
+
+  .header {
+    padding-inline: 1.5rem;
+    justify-content: space-between;
+    background-color: theme('colors.zinc.800');
+
+    display: flex;
+    padding-block: 1rem;
+    transition: all 0.1s;
+
+    .logo {
+      display: block;
+    }
+
+    .openButton {
+      color: white;
+
+      .icon {
+        transform: rotate(0);
+        transition: all .5s;
+
+      }
+
+      &:hover {
+        background: white;
+        color: black;
+      }
+    }
+
+
+  }
+
+  .section {
+    padding-inline: 1rem;
+    padding-block: 1rem;
+
+    .title {
+      font-size: 0.75rem;
+      line-height: 1rem;
+      margin-bottom: 1rem;
+      padding-inline: 1rem;
+      color: theme('colors.zinc.400');
+    }
+
+    .button {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: start;
+      gap: 0.75rem;
+      font-size: 1rem;
+      line-height: 1.5rem;
+      font-weight: 200;
+      color: theme('colors.zinc.300');
+
+
+      &:hover {
+        background-color: theme('colors.zinc.800');
+        color: theme('colors.zinc.300');
+      }
+
+    }
+
+  }
+
+  .userContainer {
+    background-color: theme('colors.zinc.800');
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 1rem;
+    padding-block: 0.5rem;
+    border-radius: 0.5rem;
+    margin: 1rem;
+    gap: 1rem;
+
+    .username {
+      width: 100%;
+      text-wrap: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      font-size: 1rem;
+      line-height: 1.5rem;
+      color: theme('colors.zinc.200');
+    }
+
+    .email {
+      width: 100%;
+      text-wrap: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      color: theme('colors.zinc.400');
+    }
+
+    .button {
+      flex-shrink: 0;
+      color: theme('colors.zinc.100');
+
+      &:hover {
+        color: theme('colors.zinc.950');
+      }
+    }
+
+
+  }
+
+  .loginContainer {
+    display: flex;
+    padding-block: 1rem;
+    padding-inline: 1rem;
+
+    .button {
+      color: theme('colors.zinc.100');
+      background-color: theme('colors.zinc.800');
+      width: 100%;
+      display: flex;
+      justify-content: center;
+
+      &:hover {
+        background-color: white;
+        color: black;
+      }
+    }
+  }
+
+
+  // closed state
+  &.closed {
+    width: 60px;
+
+
+    .header {
+      justify-content: center;
+      padding-inline: 0.5rem;
+
+      .logo {
+        display: none;
+      }
+
+      .openButton {
+        .icon {
+          transform: rotate(-180deg);
+        }
+      }
+
+
+    }
+
+    .section {
+      padding-inline: 0.5rem;
+
+      .title {
+        padding-inline: 0;
+        text-align: center;
+      }
+
+      .button {
+        justify-content: center;
+      }
+
+    }
+
+    .userContainer {
+      padding-inline: 0.5rem;
+      margin-inline: 0.5rem;
+    }
+
+    .loginContainer {
+      padding-inline: 0.5rem;
+    }
+  }
+
+
+  @media screen and (max-width: 768px) {
+    position: absolute;
+    border-right: 0;
+    width: 100%;
+
+    &.closed {
+      width: 0;
+
+      .header {
+        height: 68px;
+
+        .openButton {
+          position: fixed;
+          top: 1rem;
+          left: 0.75rem;
+        }
+      }
+
+      .userContainer{
+        opacity: 0;
+      }
+
+      .loginContainer{
+        opacity: 0;
+      }
+
+    }
+  }
+}
+
+
+
+

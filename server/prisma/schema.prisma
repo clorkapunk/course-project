@@ -5,7 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "relationJoins"]
 }
 
 datasource db {
@@ -14,14 +15,17 @@ datasource db {
 }
 
 model User {
-  id             Int     @id @default(autoincrement())
-  email          String  @unique
-  password       String?
-  isActivated    Boolean @default(false)
-  activationLink String?
-  username       String?
-  roles          Role[]  @default([USER])
-  Token          Token[]
+  id               Int            @id @default(autoincrement())
+  email            String         @unique
+  password         String?
+  isVerified       Boolean        @default(false)
+  isActive         Boolean        @default(true)
+  verificationLink String?
+  username         String?
+  role             Int            @default(2000)
+  Token            Token[]
+  victimHistory    AdminHistory[] @relation("victimHistory")
+  initiatorHistory AdminHistory[] @relation("initiatorHistory")
 
   @@map("users")
 }
@@ -35,7 +39,15 @@ model Token {
   @@map("tokens")
 }
 
-enum Role {
-  USER
-  ADMIN
+model AdminHistory {
+  id          Int      @id @default(autoincrement())
+  action_type String
+  new_value   String
+  initiatorId Int
+  victimId    Int
+  createdAt   DateTime @default(now())
+  victim      User     @relation("victimHistory", fields: [victimId], references: [id])
+  initiator   User     @relation("initiatorHistory", fields: [initiatorId], references: [id])
+
+  @@map("admin_history")
 }

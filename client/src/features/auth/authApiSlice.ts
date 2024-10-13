@@ -28,8 +28,9 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 url: '/logout',
                 method: 'GET'
             }),
-            async onQueryStarted() {
-                logOut()
+            async onQueryStarted(_arg, { dispatch }
+            ) {
+                dispatch(logOut())
             },
         }),
         googleLogin: builder.mutation({
@@ -38,7 +39,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
                 method: 'POST'
             }),
         }),
-        googleGetData: builder.mutation({
+        googleAuth: builder.mutation({
             query: ({code}) => ({
                 url: `/oauth?code=${code}`,
                 method: 'GET'
@@ -53,5 +54,5 @@ export const {
     useRefreshMutation,
     useLogoutMutation,
     useGoogleLoginMutation,
-    useGoogleGetDataMutation
+    useGoogleAuthMutation
 } = authApiSlice

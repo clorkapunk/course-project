@@ -1,5 +1,5 @@
 import {Link, useLocation, useNavigate} from "react-router-dom";
-import {HOME_ROUTE, REGISTER_ROUTE} from "@/utils/consts.ts";
+import {HOME_ROUTE, REGISTER_ROUTE} from "@/utils/routes.ts";
 import React, {useEffect, useRef, useState} from "react";
 import useInput from "@/hooks/useInput.ts";
 import useToggle from "@/hooks/useToggle.ts";
@@ -13,8 +13,11 @@ import {ReloadIcon} from "@radix-ui/react-icons";
 import googleLogo from '@/assets/google-logo.png'
 import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {FaCircleExclamation} from "react-icons/fa6";
+import {useTranslation} from "react-i18next";
+import ResponseErrorCodes from "@/utils/response-error-codes.ts";
 
 const Login = () => {
+    const {t, i18n} = useTranslation()
     const navigate = useNavigate()
     const location = useLocation()
     const from = location.state?.from.pathname || HOME_ROUTE
@@ -37,14 +40,13 @@ const Login = () => {
 
     useEffect(() => {
         setErrMsg('')
-    }, [email, password])
-
+    }, [email, password, i18n.language])
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         if (!email || !password) {
-            setErrMsg('Invalid entry')
+            setErrMsg(t('invalid-entry'))
             return;
         }
 
@@ -57,17 +59,33 @@ const Login = () => {
             console.log(from)
             navigate(from, {replace: true});
         } catch (err) {
-            console.log(err)
+
             const error = err as ApiErrorResponse
 
-            if (!error.status) {
-                setErrMsg('No Server Response');
+            if (!error.data) {
+                setErrMsg(t('no-server-response'));
             } else if (error.status === 400) {
-                setErrMsg(error.data.message);
-            } else if (error.status === 401) {
-                setErrMsg(error.data.message);
+                let msg = t('unexpected-error')
+                switch (error.data.code){
+                    case ResponseErrorCodes.ValidationFailed.email:
+                        msg = t('validation-failed-email')
+                        break;
+                    case ResponseErrorCodes.ValidationFailed.password:
+                        msg = t('validation-failed-password')
+                        break;
+                    case ResponseErrorCodes.UserNotExist:
+                        msg = t('user-not-exist', {email})
+                        break;
+                    case ResponseErrorCodes.UserRegisteredViaExternalService:
+                        msg = t('user-registered-via-external-service', {email})
+                        break;
+                    case ResponseErrorCodes.WrongPassword:
+                        msg = t('wrong-password')
+                        break;
+                }
+                setErrMsg(msg);
             } else {
-                setErrMsg('Login Failed');
+                setErrMsg(t('login-failed'));
             }
             errRef.current?.focus();
         }
@@ -82,10 +100,7 @@ const Login = () => {
 
     return (
         <section className={'h-screen flex items-center justify-center'}>
-            <div className={'w-full max-w-[400px] flex flex-col bg-primary rounded-xl p-6 text-slate-200'}>
-
-
-
+            <div className={'w-full max-w-[400px] flex flex-col bg-primary rounded-xl p-6 text-slate-200 border border-zinc-600'}>
                 <p
                     aria-live={'assertive'}
                     ref={errRef}
@@ -96,7 +111,7 @@ const Login = () => {
                 </p>
 
                 <h1 className={'text-left text-2xl mb-4'}>
-                    Sign In
+                    {t("login-title")}
                 </h1>
                 <form
                     onSubmit={handleSubmit}
@@ -106,7 +121,7 @@ const Login = () => {
                         htmlFor={'email'}
                         className={'mb-1'}
                     >
-                        Username:
+                        {t("email")}:
                     </label>
                     <Input
                         className={'mb-4 bg-primary-foreground text-primary'}
@@ -122,7 +137,7 @@ const Login = () => {
                         htmlFor={'password'}
                         className={'mb-1'}
                     >
-                        Password:
+                        {t("password")}:
                     </label>
                     <Input
                         className={'mb-4 bg-primary-foreground text-primary'}
@@ -143,16 +158,16 @@ const Login = () => {
                             isLoading
                                 ? (<>
                                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin"/>
-                                    Processing
+                                    {t("processing")}
                                 </>)
-                                : "Sign In"
+                                :  t("sign-in")
                         }
                     </Button>
 
                     <div className={'flex items-center gap-3 my-4'}>
-                        <hr className={'w-full border-slate-500'}/>
-                        or
-                        <hr className={'w-full border-slate-500'}/>
+                        <hr className={'w-full border-zinc-600'}/>
+                        {t("or")}
+                        <hr className={'w-full border-zinc-600'}/>
                     </div>
 
                     <Button
@@ -166,7 +181,7 @@ const Login = () => {
                            src={googleLogo}
                            className={'h-full'}
                        />
-                        Sing in with Google
+                        {t("sign-in-with-google")}
                     </Button>
 
                     <div className={'flex items-center gap-2 mt-4'}>
@@ -179,7 +194,7 @@ const Login = () => {
                             checked={check}
                         />
                         <label>
-                            Trust this device?
+                            {t("trust-this-device")}
                         </label>
                     </div>
                 </form>
@@ -189,10 +204,10 @@ const Login = () => {
 
 
                 <p className={'mt-4 text-sm flex gap-2 justify-center'}>
-                    Do not have account yet?
+                    {t("no-account-question")}
                     <span className={'underline'}>
                     <Link to={REGISTER_ROUTE}>
-                        Sign Up
+                             {t('sign-up')}
                     </Link>
                 </span>
                 </p>

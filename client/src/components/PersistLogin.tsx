@@ -38,7 +38,6 @@ const PersistLogin = () => {
         }
     }, [])
 
-    // todo paste loading spinner or something else
     return (
         <>
             {

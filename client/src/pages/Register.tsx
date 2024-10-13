@@ -3,18 +3,21 @@ import {Check, Info, X} from "lucide-react";
 import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Link} from "react-router-dom";
-import {LOGIN_ROUTE} from "@/utils/consts.ts";
+import {LOGIN_ROUTE} from "@/utils/routes.ts";
 import {ApiErrorResponse} from "@/types";
 import {useGoogleLoginMutation, useRegisterMutation} from "@/features/auth/authApiSlice.ts";
 import {ReloadIcon} from "@radix-ui/react-icons";
 import toast from "react-hot-toast";
 import googleLogo from "@/assets/google-logo.png";
+import {useTranslation} from "react-i18next";
+import ResponseErrorCodes from "@/utils/response-error-codes.ts";
 
 const USER_REGEX = /.+/
 const PWD_REGEX = /.{3,8}/
 const EMAIL_REGEX = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
 
 const Register = () => {
+    const {t, i18n} = useTranslation()
     const userRef = useRef<HTMLInputElement>(null);
     const errRef = useRef<HTMLParagraphElement>(null);
     const [register, {isLoading}] = useRegisterMutation()
@@ -62,7 +65,7 @@ const Register = () => {
 
     useEffect(() => {
         setErrMsg('')
-    }, [user, password, matchPassword, email]);
+    }, [user, password, matchPassword, email, i18n.language]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -72,7 +75,7 @@ const Register = () => {
         const isEmailValid = EMAIL_REGEX.test(email)
 
         if (!isUserValid || !isPasswordValid || !isEmailValid) {
-            setErrMsg('Invalid entry')
+            setErrMsg(t('invalid-entry'))
             return;
         }
 
@@ -84,20 +87,33 @@ const Register = () => {
             setEmail('')
             setPassword('')
             setMatchPassword('')
-            toast.success('You successfully registered!\nYou can login now!')
+            toast.success(t('registration-success'))
         } catch (err) {
-            console.log(err)
             const error = err as ApiErrorResponse
 
-            if (!error.status) {
-                setErrMsg('No Server Response');
+            if (!error.data) {
+                setErrMsg(t('no-server-response'));
             } else if (error.status === 400) {
-                setErrMsg(error.data.message);
-            } else if (error.status === 401) {
-                setErrMsg(error.data.message);
+                let msg = t('unexpected-error')
+                switch (error.data.code){
+                    case ResponseErrorCodes.ValidationFailed.email:
+                        msg = t('validation-failed-email')
+                        break;
+                    case ResponseErrorCodes.ValidationFailed.password:
+                        msg = t('validation-failed-password')
+                        break;
+                    case ResponseErrorCodes.ValidationFailed.username:
+                        msg = t('validation-failed-username')
+                        break;
+                    case ResponseErrorCodes.UserAlreadyExist:
+                        msg = t('user-already-exist', {email})
+                        break;
+                }
+                setErrMsg(msg);
             } else {
-                setErrMsg('Register Failed');
+                setErrMsg(t('register-failed'));
             }
+
             errRef.current?.focus();
         }
 
@@ -118,12 +134,11 @@ const Register = () => {
                     ref={errRef}
                     className={`${errMsg ? "block" : 'hidden'} gap-2 bg-red-900 rounded p-2 mb-2`}
                 >
-
                     {errMsg}
                 </p>
 
                 <h1 className={'text-left text-2xl mb-4'}>
-                    Sign Up
+                    {t('register-title')}
                 </h1>
                 <form
                     onSubmit={handleSubmit}
@@ -133,7 +148,7 @@ const Register = () => {
                         htmlFor={'username'}
                         className={'flex gap-2 mb-1'}
                     >
-                        Username:
+                        {t('username')}:
                         <span className={`${validName ? 'block' : 'hidden'}`}>
                         <Check color={'green'}/>
                     </span>
@@ -158,18 +173,18 @@ const Register = () => {
                     <p
                         id='uidnote'
                         className={`${userFocus && user && !validName ? 'block' : 'hidden'}
-                    bg-primary-foreground flex items-center gap-2 p-2 text-sm rounded text-red-500 mb-4
+                            bg-primary-foreground flex items-center gap-2 p-2 text-sm rounded text-red-500 mb-4
                     `}
                     >
                         <Info size={15} className={'flex-shrink-0'}/>
-                        More than one character.
+                        {t('username-requirements')}
                     </p>
 
                     <label
                         htmlFor={'email'}
                         className={'flex gap-2 mb-1'}
                     >
-                        Email:
+                        {t('email')}:
                         <span className={`${validEmail ? 'block' : 'hidden'}`}>
                         <Check color={'green'}/>
                     </span>
@@ -197,9 +212,7 @@ const Register = () => {
                     `}
                     >
                         <Info size={15} className={'flex-shrink-0'}/>
-                        To register, please provide a valid email address. It must consist of two parts, separated by
-                        the '@' symbol: username (any Latin letters, numbers and some symbols) and domain (e.g.
-                        gmail.com, yandex.ru).
+                        {t('email-requirements')}
                     </p>
 
 
@@ -207,7 +220,7 @@ const Register = () => {
                         htmlFor={'password'}
                         className={'flex gap-2 mb-1'}
                     >
-                        Password:
+                        {t('password')}:
                         <span className={`${validPassword ? 'block' : 'hidden'}`}>
                         <Check color={'green'}/>
                     </span>
@@ -233,8 +246,8 @@ const Register = () => {
                     bg-primary-foreground flex items-center gap-2 p-2 text-sm rounded text-red-500 mb-4
                     `}
                     >
-                        <Info size={15} className={'flex-shrink-0'}/>
-                        3 to 8 characters.
+                        <Info size={15} className={'flex-shrink-0 float'}/>
+                        {t('password-requirements')}
                     </p>
 
 
@@ -242,7 +255,7 @@ const Register = () => {
                         htmlFor={'matchPassword'}
                         className={'flex gap-2 mb-1'}
                     >
-                        Confirm Password:
+                        {t('confirm-password')}:
                         <span className={`${validMatchPassword && matchPassword ? 'block' : 'hidden'}`}>
                         <Check color={'green'}/>
                     </span>
@@ -269,7 +282,7 @@ const Register = () => {
                     `}
                     >
                         <Info size={15} className={'flex-shrink-0'}/>
-                        Must match the first password input field.
+                        {t('confirm-password-requirements')}
                     </p>
 
                     <Button
@@ -281,15 +294,15 @@ const Register = () => {
                             isLoading
                                 ? (<>
                                     <ReloadIcon className="mr-2 h-4 w-4 animate-spin"/>
-                                    Processing
+                                    {t('processing')}
                                 </>)
-                                : "Sign up"
+                                : t('sign-up')
                         }
                     </Button>
 
                     <div className={'flex items-center gap-3 my-4'}>
                         <hr className={'w-full border-slate-500'}/>
-                        or
+                        {t('or')}
                         <hr className={'w-full border-slate-500'}/>
                     </div>
 
@@ -304,15 +317,15 @@ const Register = () => {
                             src={googleLogo}
                             className={'h-full'}
                         />
-                        Sing up with Google
+                        {t('sign-up-with-google')}
                     </Button>
                 </form>
 
                 <p className={'mt-4 text-sm flex gap-2 justify-center'}>
-                    Already registered?
+                    {t('have-account-question')}
                     <span className={'underline'}>
                     <Link to={LOGIN_ROUTE}>
-                        Sign In
+                        {t('sign-in')}
                     </Link>
                 </span>
                 </p>

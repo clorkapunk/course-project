@@ -1,27 +1,16 @@
-import {Navigate, Outlet, useLocation, useParams} from "react-router-dom";
-import {LOGIN_ROUTE} from "@/utils/consts.ts";
-import {useDispatch, useSelector} from "react-redux";
-import {selectAuthState, setCredentials} from "@/features/auth/authSlice.ts";
-import {useEffect} from "react";
+import {Navigate, Outlet, useLocation} from "react-router-dom";
+import {LOGIN_ROUTE} from "@/utils/routes.ts";
+import {useSelector} from "react-redux";
+import {selectAuthState, } from "@/features/auth/authSlice.ts";
 
 
-const RequireAuth = ({allowedRoles}: { allowedRoles: string[] }) => {
-    const {accessToken} = useParams()
-    const dispatch = useDispatch();
-
+const RequireAuth = ({allowedRoles}: { allowedRoles: number[] }) => {
     const authState = useSelector(selectAuthState)
     const location = useLocation()
 
-    useEffect(() => {
-        if(accessToken){
-            console.log('accessToken', accessToken)
-            dispatch(setCredentials({accessToken}))
-        }
-    }, [])
-
-
     return (
-        authState?.roles.find(role => allowedRoles?.includes(role))
+        // authState?.role.find(role => allowedRoles?.includes(role))
+        allowedRoles.some(role => role === authState?.role)
             ? <Outlet/>
             : authState?.token
                 ? <Navigate to={`/unauthorized`} state={{from: location}} replace/>

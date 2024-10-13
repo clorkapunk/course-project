@@ -6,13 +6,15 @@ import {JwtPayload} from "@/types";
 type State = {
     username: string | null;
     token: string | null;
-    roles: string[] | []
+    role: number | null;
+    email: string | null;
 }
 
 const initialState: State = {
     username: null,
     token: null,
-    roles: []
+    role: null,
+    email: null
 }
 
 const authSlice = createSlice({
@@ -23,13 +25,15 @@ const authSlice = createSlice({
             const {accessToken} = action.payload;
             const decoded = jwtDecode(accessToken) as JwtPayload
             state.username = decoded?.username
-            state.roles = decoded?.roles
+            state.role = decoded?.role
+            state.email = decoded?.email
             state.token = accessToken;
         },
         logOut: (state) => {
             state.token = null;
             state.username = null;
-            state.roles = [];
+            state.role = null;
+            state.email = null;
         }
     }
 })

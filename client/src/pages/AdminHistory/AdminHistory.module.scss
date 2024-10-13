@@ -1,0 +1,110 @@
+.page {
+  padding: 2rem;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+
+
+  .title{
+    font-size: theme('fontSize.2xl');
+    color: theme('colors.zinc.200');
+  }
+
+  .container{
+    overflow: auto;
+    border-radius: theme('borderRadius.lg');
+    background-color: theme('colors.zinc.950');
+    color: theme('colors.zinc.300');
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+
+
+
+
+    .line {
+      font-family: "Source Code Pro", monospace;
+      display: flex;
+      align-items: center;
+      text-wrap: nowrap;
+      flex-wrap: wrap;
+      padding: 0.1rem;
+      column-gap: 0.5rem;
+      border-radius: theme('borderRadius.md');
+
+
+      &:hover {
+        background-color: theme('colors.zinc.800');
+      }
+
+      .date{
+        font-family: inherit;
+        background-color: theme('colors.zinc.800');
+        height: 100%;
+        padding-inline: 0.1rem;
+        border-radius: theme('borderRadius.sm');
+      }
+
+      .action{
+        font-family: inherit;
+        color: theme('colors.zinc.300');
+      }
+
+      .newValue{
+        font-family: inherit;
+        color: theme('colors.zinc.300');
+      }
+
+      .hoverCard{
+        width: fit-content;
+        padding: 1rem;
+        background-color: theme('colors.zinc.800');
+        color: theme('colors.zinc.300');
+        border-color: theme('colors.zinc.600');
+
+        .cardLine{
+          display: flex;
+          justify-content: space-between;
+          gap: 2rem;
+
+          .key {
+            color: theme('colors.zinc.300');
+          }
+
+          .value {
+            color: theme('colors.zinc.100');
+          }
+
+        }
+      }
+
+      .username{
+        font-family: inherit;
+        cursor: pointer;
+        color: theme('colors.slate.400');
+
+        &:hover {
+          text-decoration: underline;
+        }
+
+      }
+
+    }
+  }
+}
+
+@media screen and (width <= 1024px) {
+  .page{
+    padding-inline: 1rem;
+  }
+}
+
+@media screen and (width <= 768px) {
+  .page {
+    padding-top: 64px;
+  }
+
+}

@@ -7,6 +7,7 @@ const ApiError = require('../exceptions/api-errors')
 const {prisma} = require("../prisma/prisma-client");
 const {OAuth2Client} = require('google-auth-library')
 const env = process.env.NODE_ENV || 'development';
+const ErrorCodes = require('../config/error-codes')
 
 const cookieOptions = {
     httpOnly: true,
@@ -22,22 +23,34 @@ if(env === 'production'){
 
 class AuthService {
 
-    async registration(email, password, username) {
+    async registration(email, password, username, isVerified = false) {
         const candidate = await prisma.user.findFirst({where: {email}})
 
         if (candidate) {
-            throw ApiError.BadRequest(`User with email address ${email} already exists`)
+            throw ApiError.BadRequest(
+                `User with email address ${email} already exists`,
+                ErrorCodes.UserAlreadyExist
+            )
         }
 
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(password, salt)
-        const activationLink = uuid.v4()
+        let hashedPassword = null
+        let verificationLink = null
+        if(password){
+            const salt = await bcrypt.genSalt(10)
+            hashedPassword = await bcrypt.hash(password, salt)
+
+        }
+        if(!isVerified){
+            verificationLink = uuid.v4()
+        }
+
         const user = await prisma.user.create({
             data: {
                 email,
+                isVerified,
                 password: hashedPassword,
                 username,
-                activationLink,
+                verificationLink
             }
         })
 
@@ -51,15 +64,15 @@ class AuthService {
         return {...tokens}
     }
 
-    async activate(activationLink) {
-        const user = await prisma.user.findFirst({where: {activationLink}})
+    async activate(verificationLink) {
+        const user = await prisma.user.findFirst({where: {verificationLink}})
         if (!user) {
-            throw ApiError.BadRequest(`Incorrect activation link`)
+            throw ApiError.BadRequest(`Incorrect verification link`, ErrorCodes.IncorrectVerificationLink)
         }
 
         await prisma.user.update({
             where: {id: user.id},
-            data: {isActivated: true}
+            data: {isVerified: true}
         })
     }
 
@@ -67,17 +80,20 @@ class AuthService {
         const user = await prisma.user.findFirst({where: {email}})
 
         if (!user) {
-            throw ApiError.BadRequest(`User with email address ${email} does not exist`)
+            throw ApiError.BadRequest(`User with email address ${email} does not exist`, ErrorCodes.UserNotExist)
         }
 
         if(!user.password){
-            throw ApiError.BadRequest(`The account with the email address ${email} was created through authorization with Google or another external service. `)
+            throw ApiError.BadRequest(
+                `The account with the email address ${email} was created through authorization with Google or another external service.`,
+                ErrorCodes.UserRegisteredViaExternalService
+            )
         }
 
         const isPassEqual = await bcrypt.compare(password, user.password)
 
         if (!isPassEqual) {
-            throw ApiError.BadRequest("Wrong password")
+            throw ApiError.BadRequest("Wrong password", ErrorCodes.WrongPassword)
         }
 
         const userDto = new UserDto(user)
@@ -117,7 +133,13 @@ class AuthService {
 
     clearCookie(res, name, options = {}){
         const {maxAge, otherOptions} = cookieOptions
-        res.clearCookie(name, {...otherOptions, ...options, expires: new Date(0)})
+        res.clearCookie(name, {
+            ...otherOptions,
+            ...options,
+            expires: new Date(0),
+            path: '/',
+            domain: process.env.API_URL
+        })
     }
 
 }
