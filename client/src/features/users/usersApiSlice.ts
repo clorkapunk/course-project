@@ -12,25 +12,48 @@ export const usersApiSlice = apiSlice.injectEndpoints({
         }),
         getHistory: builder.query<
             AdminHistoryResponseData,
-            { page: number; }
+            {
+                page: number;
+                aSearchField: string;
+                aSearch: string;
+                uSearchField: string;
+                uSearch: string;
+                from: string;
+                to: string;
+            }
         >({
-            query: ({page}) => {
-                return `/history?page=${page}`
+            query: ({page, aSearchField, aSearch, uSearchField, uSearch, from, to}) => {
+                return `api/users/history?page=${page}&aSearchBy=${aSearchField}&aSearch=${aSearch}&uSearchBy=${uSearchField}&uSearch=${uSearch}&from=${from}&to=${to}`
             },
-            serializeQueryArgs: ({ endpointName }) => {
+
+            serializeQueryArgs: ({endpointName}) => {
                 return endpointName
             },
-            merge: (currentCache, newItems) => {
-                console.log('done merge')
-                currentCache = {
-                    ...newItems,
-                    data: [...currentCache.data, ...newItems.data]
+            merge: (currentCache, newItems, {arg}) => {
+                if (arg.page === 1) {
+                    currentCache.data = newItems.data;
+                } else {
+
+                    currentCache.data = Array.from(new Set([...currentCache.data, ...newItems.data]))
                 }
+                currentCache.page = newItems.page;
+                currentCache.total = newItems.total;
+                currentCache.pages = newItems.pages;
+                currentCache.limit = newItems.limit;
                 return currentCache
             },
-            forceRefetch({ currentArg, previousArg }) {
-                return currentArg?.page !== previousArg?.page
-            },
+            forceRefetch({currentArg, previousArg}) {
+                let refetch = false
+                if(currentArg?.page !== previousArg?.page) refetch = true
+                if(currentArg?.uSearch !== previousArg?.uSearch) refetch = true
+                if(currentArg?.aSearch !== previousArg?.aSearch) refetch = true
+                if(currentArg?.aSearchField !== previousArg?.aSearchField) refetch = true
+                if(currentArg?.uSearchField !== previousArg?.uSearchField) refetch = true
+                if(currentArg?.from !== previousArg?.from) refetch = true
+                if(currentArg?.to !== previousArg?.to) refetch = true
+
+                return refetch
+            }
         }),
         updateUsersStatus: builder.mutation({
             query: ({ids, status}) => ({

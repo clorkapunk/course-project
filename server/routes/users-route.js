@@ -8,8 +8,17 @@ const router = new Router()
 
 
 router.get(
-    '/users-history',
+    '/users/history',
     roleMiddleware(Roles.Admin),
+    checkSchema({
+        page: {in: ['query'], optional: true, isInt: true},
+        from: {in: ['query'], optional: true, isDate: true},
+        to: {in: ['query'], optional: true, isDate: true},
+        aSearchBy: {in: ['query'], optional: true, isIn: {options: [['email', 'username']]}},
+        aSearch: {in: ['query'], optional: true},
+        uSearchBy: {in: ['query'], optional: true, isIn: {options: [['email', 'username']]}},
+        uSearch: {in: ['query'], optional: true}
+    }),
     usersController.getHistory
 )
 

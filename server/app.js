@@ -28,55 +28,6 @@ app.use(express.urlencoded({extended: false}));
 app.use('/', require('./routes/auth-route'));
 app.use('/oauth', require('./routes/oauth-route'));
 
-app.get('/history', async (req, res, next) => {
-    // const {page, adminId, userId} = req.query;
-    const limit = 20
-    const page = parseInt(req.query.page)
-
-    const total = await prisma.adminHistory.count()
-
-    const history = await prisma.adminHistory.findMany({
-        take: limit,
-        skip: (page - 1) * limit,
-        orderBy: {
-          id: 'desc'
-        },
-        relationLoadStrategy: 'join',
-        select: {
-            id: true,
-            initiator: {
-                select: {
-                    id: true,
-                    username: true,
-                    isActive: true,
-                    email: true,
-                    role: true
-                }
-            },
-            victim: {
-                select: {
-                    id: true,
-                    username: true,
-                    isActive: true,
-                    email: true,
-                    role: true
-                }
-            },
-            action_type: true,
-            new_value: true,
-            createdAt: true
-        }
-    })
-
-    return res.json({
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-        data: history
-    })
-})
-
 app.use(authMiddleware)
 app.use('/api', require('./routes/users-route'));
 

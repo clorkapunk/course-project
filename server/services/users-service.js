@@ -5,6 +5,73 @@ const ActionTypes = require('../config/admin-history-action-types')
 
 class UsersService {
 
+    async getHistory({skip, take, initiatorField, initiatorSearch, victimField, victimSearch, from, to}){
+
+
+        const filter = {
+            where: {
+                initiator: {
+                    [initiatorField]: {
+                        contains: initiatorSearch,
+                        mode: "insensitive"
+                    }
+                },
+                victim: {
+                    [victimField]: {
+                        contains: victimSearch,
+                        mode: "insensitive"
+                    }
+                },
+                createdAt: {
+                    gte: from,
+                    lte: to
+                }
+
+            }
+        }
+
+        const totalCount = await prisma.adminHistory.count({
+            ...filter
+        })
+
+        const history = await prisma.adminHistory.findMany({
+            take,
+            skip,
+            orderBy: {
+                id: 'desc'
+            },
+            relationLoadStrategy: 'join',
+            select: {
+                id: true,
+                initiator: {
+                    select: {
+                        id: true,
+                        username: true,
+                        isActive: true,
+                        email: true,
+                        role: true
+                    }
+                },
+                victim: {
+                    select: {
+                        id: true,
+                        username: true,
+                        isActive: true,
+                        email: true,
+                        role: true
+                    }
+                },
+                action_type: true,
+                new_value: true,
+                createdAt: true
+            },
+            ...filter
+        })
+
+        return {totalCount, history}
+    }
+
+
     async getUsers({skip, take, orderField, sort, searchField, search}) {
         const filter = {
             where: {

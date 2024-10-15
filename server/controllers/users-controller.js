@@ -4,7 +4,7 @@ const ApiError = require("../exceptions/api-errors");
 const {prisma} = require("../prisma/prisma-client");
 
 
-class AuthController {
+class UsersController {
     async getUsers(req, res, next) {
         try {
             const errors = validationResult(req)
@@ -52,8 +52,57 @@ class AuthController {
 
     async getHistory(req, res, next) {
         try {
-            const history = await prisma.adminHistory.findMany({})
-            return res.json({data: history})
+
+            const errors = validationResult(req)
+            if (!errors.isEmpty()) {
+                const firstErrorCode = errors.array()[0].path
+                return next(ApiError.BadRequest(
+                    "Validation failed",
+                    `validation_failed_${firstErrorCode}`,
+                    errors.array())
+                )
+            }
+
+            const limit = 20
+            const page = parseInt(req.query.page) ||  1
+            const aSearchBy = req.query.aSearchBy || 'username'
+            const aSearch = req.query.aSearch || ''
+            const uSearchBy = req.query.uSearchBy || 'username'
+            const uSearch = req.query.uSearch || ''
+            const from = new Date(req.query.from) || new Date('2024-01-01')
+            const to = new Date(req.query.to) || new Date()
+
+            from.setHours(0)
+            from.setMinutes(0)
+            from.setSeconds(0)
+
+            to.setHours(23)
+            to.setMinutes(59)
+            to.setSeconds(59)
+
+            const skip = (page - 1) * limit
+
+
+            const {totalCount, history} = await usersService.getHistory({
+                skip,
+                take: limit,
+                initiatorField: aSearchBy,
+                initiatorSearch: aSearch,
+                victimField: uSearchBy,
+                victimSearch: uSearch,
+                from,
+                to
+            })
+
+
+
+            return res.json({
+                page,
+                limit,
+                total: totalCount,
+                pages: Math.ceil(totalCount / limit),
+                data: history
+            })
         } catch (err) {
             next(err)
         }
@@ -106,8 +155,6 @@ class AuthController {
             next(err)
         }
     }
-
-
 }
 
-module.exports = new AuthController();
+module.exports = new UsersController();
