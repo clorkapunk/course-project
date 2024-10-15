@@ -26,7 +26,6 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select.tsx";
-import useLocalStorage from "@/hooks/useLocalStorage.ts";
 import {CaretSortIcon} from "@radix-ui/react-icons";
 import styles from './UsersManagement.module.scss'
 import {FaChevronDown, FaChevronLeft, FaChevronRight} from "react-icons/fa6";
@@ -46,12 +45,12 @@ const UsersManagement = () => {
     const [selectedRows, setSelectedRows] = useState<number[]>([])
 
     const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-    const [searchField, setSearchField] = useLocalStorage<string>('searchBy', 'email')
-    const [searchString, setSearchString] = useLocalStorage<string>('search', '')
-    const [page, setPage] = useLocalStorage<number>('page', 1)
-    const [limit, setLimit] = useLocalStorage<number>('limit', 10)
-    const [sort, setSort] = useLocalStorage<string>("sort", 'desc')
-    const [orderField, setOrderField] = useLocalStorage<string>("orderBy", 'id')
+    const [searchField, setSearchField] = useState<string>('email')
+    const [searchString, setSearchString] = useState<string>( '')
+    const [page, setPage] = useState<number>(1)
+    const [limit, setLimit] = useState<number>(10)
+    const [sort, setSort] = useState<string>('desc')
+    const [orderField, setOrderField] = useState<string>('id')
 
     const {data, refetch} = useGetUsersQuery({
         page,
@@ -136,7 +135,6 @@ const UsersManagement = () => {
     useEffect(() => {
         searchTimeoutRef.current && clearTimeout(searchTimeoutRef.current);
         searchTimeoutRef.current = setTimeout(() => {
-            console.log('fetch')
             refetch()
         }, 2000)
 
@@ -346,7 +344,7 @@ const UsersManagement = () => {
                                         colSpan={5}
                                         className={`${styles.tableCell} text-center py-10`}
                                     >
-                                        No results.
+                                        {t('no-result')}
                                     </TableCell>
                                 </TableRow>
                             )}
@@ -370,11 +368,11 @@ const UsersManagement = () => {
                                 <SelectLabel>{t("page-size")}</SelectLabel>
                                 <SelectSeparator className={'bg-zinc-600'}/>
                                 <SelectItem className={'text-zinc-200 focus:bg-zinc-600 focus:text-zinc-100'}
-                                            value="10" defaultChecked>10 per page</SelectItem>
+                                            value="10" defaultChecked>10 {t('per-page')}</SelectItem>
                                 <SelectItem className={'text-zinc-200 focus:bg-zinc-600 focus:text-zinc-100'}
-                                            value="20" defaultChecked>20 per page</SelectItem>
+                                            value="20" defaultChecked>20 {t('per-page')}</SelectItem>
                                 <SelectItem className={'text-zinc-200 focus:bg-zinc-600 focus:text-zinc-100'}
-                                            value="30" defaultChecked>30 per page</SelectItem>
+                                            value="30" defaultChecked>30 {t('per-page')}</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
@@ -384,7 +382,7 @@ const UsersManagement = () => {
                             className={styles.pageInfo}
                         >
                             <p>
-                                {`${((data?.page - 1) * data?.limit) + 1} - ${data?.page === data?.pages ? data?.total : data?.page * data?.limit} of ${data?.total}`}
+                                {`${((data?.page - 1) * data?.limit) + 1} - ${data?.page === data?.pages ? data?.total : data?.page * data?.limit} ${t('of')} ${data?.total}`}
                             </p>
                         </div>
 

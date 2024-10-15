@@ -128,6 +128,7 @@
     .paginationContainer {
       display: flex;
       justify-content: end;
+
       gap: 0.5rem;
 
       .pageInfo {
@@ -146,6 +147,7 @@
         background-color: theme('colors.zinc.800');
         color: theme('colors.zinc.100');
         border: none;
+        height: auto;
 
         &:hover{
           background-color: theme('colors.zinc.600');
@@ -163,6 +165,7 @@
         border: none;
         background-color: theme('colors.zinc.800');
         color: theme('colors.zinc.100');
+        height: auto;
 
         &:hover{
           background-color: theme('colors.zinc.600');

@@ -12,6 +12,65 @@
     color: theme('colors.zinc.200');
   }
 
+
+
+  .optionsContainer {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+
+    .searchContainer{
+      display: flex;
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 500px;
+
+      .input {
+        background-color: theme('colors.zinc.800');
+        border: none;
+        color: theme('colors.zinc.100');
+        width: 100%;
+
+        &::placeholder {
+          color: theme('colors.zinc.400');
+        }
+
+      }
+    }
+
+
+
+    .dateContainer {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      color: theme('colors.zinc.200');
+      background-color: theme('colors.zinc.800');
+      border-radius: theme('borderRadius.md');
+
+
+      .dash{
+        display: block;
+      }
+
+      .button {
+        justify-content: start;
+        text-align: left;
+        background-color: theme('colors.zinc.800');
+        height: auto;
+
+        &:hover {
+          background-color: theme('colors.zinc.600');
+        }
+      }
+
+
+
+    }
+
+  }
+
   .container{
     overflow: auto;
     border-radius: theme('borderRadius.lg');
@@ -96,6 +155,53 @@
   }
 }
 
+
+.calendar {
+  background-color: theme('colors.zinc.800');
+  color: theme('colors.zinc.200');
+
+  .day {
+    //background-color: red;
+
+    &[aria-selected="true"] {
+      background-color: red;
+    }
+
+    &:hover {
+      background-color: theme('colors.zinc.600');
+      color: theme('colors.zinc.100')
+    }
+
+
+  }
+}
+
+
+@media screen and (width <= 1536px) {
+  .page {
+
+    .optionsContainer{
+      .searchContainer{
+        flex-direction: column;
+      }
+
+      .dateContainer{
+        flex-direction: column;
+
+        .button{
+          width: 100%;
+        }
+
+        .dash{
+          display: none;
+        }
+      }
+    }
+
+  }
+
+}
+
 @media screen and (width <= 1024px) {
   .page{
     padding-inline: 1rem;
@@ -105,6 +211,50 @@
 @media screen and (width <= 768px) {
   .page {
     padding-top: 64px;
+
+    .optionsContainer{
+      flex-direction: column;
+      align-items: start;
+
+      .searchContainer{
+        flex-direction: row;
+        max-width: none;
+
+
+        .input {
+          width: 200%;
+        }
+      }
+
+      .dateContainer{
+        flex-direction: row;
+
+        .button{
+          width: 100%;
+        }
+
+        .dash{
+          display: block;
+        }
+      }
+    }
   }
 
 }
+
+@media screen and (max-width: 640px) {
+  .page{
+    padding-inline: 0.5rem;
+
+    .container {
+      padding: 0.5rem;
+    }
+
+
+  }
+
+
+}
+
+
+

@@ -2,7 +2,14 @@ import {Button} from "@/components/ui/button.tsx";
 import {Link, useNavigate} from "react-router-dom";
 import {HOME_ROUTE, LOGIN_ROUTE, ADMIN_USERS_ROUTE, ADMIN_HISTORY_ROUTE} from "@/utils/routes.ts";
 import logo from '../../../public/vite.svg'
-import {FaAnglesLeft, FaHouse, FaRightFromBracket, FaRightToBracket, FaUsersGear} from "react-icons/fa6";
+import {
+    FaAnglesLeft,
+    FaGlobe,
+    FaHouse,
+    FaRightFromBracket,
+    FaRightToBracket,
+    FaUsersGear
+} from "react-icons/fa6";
 import {Separator} from "@/components/ui/separator.tsx";
 import React, {useState} from "react";
 import {useSelector} from "react-redux";
@@ -14,51 +21,58 @@ import {useTranslation} from "react-i18next";
 import useIsMobile from "@/hooks/useIsMobile.ts";
 import {useLogoutMutation} from "@/features/auth/authApiSlice.ts";
 import {FaHistory} from "react-icons/fa";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu.tsx";
 
 
-const sidebarItems = [
-    {
-        title: "Menu",
-        isAuth: false,
-        roles: [],
-        options: [
-            {
-                type: "button",
-                route: HOME_ROUTE,
-                label: "Home",
-                icon: <FaHouse/>
-            }
-        ]
-    },
-    {
-        title: 'Admin',
-        isAuth: true,
-        roles: [Roles.Admin],
-        options: [
-            {
-                type: "button",
-                route: ADMIN_USERS_ROUTE,
-                label: "Users",
-                icon: <FaUsersGear/>
-            },
-            {
-                type: "button",
-                route: ADMIN_HISTORY_ROUTE,
-                label: "History",
-                icon: <FaHistory/>
-            }
-        ]
-    }
-
-]
-
+const availableLanguages = ['en', 'ru']
 const Sidebar = () => {
     const authState = useSelector(selectAuthState)
     const [isOpened, setIsOpened] = useState<boolean>(true);
-    const {t} = useTranslation()
+    const {t, i18n} = useTranslation()
     const navigate = useNavigate()
     const isMobile = useIsMobile()
     const [logout] = useLogoutMutation()
+
+    const sidebarItems = [
+        {
+            title: t('menu'),
+            isAuth: false,
+            roles: [],
+            options: [
+                {
+                    type: "button",
+                    route: HOME_ROUTE,
+                    label: t('home'),
+                    icon: <FaHouse/>
+                }
+            ]
+        },
+        {
+            title: t('admin'),
+            isAuth: true,
+            roles: [Roles.Admin],
+            options: [
+                {
+                    type: "button",
+                    route: ADMIN_USERS_ROUTE,
+                    label: t('users'),
+                    icon: <FaUsersGear/>
+                },
+                {
+                    type: "button",
+                    route: ADMIN_HISTORY_ROUTE,
+                    label: t('history'),
+                    icon: <FaHistory/>
+                }
+            ]
+        }
+
+    ]
 
     const signOut = async () => {
         await logout({})
@@ -134,52 +148,98 @@ const Sidebar = () => {
                 }
             </div>
 
-            {
-                authState?.token ?
-                    <div className={`${styles.userContainer} ${!isOpened && styles.closed}`}>
-                        {
-                            isOpened &&
-                            <div className={'flex flex-col w-[75%]'}>
-                                <p className={`${styles.username} ${!isOpened && styles.closed}`}>{authState.username}</p>
-                                <p className={`${styles.email} ${!isOpened && styles.closed}`}>{authState.email}</p>
-                            </div>
-                        }
-                        <Button
-                            onClick={signOut}
-                            className={`${styles.button} ${!isOpened && styles.closed}`}
-                            variant={'ghost'}
-                            size={'icon'}
-                        >
-                            <FaRightFromBracket/>
-                        </Button>
-                    </div>
-                    :
-                    <div className={`${styles.loginContainer} ${!isOpened && styles.close}`}>
+            <div className={styles.bottomContainer}>
+                <TooltipProvider>
 
-                        <Button
-                            onClick={() => {
-                                navigate(LOGIN_ROUTE)
-                                console.log(isMobile)
-                                if(isMobile) setIsOpened(false)
-                            }}
-                            className={`${styles.button} ${!isOpened && styles.closed}`}
-                            size={'icon'}
-                            variant={'ghost'}
-                        >
+                    <DropdownMenu>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <DropdownMenuTrigger asChild>
+                                    <Button
+                                        variant="default"
+                                        className={styles.langButton}
+                                        size={'sm'}
+                                    >
+                                        <FaGlobe className={`${isOpened ? "block" : "hidden"}`}/>
+                                        {i18n.language.toUpperCase()}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <DropdownMenuContent className={`${styles.langMenu}`}>
+                                <DropdownMenuLabel
+                                    className={'text-zinc-200 bg-zinc-800'}>{t("select-language")}</DropdownMenuLabel>
+                                <DropdownMenuSeparator className={'bg-zinc-600'}/>
+                                <DropdownMenuRadioGroup
+                                    value={i18n.language}
+                                    onValueChange={(value) => i18n.changeLanguage(value)}
+                                >
+                                    {
+                                        availableLanguages.map((language) => (
+                                            <DropdownMenuRadioItem
+                                                className={styles.option}
+                                                key={language}
+                                                value={language}
+                                            >
+                                                {t(language)}
+                                            </DropdownMenuRadioItem>
+                                        ))
+                                    }
+                                </DropdownMenuRadioGroup>
+                            </DropdownMenuContent>
+                            <TooltipContent side={'right'} hidden={isOpened}>
+                                <p>{t('language')}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </DropdownMenu>
+                </TooltipProvider>
+
+
+                {
+                    authState?.token ?
+                        <div className={`${styles.userContainer} ${!isOpened && styles.closed}`}>
                             {
-                                isOpened
-                                    ? t("sign-in")
-                                    :
-                                    <div className={'text-xl'}>
-                                        <FaRightToBracket/>
-                                    </div>
+                                isOpened &&
+                                <div className={'flex flex-col w-[75%]'}>
+                                    <p className={`${styles.username} ${!isOpened && styles.closed}`}>{authState.username}</p>
+                                    <p className={`${styles.email} ${!isOpened && styles.closed}`}>{authState.email}</p>
+                                </div>
                             }
+                            <Button
+                                onClick={signOut}
+                                className={`${styles.button} ${!isOpened && styles.closed}`}
+                                variant={'ghost'}
+                                size={'icon'}
+                            >
+                                <FaRightFromBracket/>
+                            </Button>
+                        </div>
+                        :
+                        <div className={`${styles.loginContainer} ${!isOpened && styles.close}`}>
+                            <Button
+                                onClick={() => {
+                                    navigate(LOGIN_ROUTE)
+                                    console.log(isMobile)
+                                    if (isMobile) setIsOpened(false)
+                                }}
+                                className={`${styles.button} ${!isOpened && styles.closed}`}
+                                size={'icon'}
+                                variant={'ghost'}
+                            >
+                                {
+                                    isOpened
+                                        ? t("sign-in")
+                                        :
+                                        <div className={'text-xl'}>
+                                            <FaRightToBracket/>
+                                        </div>
+                                }
 
-                        </Button>
+                            </Button>
 
-                    </div>
+                        </div>
 
-            }
+                }
+            </div>
 
 
         </nav>

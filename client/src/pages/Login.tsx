@@ -52,11 +52,9 @@ const Login = () => {
 
         try {
             const response = await login({email, password}).unwrap()
-            console.log(response.accessToken)
             dispatch(setCredentials({accessToken: response.accessToken}))
             resetEmail()
             setPassword('')
-            console.log(from)
             navigate(from, {replace: true});
         } catch (err) {
 
