@@ -1,13 +1,19 @@
 import {Button} from "@/components/ui/button.tsx";
 import {Link, useNavigate} from "react-router-dom";
-import {HOME_ROUTE, LOGIN_ROUTE, ADMIN_USERS_ROUTE, ADMIN_HISTORY_ROUTE} from "@/utils/routes.ts";
+import {
+    HOME_ROUTE,
+    LOGIN_ROUTE,
+    ADMIN_USERS_ROUTE,
+    ADMIN_HISTORY_ROUTE,
+    CREATE_TEMPLATE_ROUTE, PROFILE_ROUTE
+} from "@/utils/routes.ts";
 import logo from '../../../public/vite.svg'
 import {
     FaAnglesLeft,
     FaGlobe,
     FaHouse,
     FaRightFromBracket,
-    FaRightToBracket,
+    FaRightToBracket, FaSquarePlus, FaUserGear,
     FaUsersGear
 } from "react-icons/fa6";
 import {Separator} from "@/components/ui/separator.tsx";
@@ -49,6 +55,25 @@ const Sidebar = () => {
                     route: HOME_ROUTE,
                     label: t('home'),
                     icon: <FaHouse/>
+                }
+            ]
+        },
+        {
+            title: t("hz-menu"),
+            isAuth: true,
+            roles: [Roles.User, Roles.Admin],
+            options: [
+                {
+                    type: "button",
+                    route: CREATE_TEMPLATE_ROUTE,
+                    label: t('create-template'),
+                    icon: <FaSquarePlus/>
+                },
+                {
+                    type: "button",
+                    route: PROFILE_ROUTE,
+                    label: t('profile'),
+                    icon: <FaUserGear/>
                 }
             ]
         },

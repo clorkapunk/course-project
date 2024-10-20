@@ -1,14 +1,35 @@
 import {apiSlice} from "@/app/api/apiSlice.ts";
-import {AdminHistoryResponseData} from "@/types";
+import {AdminHistoryResponseData, UserData} from "@/types";
 
 
 export const usersApiSlice = apiSlice.injectEndpoints({
     endpoints: builder => ({
-        getUsers: builder.query({
+        getUsers: builder.query<{
+            limit: number;
+            page: number;
+            pages: number;
+            total: number;
+            data: UserData[];
+        }, {
+            page: number;
+            limit: number;
+            orderBy: string;
+            sort: string;
+            searchBy: string;
+            search: string;
+        }>({
             query: ({page, limit, orderBy, sort, searchBy, search}) => {
                 return `/api/users?page=${page}&limit=${limit}&orderBy=${orderBy}&sort=${sort}&searchBy=${searchBy}&search=${search}`
             },
-            keepUnusedDataFor: 5,
+            serializeQueryArgs: ({endpointName}) => {
+                return endpointName
+            },
+            forceRefetch({currentArg, previousArg}) {
+                let refetch = false
+                if (currentArg?.page !== previousArg?.page) refetch = true
+                return refetch
+            }
+            // keepUnusedDataFor: 5,
         }),
         getHistory: builder.query<
             AdminHistoryResponseData,
@@ -44,13 +65,13 @@ export const usersApiSlice = apiSlice.injectEndpoints({
             },
             forceRefetch({currentArg, previousArg}) {
                 let refetch = false
-                if(currentArg?.page !== previousArg?.page) refetch = true
-                if(currentArg?.uSearch !== previousArg?.uSearch) refetch = true
-                if(currentArg?.aSearch !== previousArg?.aSearch) refetch = true
-                if(currentArg?.aSearchField !== previousArg?.aSearchField) refetch = true
-                if(currentArg?.uSearchField !== previousArg?.uSearchField) refetch = true
-                if(currentArg?.from !== previousArg?.from) refetch = true
-                if(currentArg?.to !== previousArg?.to) refetch = true
+                if (currentArg?.page !== previousArg?.page) refetch = true
+                if (currentArg?.uSearch !== previousArg?.uSearch) refetch = true
+                if (currentArg?.aSearch !== previousArg?.aSearch) refetch = true
+                if (currentArg?.aSearchField !== previousArg?.aSearchField) refetch = true
+                if (currentArg?.uSearchField !== previousArg?.uSearchField) refetch = true
+                if (currentArg?.from !== previousArg?.from) refetch = true
+                if (currentArg?.to !== previousArg?.to) refetch = true
 
                 return refetch
             }

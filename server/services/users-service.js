@@ -1,6 +1,8 @@
 const {prisma} = require("../prisma/prisma-client");
 const Roles = require('../config/roles')
 const ActionTypes = require('../config/admin-history-action-types')
+const ApiError = require("../exceptions/api-errors");
+const ErrorCodes = require("../config/error-codes");
 
 
 class UsersService {
@@ -133,6 +135,30 @@ class UsersService {
 
         return users
 
+    }
+
+    async getById(id){
+        const user = await prisma.user.findFirst({
+            where: {
+                id
+            },
+            select: {
+                id: true,
+                isActive: true,
+                email: true,
+                role:  true,
+                username: true
+            }
+        })
+
+        if(!user){
+            throw ApiError.BadRequest(
+                `User with id ${id} not found`,
+                ErrorCodes.UserNotExist
+            )
+        }
+
+        return user
     }
 
 }

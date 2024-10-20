@@ -41,7 +41,58 @@ export type AdminHistoryData = {
     action_type: string,
     new_value: string,
     createdAt: Date,
-
 }
 
+export type TopicData = {
+    id: number;
+    name: string;
+}
+
+
+export type TagData = {
+    id: number;
+    name: string;
+}
+
+export type TemplateData = {
+    id: number;
+    title: string;
+    description: string;
+    createdAt: Date;
+    image?: string;
+    mode: string,
+    topic: TopicData,
+    tags: TagData[],
+    questions: QuestionData[],
+    user: UserData
+}
+
+export type QuestionData = {
+    type: string;
+    question: string;
+    description: string
+}
+
+
+export type AnsweredQuestionData = QuestionData & {answer: string | number | boolean | null;}
+
+export type FormData = {
+    templateData: {
+        id: number;
+        title: string;
+        description: string;
+        createdAt: Date;
+        image?: string;
+        mode: string,
+        topic: TopicData,
+        tags: TagData[],
+        user: UserData
+    },
+    formData: {
+        id: number;
+        createdAt: Date,
+        user: UserData,
+    },
+    questions: AnsweredQuestionData[]
+}
 

@@ -20,6 +20,11 @@ model User {
   Token            Token[]
   victimHistory    AdminHistory[] @relation("victimHistory")
   initiatorHistory AdminHistory[] @relation("initiatorHistory")
+  Template         Template[]
+  TemplateUser     TemplateUser[]
+  Like             Like[]
+  Comment          Comment[]
+  Form             Form[]
 
   @@map("users")
 }
@@ -44,4 +49,156 @@ model AdminHistory {
   initiator   User     @relation("initiatorHistory", fields: [initiatorId], references: [id])
 
   @@map("admin_history")
+}
+
+model Template {
+  id                       Int            @id @default(autoincrement())
+  title                    String
+  description              String
+  createdAt                DateTime       @default(now())
+  topicId                  Int
+  userId                   Int
+  image                    String?
+  mode                     String?        @default("public") // public or strict
+  customString1State       String         @default("NOT_PRESENT")
+  customString1Question    String?
+  customString1Description String?
+  customString2State       String         @default("NOT_PRESENT")
+  customString2Question    String?
+  customString2Description String?
+  customString3State       String         @default("NOT_PRESENT")
+  customString3Question    String?
+  customString3Description String?
+  customString4State       String         @default("NOT_PRESENT")
+  customString4Question    String?
+  customString4Description String?
+  customInt1State          String         @default("NOT_PRESENT")
+  customInt1Question       String?
+  customInt1Description    String?
+  customInt2State          String         @default("NOT_PRESENT")
+  customInt2Question       String?
+  customInt2Description    String?
+  customInt3State          String         @default("NOT_PRESENT")
+  customInt3Question       String?
+  customInt3Description    String?
+  customInt4State          String         @default("NOT_PRESENT")
+  customInt4Question       String?
+  customInt4Description    String?
+  customText1State         String         @default("NOT_PRESENT")
+  customText1Question      String?
+  customText1Description   String?
+  customText2State         String         @default("NOT_PRESENT")
+  customText2Question      String?
+  customText2Description   String?
+  customText3State         String         @default("NOT_PRESENT")
+  customText3Question      String?
+  customText3Description   String?
+  customText4State         String         @default("NOT_PRESENT")
+  customText4Question      String?
+  customText4Description   String?
+  customBool1State         String         @default("NOT_PRESENT")
+  customBool1Question      String?
+  customBool1Description   String?
+  customBool2State         String         @default("NOT_PRESENT")
+  customBool2Question      String?
+  customBool2Description   String?
+  customBool3State         String         @default("NOT_PRESENT")
+  customBool3Question      String?
+  customBool3Description   String?
+  customBool4State         String         @default("NOT_PRESENT")
+  customBool4Question      String?
+  customBool4Description   String?
+  topic                    Topic          @relation(fields: [topicId], references: [id])
+  user                     User           @relation(fields: [userId], references: [id])
+  tags                     TemplateTag[]
+  templateUser             TemplateUser[]
+  like                     Like[]
+  comment                  Comment[]
+  form                     Form[]
+
+  @@map("templates")
+}
+
+model Tag {
+  id    Int           @id @default(autoincrement())
+  name  String        @unique
+  posts TemplateTag[]
+
+  @@map("tags")
+}
+
+model TemplateTag {
+  templateId Int
+  tagId      Int
+  template   Template @relation(fields: [templateId], references: [id])
+  tag        Tag      @relation(fields: [tagId], references: [id])
+
+  @@id([tagId, templateId])
+  @@map("templates_tags")
+}
+
+model TemplateUser {
+  id         Int      @id @default(autoincrement())
+  templateId Int
+  userId     Int
+  template   Template @relation(fields: [templateId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@map("tempaltes_users")
+}
+
+model Topic {
+  id       Int        @id @default(autoincrement())
+  name     String
+  Template Template[]
+
+  @@map("topics")
+}
+
+model Like {
+  id         Int      @id @default(autoincrement())
+  templateId Int
+  userId     Int
+  template   Template @relation(fields: [templateId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@map("likes")
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  text       String
+  templateId Int
+  userId     Int
+  template   Template @relation(fields: [templateId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@map("comments")
+}
+
+model Form {
+  id                  Int      @id @default(autoincrement())
+  userId              Int
+  templateId          Int
+  createdAt           DateTime @default(now())
+  customString1Answer String?
+  customString2Answer String?
+  customString3Answer String?
+  customString4Answer String?
+  customInt1Answer    Int?
+  customInt2Answer    Int?
+  customInt3Answer    Int?
+  customInt4Answer    Int?
+  customText1Answer   String?
+  customText2Answer   String?
+  customText3Answer   String?
+  customText4Answer   String?
+  customBool1Answer   Boolean?
+  customBool2Answer   Boolean?
+  customBool3Answer   Boolean?
+  customBool4Answer   Boolean?
+  template            Template @relation(fields: [templateId], references: [id])
+  user                User     @relation(fields: [userId], references: [id])
 }
