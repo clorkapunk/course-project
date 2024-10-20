@@ -5,3 +5,7 @@ export const HOME_ROUTE = "/"
 export const ADMIN_USERS_ROUTE = "/admin/users"
 export const ADMIN_HISTORY_ROUTE = "/admin/history"
 export const UNAUTHORIZED_ROUTE = "/unauthorized"
+export const CREATE_TEMPLATE_ROUTE = '/template/create'
+export const FILL_TEMPLATE_ROUTE = '/template/fill'
+export const SEARCH_TEMPLATES_ROUTE = '/templates'
+export const PROFILE_ROUTE = '/profile'
