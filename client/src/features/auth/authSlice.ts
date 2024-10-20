@@ -8,13 +8,15 @@ type State = {
     token: string | null;
     role: number | null;
     email: string | null;
+    id: number | null;
 }
 
 const initialState: State = {
     username: null,
     token: null,
     role: null,
-    email: null
+    email: null,
+    id: null
 }
 
 const authSlice = createSlice({
@@ -27,6 +29,7 @@ const authSlice = createSlice({
             state.username = decoded?.username
             state.role = decoded?.role
             state.email = decoded?.email
+            state.id = decoded?.id
             state.token = accessToken;
         },
         logOut: (state) => {
@@ -34,6 +37,7 @@ const authSlice = createSlice({
             state.username = null;
             state.role = null;
             state.email = null;
+            state.id = null
         }
     }
 })
