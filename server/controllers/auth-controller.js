@@ -3,22 +3,15 @@ const ApiError = require("../exceptions/api-errors");
 const authService = require("../services/auth-service");
 const {OAuth2Client} = require("google-auth-library");
 const {checkSchema} = require("express-validator");
+const {checkValidationErrors} = require("../check-validation-errors");
 
 
 class AuthController {
     async registration(req, res, next) {
         try {
-            const errors = validationResult(req)
-            const {username, email, password} = req.body
+            checkValidationErrors(req, next)
 
-            if (!errors.isEmpty()) {
-                const firstErrorCode = errors.array()[0].path
-                return next(ApiError.BadRequest(
-                    "Validation failed.",
-                    `validation_failed_${firstErrorCode}`,
-                    errors.array())
-                )
-            }
+            const {username, email, password} = req.body
 
             const tokens = await authService.registration(email, password, username);
             authService.setCookie(res, 'refreshToken', tokens.refreshToken)
@@ -33,18 +26,9 @@ class AuthController {
 
     async login(req, res, next) {
         try {
-            const errors = validationResult(req)
+            checkValidationErrors(req, next)
+
             const {email, password} = req.body
-
-
-            if (!errors.isEmpty()) {
-                const firstErrorCode = errors.array()[0].path
-                return next(ApiError.BadRequest(
-                    "Validation failed.",
-                    `validation_failed_${firstErrorCode}`,
-                    errors.array())
-                )
-            }
 
             const tokens = await authService.login(email, password);
             authService.setCookie(res, 'refreshToken', tokens.refreshToken)

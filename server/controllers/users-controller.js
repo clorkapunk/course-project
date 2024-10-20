@@ -2,20 +2,13 @@ const usersService = require('../services/users-service')
 const {validationResult} = require("express-validator");
 const ApiError = require("../exceptions/api-errors");
 const {prisma} = require("../prisma/prisma-client");
+const {checkValidationErrors} = require("../check-validation-errors");
 
 
 class UsersController {
     async getUsers(req, res, next) {
         try {
-            const errors = validationResult(req)
-            if (!errors.isEmpty()) {
-                const firstErrorCode = errors.array()[0].path
-                return next(ApiError.BadRequest(
-                    "Validation failed",
-                    `validation_failed_${firstErrorCode}`,
-                    errors.array())
-                )
-            }
+            checkValidationErrors(req, next)
 
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
@@ -53,15 +46,7 @@ class UsersController {
     async getHistory(req, res, next) {
         try {
 
-            const errors = validationResult(req)
-            if (!errors.isEmpty()) {
-                const firstErrorCode = errors.array()[0].path
-                return next(ApiError.BadRequest(
-                    "Validation failed",
-                    `validation_failed_${firstErrorCode}`,
-                    errors.array())
-                )
-            }
+            checkValidationErrors(req, next)
 
             const limit = 20
             const page = parseInt(req.query.page) ||  1
@@ -112,17 +97,9 @@ class UsersController {
         try {
 
 
-            const errors = validationResult(req)
+            checkValidationErrors(req, next)
             const {ids, role} = req.body
 
-            if (!errors.isEmpty()) {
-                const firstErrorCode = errors.array()[0].path
-                return next(ApiError.BadRequest(
-                    "Validation failed.",
-                    `validation_failed_${firstErrorCode}`,
-                    errors.array())
-                )
-            }
 
             await usersService.updateUsersField(ids, 'role', role, req.user?.id)
 
@@ -136,17 +113,9 @@ class UsersController {
 
     async updateUsersStatus(req, res, next) {
         try {
-            const errors = validationResult(req)
+            checkValidationErrors(req, next)
             const {ids, status} = req.body
 
-            if (!errors.isEmpty()) {
-                const firstErrorCode = errors.array()[0].path
-                return next(ApiError.BadRequest(
-                    "Validation failed.",
-                    `validation_failed_${firstErrorCode}`,
-                    errors.array())
-                )
-            }
 
             await usersService.updateUsersField(ids, 'isActive', status, req.user?.id)
 
