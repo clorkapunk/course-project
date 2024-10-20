@@ -1,0 +1,9 @@
+.dark{
+  background: theme('colors.zinc.800');
+  color: theme('colors.zinc.200');
+  border: none !important;
+
+  &::placeholder {
+    color: theme('colors.zinc.400');
+  }
+}
