@@ -47,8 +47,26 @@ class GoogleDriveService {
             },
         })
 
-        return response.data.id;
+        return `https://drive.google.com/thumbnail?id=${response.data.id}&sz=w1000`;
     };
+
+    async deleteImage(imageUrl){
+        const auth = await this.authorize()
+
+        const urlObject = new URL(imageUrl);
+        const searchParams = urlObject.searchParams;
+        const id = searchParams.get('id');
+
+        console.log("id: ", id)
+
+        const driveService = google.drive({version: "v3", auth});
+
+        const response = await driveService.files.delete({
+            fileId: id
+        })
+
+        return response
+    }
 }
 
 module.exports = new GoogleDriveService();

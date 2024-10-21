@@ -64,7 +64,12 @@ export type TemplateData = {
     topic: TopicData,
     tags: TagData[],
     questions: QuestionData[],
-    user: UserData
+    user: UserData,
+    _count?: {
+        form: number;
+        comment: number;
+        like: number;
+    }
 }
 
 export type QuestionData = {

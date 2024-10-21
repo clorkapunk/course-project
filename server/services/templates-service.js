@@ -1,6 +1,7 @@
 const {prisma} = require("../prisma/prisma-client");
 const ApiError = require("../exceptions/api-errors");
 const ErrorCodes = require("../config/error-codes");
+const googleDriveService = require('./google-drive-service')
 const {Prisma} = require("@prisma/client");
 
 
@@ -180,7 +181,7 @@ class TemplatesService {
                 `);
 
         const totalCount = await prisma.$queryRaw(
-              Prisma.sql`SELECT COUNT(*)
+            Prisma.sql`SELECT COUNT(*)
                           FROM "templates" t
                              LEFT JOIN "comments" c ON t.id = c."templateId"
                               WHERE 
@@ -234,11 +235,15 @@ class TemplatesService {
         return {templates: groupedTemplates, totalCount: Number(totalCount[0].count)}
     }
 
-    async getById(templateId) {
+    async getById(templateId, userId) {
+        let filter = {where: {id: templateId}}
+
+        if (userId) {
+            filter = {where: {id: templateId, userId}}
+        }
+
         const template = await prisma.template.findFirst({
-            where: {
-                id: templateId
-            },
+            ...filter,
             select: {
                 id: true,
                 title: true,
@@ -344,6 +349,75 @@ class TemplatesService {
         }
     }
 
+    async getByUserId({userId, skip, take, orderField, sort, searchField, search}) {
+        let orderBy = {}
+
+        if (orderField === 'form') {
+            orderBy = {
+                form: {
+                    _count: sort
+                }
+            }
+        } else {
+            orderBy = {
+                [orderField]: sort
+            }
+        }
+
+        const templates = await prisma.template.findMany({
+            skip, take,
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                createdAt: true,
+                mode: true,
+                image: true,
+                tags: {
+                    select: {
+                        tag: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
+                    }
+                },
+                topic: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                _count: {
+                    select: {
+                        form: true
+                    }
+                }
+            },
+            where: {
+                userId,
+                [searchField]: {
+                    contains: search,
+                    mode: "insensitive"
+                }
+            },
+            orderBy
+        })
+
+        const totalCount = await prisma.template.count({
+            where: {
+                userId,
+                [searchField]: {
+                    contains: search,
+                    mode: "insensitive"
+                }
+            },
+        })
+
+        return {templates, totalCount}
+    }
+
     async create({title, description, userId, topicId, image, mode, questions, tags}) {
 
         const topic = await prisma.topic.findFirst({where: {id: topicId}})
@@ -392,6 +466,134 @@ class TemplatesService {
 
         return response
 
+    }
+
+    async deleteAll(templatesIds, userId) {
+        let filter = {
+            where: {id: {in: templatesIds}}
+        }
+        if (userId) {
+            filter = {
+                where: {id: {in: templatesIds}, userId}
+            }
+        }
+        const templates = await prisma.template.findMany({
+            ...filter
+        })
+
+        templates.forEach(template => {
+            if (template.image === null) return
+            googleDriveService.deleteImage(template.image)
+        })
+
+        return prisma.template.deleteMany({
+            ...filter
+        })
+    }
+
+    async update(templateId, data, userId) {
+        let filter = {
+            where: {id: templateId}
+        }
+        let template
+        if (userId) {
+            filter = {
+                where: {id: templateId, userId: userId}
+            }
+            template = await this.getById(templateId, userId)
+        } else {
+            template = await this.getById(templateId)
+        }
+
+
+        if (!template) {
+            return null;
+        }
+
+        if (template.image && data.image) {
+            try {
+                await googleDriveService.deleteImage(template.image)
+            } catch (err) {
+                console.log(err)
+            }
+        }
+
+        console.log(template.tags)
+        console.log('data', data.tags)
+
+        let tagsToDisconnect = [...template.tags].filter(x => {
+            console.log(x, data.tags)
+            return !data.tags.includes(x.name)
+        })
+        let tagsToConnect = [...data.tags].filter(x => !template.tags.map(i => i.name).includes(x))
+
+        const templateQuestions = {
+            ...this.formatQuestionsForDB(data.questions, "string"),
+            ...this.formatQuestionsForDB(data.questions, "int"),
+            ...this.formatQuestionsForDB(data.questions, "bool"),
+            ...this.formatQuestionsForDB(data.questions, "text"),
+        }
+
+        let updateData = {
+            title: data.title,
+            description: data.description,
+            mode: data.mode,
+            ...templateQuestions
+        }
+
+        if (tagsToDisconnect.length > 0 || tagsToConnect) {
+            updateData = {
+                ...updateData,
+                tags: {
+                    deleteMany: {
+                        tagId: {
+                            in: tagsToDisconnect.map(i => i.id), // Указываем теги, которые нужно удалить
+                        },
+                    },
+                    create: tagsToConnect.map(tagName => ({
+                        tag: {
+                            connectOrCreate: {
+                                where: {name: tagName},       // Проверяем, существует ли тег
+                                create: {name: tagName},      // Создаем новый тег, если его нет
+                            },
+                        },
+                    })),
+                }
+            }
+        }
+        if (data.image) {
+            updateData = {
+                ...updateData,
+                image: data.image
+            }
+        }
+        if (data.topicId) {
+            updateData = {
+                ...updateData,
+                topic: {
+                    connect: {
+                        id: data.topicId
+                    }
+                }
+            }
+        }
+
+        console.log(updateData)
+
+
+        return prisma.template.update({
+            ...filter,
+            data: {
+                ...updateData
+            },
+            include: {
+                tags: {
+                    include: {
+                        tag: true,
+                    },
+                },
+            }
+        })
     }
 
     async addTags({templateId, tags}) {

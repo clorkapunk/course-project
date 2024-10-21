@@ -3,11 +3,10 @@ import {Button} from "@/components/ui/button.tsx";
 import {FaImage} from "react-icons/fa6";
 
 
-const ImageInput = ({handleChange, handleDelete}: { handleChange: (file: File) => void; handleDelete: () => void }) => {
+const ImageInput = ({handleChange, handleDelete, existingImage}: { handleChange: (file: File) => void; handleDelete: () => void; existingImage: string | undefined;}) => {
 
-    const [fileName, setFileName] = useState('')
+    const [file, setFile] = useState<File | null>(null)
     const hiddenFileInput = useRef<HTMLInputElement>(null);
-
 
     const handleClick = () => {
         hiddenFileInput.current?.click();
@@ -17,36 +16,34 @@ const ImageInput = ({handleChange, handleDelete}: { handleChange: (file: File) =
         const file = e.target.files?.[0];
         if (file) {
             handleChange(file)
-            setFileName(file.name)
+            setFile(file)
         }
     };
 
     const onDeleteHandler = () => {
-        setFileName('')
+        setFile(null)
         handleDelete()
     }
 
     return (
         <>
+
             <Button
-                className={'border-dashed border-2 min-w-[80px] h-[80px] flex justify-center p-2'}
-                variant={fileName ? 'destructive' : 'dark'}
-                onClick={fileName ? onDeleteHandler : handleClick}
+                className={'border-dashed border-2 min-w-[80px] h-[80px] flex justify-center p-1 bg-transparent'}
+                variant={file ? 'destructive' : 'dark'}
+                onClick={file ? onDeleteHandler : handleClick}
             >
                 {
-                    fileName ?
-                        <p className={'truncate overflow-hidden whitespace-nowrap'}>
-                            {fileName}
-                        </p>
-                        :
-                        <FaImage/>
+                    file
+                        ? <img src={URL.createObjectURL(file)} alt="Uploaded image" className={' w-full h-full object-cover'}/>
+                        : existingImage
+                            ? <img src={existingImage} alt="Uploaded image" className={' w-full h-full object-cover'} />
+                            : <FaImage/>
+
                 }
-
-
             </Button>
             <input
                 type="file"
-
                 onChange={onChangeHandler}
                 ref={hiddenFileInput}
                 style={{display: 'none'}} // Make the file input element invisible

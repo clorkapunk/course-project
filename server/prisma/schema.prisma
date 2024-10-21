@@ -33,7 +33,7 @@ model Token {
   id           Int    @id @default(autoincrement())
   userId       Int
   refreshToken String @unique()
-  user         User   @relation(fields: [userId], references: [id])
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("tokens")
 }
@@ -45,8 +45,8 @@ model AdminHistory {
   initiatorId Int
   victimId    Int
   createdAt   DateTime @default(now())
-  victim      User     @relation("victimHistory", fields: [victimId], references: [id])
-  initiator   User     @relation("initiatorHistory", fields: [initiatorId], references: [id])
+  victim      User     @relation("victimHistory", fields: [victimId], references: [id], onDelete: Cascade)
+  initiator   User     @relation("initiatorHistory", fields: [initiatorId], references: [id], onDelete: Cascade)
 
   @@map("admin_history")
 }
@@ -56,8 +56,8 @@ model Template {
   title                    String
   description              String
   createdAt                DateTime       @default(now())
-  topicId                  Int
-  userId                   Int
+  topicId                  Int            @default(1)
+  userId                   Int?
   image                    String?
   mode                     String?        @default("public") // public or strict
   customString1State       String         @default("NOT_PRESENT")
@@ -108,8 +108,8 @@ model Template {
   customBool4State         String         @default("NOT_PRESENT")
   customBool4Question      String?
   customBool4Description   String?
-  topic                    Topic          @relation(fields: [topicId], references: [id])
-  user                     User           @relation(fields: [userId], references: [id])
+  topic                    Topic          @relation(fields: [topicId], references: [id], onDelete: SetDefault)
+  user                     User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
   tags                     TemplateTag[]
   templateUser             TemplateUser[]
   like                     Like[]
@@ -130,8 +130,8 @@ model Tag {
 model TemplateTag {
   templateId Int
   tagId      Int
-  template   Template @relation(fields: [templateId], references: [id])
-  tag        Tag      @relation(fields: [tagId], references: [id])
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  tag        Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([tagId, templateId])
   @@map("templates_tags")
@@ -141,10 +141,10 @@ model TemplateUser {
   id         Int      @id @default(autoincrement())
   templateId Int
   userId     Int
-  template   Template @relation(fields: [templateId], references: [id])
-  user       User     @relation(fields: [userId], references: [id])
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("tempaltes_users")
+  @@map("templates_users")
 }
 
 model Topic {
@@ -159,8 +159,8 @@ model Like {
   id         Int      @id @default(autoincrement())
   templateId Int
   userId     Int
-  template   Template @relation(fields: [templateId], references: [id])
-  user       User     @relation(fields: [userId], references: [id])
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
 
   @@map("likes")
@@ -171,8 +171,8 @@ model Comment {
   text       String
   templateId Int
   userId     Int
-  template   Template @relation(fields: [templateId], references: [id])
-  user       User     @relation(fields: [userId], references: [id])
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
 
   @@map("comments")
@@ -199,6 +199,6 @@ model Form {
   customBool2Answer   Boolean?
   customBool3Answer   Boolean?
   customBool4Answer   Boolean?
-  template            Template @relation(fields: [templateId], references: [id])
-  user                User     @relation(fields: [userId], references: [id])
+  template            Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

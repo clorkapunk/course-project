@@ -1,10 +1,10 @@
 import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card.tsx";
 import React, {useEffect, useState} from "react";
 import {Input} from "@/components/ui/input.tsx";
-import {QuestionDataWithId} from "@/pages/CreateTemplate.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {FaTrash} from "react-icons/fa6";
+import {QuestionDataWithId} from "@/components/TemplateForm.tsx";
 
 type Props = {
     index: number | undefined;
@@ -39,9 +39,16 @@ const CreateQuestionCard = ({otherProps, index, item, handleChange, handleDelete
     return (
         <Card {...otherProps} className={'bg-zinc-800 border-none mb-2 hover:cursor-move'}>
             <CardHeader className={'flex flex-row justify-between items-center py-2'}>
-                <CardTitle className={'text-zinc-200 text-xl'}>
-                    {index ? (index + 1) : 1}
+                <CardTitle className={'text-zinc-200 text-xl flex items-center gap-4'}>
+                    {index ? (index + 1) : 1}.
+                    <div>
+                        {item.type === "string" && "Single-line"}
+                        {item.type === "int" && "Positive integer"}
+                        {item.type === "text" && "Multiple-line"}
+                        {item.type === "bool" && "Checkbox"}
+                    </div>
                 </CardTitle>
+
                 <div className={'flex items-center justify-center gap-4'}>
                     <Button
                         className={'rounded-full'}

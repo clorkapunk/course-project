@@ -40,7 +40,24 @@ router.get('/templates/:id',
         id: {in: ['params'], isInt: true}
     }),
     templatesController.getTemplate
-    )
+)
+
+router.get('/templates/user/:id',
+    checkSchema({
+        id: {in: ['params'], isInt: true},
+        page: {in: ['query'], isInt: true},
+        limit: {in: ['query'], isInt: true},
+        sort: {in: ['query'], optional: true, isIn: {options: [['asc', 'desc']]}},
+        orderBy: {
+            in: ['query'],
+            optional: true,
+            isIn: {options: [['title', 'description', 'mode', 'form', 'createdAt']]}
+        },
+        searchBy: {in: ['query'], optional: true, isIn: {options: [['title', 'description']]}},
+        search: {in: ['query'], optional: true}
+    }),
+    templatesController.getUserTemplates
+)
 
 router.get(
     '/topics',
@@ -66,11 +83,37 @@ router.post(
         title: {notEmpty: true, isString: true},
         description: {notEmpty: true, isString: true},
         topicId: {notEmpty: true, isInt: true},
-        mode: {notEmpty: true, isString: true, isIn: {options: [['public','private']]}},
+        mode: {notEmpty: true, isString: true, isIn: {options: [['public', 'private']]}},
         questions: {notEmpty: true},
         tags: {notEmpty: true}
     }),
     templatesController.createTemplate
+)
+
+router.delete(
+    '/templates',
+    authMiddleware,
+    checkSchema({
+        templatesIds: {notEmpty: true, isArray: true}
+    }),
+    templatesController.deleteTemplates
+)
+
+router.patch(
+    '/templates/:id',
+    authMiddleware,
+    multerMiddleware.single("file"),
+    checkSchema({
+        id: {in: ['params'], notEmpty: true, isInt: true},
+        file: {optional: true},
+        title: {optional: true, isString: true},
+        description: {optional: true, isString: true},
+        topicId: {optional: true, isInt: true},
+        mode: {optional: true, isString: true, isIn: {options: [['public', 'private']]}},
+        questions: {optional: true},
+        tags: {optional: true}
+    }),
+    templatesController.updateTemplate
 )
 
 

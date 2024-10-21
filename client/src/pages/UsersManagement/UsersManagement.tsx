@@ -6,7 +6,7 @@ import {
 } from "@/features/users/usersApiSlice.ts";
 import {useTranslation} from "react-i18next";
 import Roles from "@/utils/roles.ts";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useState} from "react";
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
     DropdownMenuLabel, DropdownMenuPortal, DropdownMenuSeparator, DropdownMenuSub,
@@ -14,19 +14,10 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import toast from "react-hot-toast";
 import {ApiErrorResponse, UserData} from "@/types";
-import {Input} from "@/components/ui/input.tsx";
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel, SelectSeparator,
-    SelectTrigger,
-    SelectValue
-} from "@/components/ui/select.tsx";
 import styles from './UsersManagement.module.scss'
 import {FaChevronDown} from "react-icons/fa6";
 import SortableTable from "@/components/SortableTable/SortableTable.tsx";
+import SelectableSearch from "@/components/SelectableSearch/SelectableSearch.tsx";
 
 
 export function getRoleName(value: number) {
@@ -39,8 +30,6 @@ const UsersManagement = () => {
     const {t} = useTranslation()
 
     const [selectedRows, setSelectedRows] = useState<number[]>([])
-
-    const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const [searchField, setSearchField] = useState<string>('email')
     const [searchString, setSearchString] = useState<string>('')
     const [page, setPage] = useState<number>(1)
@@ -129,15 +118,15 @@ const UsersManagement = () => {
     }, [page, limit, sort, orderField, searchField]);
 
     useEffect(() => {
-        searchTimeoutRef.current && clearTimeout(searchTimeoutRef.current);
-        searchTimeoutRef.current = setTimeout(() => {
+        const timer = setTimeout(() => {
             refetch()
-        }, 2000)
+        }, 500);
 
         return () => {
-            searchTimeoutRef.current && clearTimeout(searchTimeoutRef.current);
-        }
+            clearTimeout(timer);
+        };
     }, [searchString]);
+
 
     const handleChangeSort = (field: string) => {
         setOrderField(field)
@@ -198,42 +187,22 @@ const UsersManagement = () => {
                         </DropdownMenuSub>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <div className={styles.searchContainer}>
-                    <Select value={searchField} onValueChange={(value) => setSearchField(value)}>
-                        <SelectTrigger
-                            className={`${styles.select} w-[180px] border-none bg-zinc-800 text-zinc-100 hover:bg-zinc-600`}>
-                            <SelectValue/>
-                        </SelectTrigger>
-                        <SelectContent className={'bg-zinc-800 border-zinc-600 text-zinc-100 '}>
-                            <SelectGroup>
-                                <SelectLabel>{t("search-by")}</SelectLabel>
-                                <SelectSeparator className={'bg-zinc-600'}/>
-                                <SelectItem
-                                    className={'text-zinc-200 focus:bg-zinc-600 focus:text-zinc-100'}
-                                    value="email"
-                                    defaultChecked>{t("email")}</SelectItem>
-                                <SelectItem
-                                    className={'text-zinc-200 focus:bg-zinc-600 focus:text-zinc-100'}
-                                    value="username" defaultChecked>{t("username")}</SelectItem>
-                            </SelectGroup>
-                        </SelectContent>
-                    </Select>
-                    <Input
-                        className={styles.input}
-                        type={'text'}
-                        value={searchString}
-                        onChange={(e) => setSearchString(e.target.value)}
-                        placeholder={t(`search-by-${searchField}`)}
-                    />
-                </div>
+                <SelectableSearch
+                    setSearchField={setSearchField}
+                    searchField={searchField}
+                    searchString={searchString}
+                    setSearchString={setSearchString}
+                    fields={[
+                        {label: t('email'), value: 'email'},
+                        {label: t('username'), value: 'username'},
+                    ]}
+                />
             </div>)
     }
 
 
     return (
         <section className={styles.page}>
-
-
             <SortableTable
                 header={tableHeader()}
                 fields={[
@@ -296,7 +265,6 @@ const UsersManagement = () => {
                     setPage
                 }}
             />
-
         </section>
     )
 };

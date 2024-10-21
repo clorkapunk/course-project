@@ -7,7 +7,7 @@ import {
     ADMIN_HISTORY_ROUTE,
     CREATE_TEMPLATE_ROUTE, PROFILE_ROUTE
 } from "@/utils/routes.ts";
-import logo from '../../../public/vite.svg'
+import logo from '@/assets/react.svg'
 import {
     FaAnglesLeft,
     FaGlobe,
@@ -190,7 +190,7 @@ const Sidebar = () => {
                                     </Button>
                                 </DropdownMenuTrigger>
                             </TooltipTrigger>
-                            <DropdownMenuContent className={`${styles.langMenu}`}>
+                            <DropdownMenuContent className={`${styles.langMenu} z-[100]`}>
                                 <DropdownMenuLabel
                                     className={'text-zinc-200 bg-zinc-800'}>{t("select-language")}</DropdownMenuLabel>
                                 <DropdownMenuSeparator className={'bg-zinc-600'}/>

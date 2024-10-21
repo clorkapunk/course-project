@@ -63,5 +63,15 @@
   "updated-role-of": "обновил роль",
   "updated-status-of": "обновил статус",
   "to": "на",
-  "no-result": "Нет результата"
+  "no-result": "Нет результата",
+  "create-template": "Создать шаблон",
+  "profile": "Профиль",
+  "title": "Название",
+  "description": "Описание",
+  "published-at": "Опубликовано в",
+  "mode": "Режим",
+  "filled-forms": "Заполненные формы",
+  "search-by-title": "Поиск по названию",
+  "search-by-description": "Поиск по описанию",
+  "topic": "Тема"
 }

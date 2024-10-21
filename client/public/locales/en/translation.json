@@ -63,5 +63,16 @@
   "updated-role-of": "updated role of",
   "updated-status-of": "updated status of",
   "to": "to",
-  "no-result": "No result"
+  "no-result": "No result",
+  "create-template": "Create template",
+  "profile": "Profile",
+  "title": "Title",
+  "description": "Description",
+  "published-at": "Published at",
+  "mode": "Mode",
+  "filled-forms": "Filled forms",
+  "search-by-title": "Search by title",
+  "search-by-description": "Search by description",
+  "topic": "Topic"
+
 }

@@ -9,7 +9,7 @@ const {unlink} = require("node:fs");
 const {log} = require("debug");
 const {prisma} = require("../prisma/prisma-client");
 const {checkValidationErrors} = require("../check-validation-errors");
-
+const Roles = require('../config/roles')
 
 class TemplatesController {
 
@@ -77,9 +77,45 @@ class TemplatesController {
         }
     }
 
+    async getUserTemplates(req, res, next){
+        try{
+            checkValidationErrors(req, next)
+
+            const id = parseInt(req.params.id) || 0
+            const limit = parseInt(req.query.limit) || 10;
+            const page = parseInt(req.query.page) || 1;
+            const sort = req.query.sort || "desc"
+            const orderField = req.query.orderBy || "id"
+            const search = req.query.search || ""
+            const searchField = req.query.searchBy || 'title'
+
+            const {templates, totalCount} = await templatesService.getByUserId({
+                userId: id,
+                take: limit,
+                skip: (page - 1) * limit,
+                search,
+                sort,
+                orderField,
+                searchField
+            })
+
+            return res.json({
+                page,
+                limit,
+                pages: Math.ceil(totalCount / limit),
+                total: totalCount,
+                data: templates
+            })
+        }catch (err){
+            next(err)
+        }
+    }
+
     async createTemplate(req, res, next) {
         try {
             checkValidationErrors(req, next)
+
+
 
             const {title, description, mode} = req.body
             const topicId = parseInt(req.body.topicId)
@@ -93,6 +129,7 @@ class TemplatesController {
             } else {
                 const auth = await googleDriveService.authorize()
                 image = await googleDriveService.uploadToGoogleDrive(req.file, auth);
+                deleteFile(req.file.path)
             }
 
             const template = await templatesService.create({
@@ -110,6 +147,9 @@ class TemplatesController {
             res.json({template})
 
         } catch (err) {
+            if(req.file){
+                deleteFile(req.file.path)
+            }
             next(err)
         }
     }
@@ -145,6 +185,80 @@ class TemplatesController {
                 limit
             })
         } catch (err) {
+            next(err)
+        }
+    }
+
+    async deleteTemplates(req, res, next){
+        try {
+            checkValidationErrors(req, next)
+
+            const templatesIds = req.body.templatesIds
+            const {id, role} = req.user
+
+            let result
+            if(role === Roles.Admin){
+                result = await templatesService.deleteAll(templatesIds)
+            }
+            else{
+                result = await templatesService.deleteAll(templatesIds, id)
+            }
+
+            return res.json(result)
+        }catch (err){
+            next(err)
+        }
+    }
+
+    async updateTemplate(req,res,next){
+        try {
+            checkValidationErrors(req, next)
+            let data = {
+                ...req.body
+            }
+
+
+            const templateId = parseInt(req.params.id)
+            const {id, role} = req.user
+
+            let image;
+            if (!req.file) {
+                image = null
+            } else {
+                image = await googleDriveService.uploadToGoogleDrive(req.file);
+                deleteFile(req.file.path)
+                data = {
+                    ...data,
+                    image
+                }
+            }
+
+            data = Object.fromEntries(
+                Object.entries(data).filter(([key, value]) => value !== null)
+            );
+
+
+            data = {
+                ...data,
+                topicId: parseInt(data.topicId),
+                questions: JSON.parse(data.questions),
+                tags: JSON.parse(data.tags)
+            }
+
+            let result
+            if(role === Roles.Admin){
+                result = await templatesService.update(templateId, data)
+            }
+            else{
+                result = await templatesService.update(templateId, data, id)
+            }
+
+            return res.json(result)
+
+        }catch (err){
+            if(req.file){
+                deleteFile(req.file.path)
+            }
             next(err)
         }
     }

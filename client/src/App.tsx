@@ -7,7 +7,7 @@ import {
     LOGIN_ROUTE,
     OAUTH_CALLBACK,
     REGISTER_ROUTE, CREATE_TEMPLATE_ROUTE,
-    UNAUTHORIZED_ROUTE, SEARCH_TEMPLATES_ROUTE, PROFILE_ROUTE,
+    UNAUTHORIZED_ROUTE, SEARCH_TEMPLATES_ROUTE, PROFILE_ROUTE, EDIT_TEMPLATE_ROUTE,
 } from "@/utils/routes.ts";
 import Register from "@/pages/Register.tsx";
 import RequireAuth from "@/components/RequireAuth.tsx";
@@ -23,6 +23,7 @@ import CreateTemplate from "@/pages/CreateTemplate.tsx";
 import FillTemplate from "@/pages/FillTemplate.tsx";
 import SearchTemplates from "@/pages/SearchTemplates.tsx";
 import Profile from "@/pages/Profile.tsx";
+import EditTemplate from "@/pages/EditTemplate.tsx";
 
 const App = () => {
     return (
@@ -43,6 +44,7 @@ const App = () => {
 
 
                     <Route element={<RequireAuth allowedRoles={[Roles.User, Roles.Admin]}/>}>
+                        <Route path={EDIT_TEMPLATE_ROUTE + "/:id"} element={<EditTemplate/>}/>
                         <Route path={CREATE_TEMPLATE_ROUTE} element={<CreateTemplate/>}/>
                         <Route path={PROFILE_ROUTE} element={<Profile/>}/>
                     </Route>

@@ -4,7 +4,6 @@ import {
 } from "@/features/templates/templatesApiSlice.ts";
 import {Input} from "@/components/ui/input.tsx";
 import {AspectRatio} from "@/components/ui/aspect-ratio.tsx";
-import LinesEllipsis from 'react-lines-ellipsis'
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {useEffect, useState} from "react";
@@ -15,7 +14,7 @@ import {FILL_TEMPLATE_ROUTE, SEARCH_TEMPLATES_ROUTE} from "@/utils/routes.ts";
 const Main = () => {
     const [latestPage, setLatestPage] = useState(1);
     const {data: latestTemplates} = useGetLatestTemplatesQuery({page: latestPage, limit: 4})
-    const [tagsPage, setTagsPage] = useState(1)
+    const [tagsPage] = useState(1)
     const {data: tags} = useGetTagsQuery({
         page: tagsPage,
         limit: 10,
@@ -61,20 +60,14 @@ const Main = () => {
                                                 <img
                                                     className={'w-full h-full object-cover absolute top-0 right-0'}
                                                     alt={'image'}
-                                                    src={`https://drive.google.com/thumbnail?id=${template.image}&sz=w1000`}
+                                                    src={template.image}
                                                 />
                                             }
 
                                             <Tooltip>
                                                 <TooltipTrigger asChild className={'z-10'}>
-                                                    <div>
-                                                        <LinesEllipsis
-                                                            text={template.title}
-                                                            maxLine='3'
-                                                            ellipsis='...'
-                                                            trimRight
-                                                            className={'text-zinc-200 text-center bg-zinc-900 bg-opacity-95 p-2 rounded-md'}
-                                                        />
+                                                    <div className={'text-zinc-200 text-center bg-zinc-900 bg-opacity-95 p-2 rounded-md'}>
+                                                        {template.title}
                                                     </div>
                                                 </TooltipTrigger>
                                                 <TooltipContent>

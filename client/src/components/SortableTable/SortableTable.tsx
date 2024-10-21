@@ -3,7 +3,7 @@ import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {CaretSortIcon} from "@radix-ui/react-icons";
 import {useTranslation} from "react-i18next";
-import { FaChevronLeft, FaChevronRight} from "react-icons/fa6";
+import {FaChevronLeft, FaChevronRight} from "react-icons/fa6";
 
 import {
     Select,
@@ -26,17 +26,26 @@ type Field = |
         partiallyChecked?: boolean;
         onCheckedChange: (value: boolean) => void;
         ariaLabel?: string;
+        align?: "right" | 'left' | 'center';
+        width?: number;
+        cellComponent?: (item?: any) => ReactNode;
     } |
     {
         type: "button";
         name: string;
         text: string;
-        onClick: () => void
+        onClick: () => void;
+        align?: "right" | 'left' | 'center';
+        width?: number;
+        cellComponent?: (item?: any) => ReactNode;
     } |
     {
         type: 'default';
         name: string;
         text: string;
+        align?: "right" | 'left' | 'center';
+        width?: number;
+        cellComponent?: (item?: any) => ReactNode;
     };
 
 type RequiredData = {
@@ -83,7 +92,10 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
                             {
                                 fields.map(field => {
                                     if (field.type === 'select') {
-                                        return (<TableHead className={`${styles.tableHead}`}>
+                                        return (<TableHead
+                                            key={field.name}
+                                            className={`${styles.tableHead} w-[${field.width}px]  min-w-fit`}
+                                        >
                                             <Checkbox
                                                 className={styles.checkbox}
                                                 checked={field.checked ? true : (field.partiallyChecked && "indeterminate")}
@@ -92,7 +104,9 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
                                             />
                                         </TableHead>)
                                     } else if (field.type === 'button') {
-                                        return (<TableHead className={styles.tableHead}>
+                                        return (<TableHead key={field.name}
+                                                           className={`${styles.tableHead} w-[${field.width?.toString()}px]  min-w-fit`}
+                                        >
                                             <Button
                                                 className={styles.button}
                                                 variant="ghost"
@@ -103,7 +117,10 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
                                             </Button>
                                         </TableHead>)
                                     } else {
-                                        return (<TableHead className={styles.tableHead}>
+                                        return (<TableHead
+                                            key={field.name}
+                                            className={`${styles.tableHead} w-[${field.width}px]  min-w-fit`}
+                                        >
                                             {field.text}
                                         </TableHead>)
                                     }
@@ -125,7 +142,7 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
                                         {
                                             fields.map(field => {
                                                 if (field.type === 'select') {
-                                                    return (<TableCell className={styles.tableCell}>
+                                                    return (<TableCell key={field.name} className={styles.tableCell}>
                                                         <Checkbox
                                                             className={styles.checkbox}
                                                             checked={item.checked}
@@ -133,8 +150,12 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
                                                         />
                                                     </TableCell>)
                                                 } else {
-                                                    return (<TableCell className={styles.tableCell}>
-                                                        {item[field.name]}
+                                                    return (<TableCell key={field.name} className={styles.tableCell}
+                                                                       align={field.align ? field.align : "left"}>
+                                                        {field.cellComponent
+                                                            ? field.cellComponent(item)
+                                                            : item[field.name]
+                                                        }
                                                     </TableCell>)
                                                 }
                                             })
