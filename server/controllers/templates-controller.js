@@ -127,9 +127,8 @@ class TemplatesController {
             if (!req.file) {
                 image = null
             } else {
-                const auth = await googleDriveService.authorize()
-                image = await googleDriveService.uploadToGoogleDrive(req.file, auth);
-                deleteFile(req.file.path)
+                image = await googleDriveService.uploadToGoogleDrive(req.file);
+                // deleteFile(req.file.path)
             }
 
             const template = await templatesService.create({
@@ -148,7 +147,7 @@ class TemplatesController {
 
         } catch (err) {
             if(req.file){
-                deleteFile(req.file.path)
+                // deleteFile(req.file.path)
             }
             next(err)
         }

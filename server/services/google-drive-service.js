@@ -1,5 +1,6 @@
 const {google} = require("googleapis");
 const fs = require("node:fs");
+const { Readable } = require('readable-stream');
 
 const SCOPE = ["https://www.googleapis.com/auth/drive"]
 
@@ -26,9 +27,18 @@ class GoogleDriveService {
             parents: [process.env.GD_PARENT_FOLDER_ID],
         };
 
+        // const media = {
+        //     mimeType: file.mimetype,
+        //     body: fs.createReadStream(file.path),
+        // };
         const media = {
             mimeType: file.mimetype,
-            body: fs.createReadStream(file.path),
+            body: new Readable({
+                read() {
+                    this.push(file.buffer);
+                    this.push(null);
+                }
+            })
         };
 
         const driveService = google.drive({version: "v3", auth});

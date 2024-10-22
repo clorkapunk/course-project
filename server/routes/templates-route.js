@@ -7,19 +7,10 @@ const multer = require('multer')
 const {join} = require("node:path");
 const authMiddleware = require('../middlewares/auth-middleware')
 
+
 const multerMiddleware = multer({
-    storage: multer.diskStorage({
-        destination: function (req, file, callback) {
-            callback(null, join(__dirname, '../', 'uploads'));
-        },
-        filename: function (req, file, callback) {
-            callback(null, file.fieldname + "_" + Date.now() + "_" + file.originalname);
-        },
-    }),
-    limits: {
-        fileSize: 5 * 1024 * 1024,
-    }
-});
+    storage: multer.memoryStorage()
+})
 
 const router = new Router()
 
