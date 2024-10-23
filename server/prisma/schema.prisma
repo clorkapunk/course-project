@@ -120,9 +120,9 @@ model Template {
 }
 
 model Tag {
-  id    Int           @id @default(autoincrement())
-  name  String        @unique
-  posts TemplateTag[]
+  id        Int           @id @default(autoincrement())
+  name      String        @unique
+  templates TemplateTag[]
 
   @@map("tags")
 }
@@ -201,4 +201,6 @@ model Form {
   customBool4Answer   Boolean?
   template            Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
   user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("forms")
 }

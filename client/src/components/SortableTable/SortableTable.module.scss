@@ -3,13 +3,12 @@
   flex-direction: column;
   gap: 1rem;
   padding: 1rem;
-  border: 1px solid theme('colors.zinc.600');
   border-radius: theme("borderRadius.lg");
 
   .tableContainer {
     overflow-x: auto;
     border-radius: theme('borderRadius.md');
-    border: 1px solid theme('colors.zinc.600');
+
     width: 100%;
 
     //max-width: 575px;
@@ -17,47 +16,39 @@
 
     .checkbox {
       //background-color: white;
-      border-color: theme('colors.zinc.400');
+
 
       &[data-state="checked"] {
-        background-color: theme('colors.zinc.900');
-        color: theme('colors.zinc.100');
+
       }
 
       &[data-state='indeterminate'] {
-        background-color: theme('colors.zinc.600');
+
       }
 
       &[data-state="unchecked"] {
-        background-color: theme('colors.zinc.900');
+
       }
     }
 
     .tableHead {
-      background-color: theme('colors.zinc.800');
-      color: theme('colors.zinc.100');
-
-      .button {
-        &:hover {
-          background-color: theme("colors.zinc.500");
-          color: theme('colors.zinc.100')
-        }
-      }
+      //background-color: theme('colors.zinc.800');
+      //color: theme('colors.zinc.100');
     }
 
     .tableRow {
-      border-color: theme("colors.zinc.600");
+      //border-color: theme("colors.zinc.600");
 
       &[data-state="selected"] {
-        background-color: theme('colors.zinc.800');
+        //background-color: theme('colors.zinc.800');
       }
 
       &:hover {
-        background-color: theme('colors.zinc.800');
+        //background-color: theme('colors.zinc.800');
       }
 
       .tableCell {
-        color: theme('colors.zinc.300');
+        //color: theme('colors.zinc.300');
 
       }
 
@@ -72,8 +63,8 @@
     gap: 0.5rem;
 
     .pageInfo {
-      background-color: theme('colors.zinc.800');
-      color: theme('colors.zinc.100');
+      //background-color: theme('colors.zinc.800');
+      //color: theme('colors.zinc.100');
       display: flex;
       align-items: center;
       font-size: theme('fontSize.sm');
@@ -84,18 +75,18 @@
 
     .prevButton {
       border-radius: 0;
-      background-color: theme('colors.zinc.800');
-      color: theme('colors.zinc.100');
+      //background-color: theme('colors.zinc.800');
+      //color: theme('colors.zinc.100');
       border: none;
       height: auto;
 
-      &:hover {
-        background-color: theme('colors.zinc.600');
-      }
-
-      &:disabled {
-        background-color: theme('colors.zinc.900');
-      }
+      //&:hover {
+      //  background-color: theme('colors.zinc.600');
+      //}
+      //
+      //&:disabled {
+      //  background-color: theme('colors.zinc.900');
+      //}
 
     }
 
@@ -103,17 +94,17 @@
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
       border: none;
-      background-color: theme('colors.zinc.800');
-      color: theme('colors.zinc.100');
+      //background-color: theme('colors.zinc.800');
+      //color: theme('colors.zinc.100');
       height: auto;
 
-      &:hover {
-        background-color: theme('colors.zinc.600');
-      }
-
-      &:disabled {
-        background-color: theme('colors.zinc.900');
-      }
+      //&:hover {
+      //  background-color: theme('colors.zinc.600');
+      //}
+      //
+      //&:disabled {
+      //  background-color: theme('colors.zinc.900');
+      //}
     }
 
   }

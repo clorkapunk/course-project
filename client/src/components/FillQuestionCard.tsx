@@ -4,9 +4,10 @@ import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {useEffect, useState} from "react";
 import {AnsweredQuestionDataWithId} from "@/pages/FillTemplate.tsx";
 
-const FillQuestionCard = ({item, handleChange}: {
+const FillQuestionCard = ({item, handleChange, disabled = false}: {
     item: AnsweredQuestionDataWithId,
-    handleChange: (id: string, answer: string | number | boolean) => void
+    handleChange: (id: string, answer: string | number | boolean) => void;
+    disabled?: boolean;
 }) => {
     const [answer, setAnswer] = useState(item.answer)
     const [status, setStatus] = useState(false)
@@ -28,6 +29,7 @@ const FillQuestionCard = ({item, handleChange}: {
                 {
                     item.type === "string" &&
                     <Input
+                        readOnly={disabled}
                         type={'text'}
                         value={answer?.toString()}
                         onChange={(e) => setAnswer(e.target.value)}
@@ -38,6 +40,7 @@ const FillQuestionCard = ({item, handleChange}: {
                 {
                     item.type === "int" &&
                     <Input
+                        readOnly={disabled}
                         type={'number'}
                         value={answer?.toString()}
                         onChange={(e) => setAnswer(e.target.value)}
@@ -48,6 +51,7 @@ const FillQuestionCard = ({item, handleChange}: {
                 {
                     item.type === 'text' &&
                     <Textarea
+                        readOnly={disabled}
                         value={answer?.toString()}
                         onChange={(e) => setAnswer(e.target.value)}
                         className={'bg-zinc-600 placeholder:text-zinc-300 resize-none'}
@@ -56,6 +60,7 @@ const FillQuestionCard = ({item, handleChange}: {
                 {
                     item.type === "bool" &&
                     <Checkbox
+                        disabled={disabled}
                         onCheckedChange={(value) => setAnswer(value)}
                         checked={Boolean(answer)}
                     />

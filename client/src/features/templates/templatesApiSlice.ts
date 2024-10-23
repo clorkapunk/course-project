@@ -29,15 +29,87 @@ export const templatesApiSlice = apiSlice.injectEndpoints({
                 return refetch
             }
         }),
+        getPopularTemplates: builder.query<{
+            data: TemplateData[];
+            page: number;
+            total: number;
+            pages: number;
+            limit: number;
+        },
+            { page: number; limit: number; }>({
+            query: ({page, limit}) => {
+                return `/api/templates?page=${page}&limit=${limit}&type=popular`
+            },
+            serializeQueryArgs: ({endpointName}) => {
+                return endpointName
+            },
+            merge: (currentCache, newItems, {arg}) => {
+                if (arg.page === 1) {
+                    currentCache.data = newItems.data;
+                } else {
+                    currentCache.data = Array.from(new Set([...currentCache.data, ...newItems.data]))
+                }
+                currentCache.page = newItems.page;
+                currentCache.total = newItems.total;
+                currentCache.pages = newItems.pages;
+                currentCache.limit = newItems.limit;
+                return currentCache
+            },
+            forceRefetch({currentArg, previousArg}) {
+                let refetch = false
+                if (currentArg?.page !== previousArg?.page) refetch = true
+                return refetch
+            }
+        }),
         searchTemplates: builder.query<{ data: TemplateData[]; page: number; total: number; pages: number; limit: number; },
-            {search: string}>({
-            query: ({search}) => {
+            { search: string}>({
+            query: ({search = []}) => {
                 return `/api/templates?type=search&search=${search}`
             }
         }),
-        getUserTemplates: builder.query<{ data: TemplateData[]; page: number; total: number; pages: number; limit: number; },
-            { userId: number; page: number; limit: number; orderBy: string; sort: string; searchBy: string; search: string; }>({
-            query: ({userId, page, limit, search,sort,searchBy,orderBy}) => {
+        getTemplatesByTags: builder.query<{ data: TemplateData[]; page: number; total: number; pages: number; limit: number; },
+            {page: number; limit: number; tags: number[] }>({
+            query: ({tags = []}) => {
+                return `/api/templates?type=tags&tags=${tags.join(',')}`
+            },
+            serializeQueryArgs: ({endpointName}) => {
+                return endpointName
+            },
+            merge: (currentCache, newItems, {arg}) => {
+                if (arg.page === 1) {
+                    currentCache.data = newItems.data;
+                } else {
+                    currentCache.data = Array.from(new Set([...currentCache.data, ...newItems.data]))
+                }
+                currentCache.page = newItems.page;
+                currentCache.total = newItems.total;
+                currentCache.pages = newItems.pages;
+                currentCache.limit = newItems.limit;
+                return currentCache
+            },
+            forceRefetch({currentArg, previousArg}) {
+                let refetch = false
+                if (currentArg?.page !== previousArg?.page) refetch = true
+                return refetch
+            }
+        }),
+        getUserTemplates: builder.query<{
+            data: TemplateData[];
+            page: number;
+            total: number;
+            pages: number;
+            limit: number;
+        },
+            {
+                userId: number;
+                page: number;
+                limit: number;
+                orderBy: string;
+                sort: string;
+                searchBy: string;
+                search: string;
+            }>({
+            query: ({userId, page, limit, search, sort, searchBy, orderBy}) => {
                 return `/api/templates/user/${userId}?page=${page}&limit=${limit}&orderBy=${orderBy}&sort=${sort}&searchBy=${searchBy}&search=${search}`
             },
             serializeQueryArgs: ({endpointName}) => {
@@ -53,7 +125,7 @@ export const templatesApiSlice = apiSlice.injectEndpoints({
                 return false
             }
         }),
-        getTemplateById: builder.query<TemplateData,{id: number}>({
+        getTemplateById: builder.query<TemplateData, { id: number }>({
             query: ({id}) => {
                 return `/api/templates/${id}`
             }
@@ -88,15 +160,15 @@ export const templatesApiSlice = apiSlice.injectEndpoints({
                 }
             },
         }),
-        getTopics: builder.query<TopicData[],{}>({
+        getTopics: builder.query<TopicData[], {}>({
             query: () => {
                 return `/api/topics`
             }
         }),
-        getTags: builder.query<{ data: TagData[]; page: number; limit: number; pages: number; total:  number; },
-            { page: number; limit: number; search: string; }>({
-            query: ({page, limit, search}) => {
-                return `/api/tags?page=${page}&limit=${limit}&search=${search}`
+        getTags: builder.query<{ data: TagData[]; page: number; limit: number; pages: number; total: number; },
+            { page: number; limit: number; search: string; exclude?: number[] }>({
+            query: ({page, limit, search, exclude = []}) => {
+                return `/api/tags?page=${page}&limit=${limit}&search=${search}&exclude=${exclude.join(',')}`
             },
             serializeQueryArgs: ({endpointName}) => {
                 return endpointName
@@ -119,18 +191,28 @@ export const templatesApiSlice = apiSlice.injectEndpoints({
                 return refetch
             }
         }),
+        getPopularTags: builder.query<{ data: TagData[]; page: number; limit: number; pages: number; total: number; },
+            { type: string; limit: number; }>({
+            query: ({limit, type}) => {
+                return `/api/tags?limit=${limit}&type=${type}`
+            }
+        })
 
     })
 })
 
 export const {
     useGetLatestTemplatesQuery,
+    useLazyGetLatestTemplatesQuery,
+    useLazyGetTemplatesByTagsQuery,
     useGetTopicsQuery,
     useCreateTemplateMutation,
     useGetTagsQuery,
     useGetTemplateByIdQuery,
     useLazySearchTemplatesQuery,
-    useGetUserTemplatesQuery,
+    useLazyGetUserTemplatesQuery,
     useDeleteTemplatesMutation,
-    useUpdateTemplateMutation
+    useUpdateTemplateMutation,
+    useLazyGetPopularTemplatesQuery,
+    useGetPopularTagsQuery
 } = templatesApiSlice

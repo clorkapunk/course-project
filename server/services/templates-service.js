@@ -3,6 +3,7 @@ const ApiError = require("../exceptions/api-errors");
 const ErrorCodes = require("../config/error-codes");
 const googleDriveService = require('./google-drive-service')
 const {Prisma} = require("@prisma/client");
+const {log} = require("debug");
 
 
 class TemplatesService {
@@ -61,7 +62,12 @@ class TemplatesService {
             }
         })
 
-        return {templates, totalCount}
+        const result = templates.map(template => ({
+            ...template,
+            tags: template.tags.map(tagRelation => tagRelation.tag)
+        }))
+
+        return {templates: result, totalCount}
     }
 
     async getPopular({take, skip}) {
@@ -123,116 +129,138 @@ class TemplatesService {
                 }
             }
         })
+        const result = templates.map(template => ({
+            ...template,
+            tags: template.tags.map(tagRelation => tagRelation.tag)
+        }))
 
-        return {templates, totalCount}
+        return {templates: result, totalCount}
     }
 
-    async getSearched({take, skip, search}) {
+    async getSearched({take, skip, search, tags}) {
 
+        let searchQuery = ''
+        if (search !== '') {
+            searchQuery = search
+                .split(' ')
+                .map(term => `${term}:*`)
+                .join(' | ');
+        }
 
-        const searchQuery = search
-            .split(' ')
-            .map(term => `${term}:*`)
-            .join(' | ');
+        console.log('tags: ', tags)
 
 
         console.log(`searching for: ${searchQuery}`)
 
         const templates = await prisma.$queryRaw(
             Prisma.sql`SELECT 
-                        t.id AS template_id, 
-                        t.title, 
-                        t.description, 
-                        t."createdAt", 
-                        t.image, 
-                        t.mode, 
-                        u.id AS user_id, 
-                        u.username, 
-                        u.email, 
-                        u."isActive",
-                        top.id AS topic_id, 
-                        top.name AS topic_name,
-                        tg.id AS tag_id, 
-                        tg.name AS tag_name,
-                        c.id AS comment_id, 
-                        c.text AS comment_text
-                      FROM "templates" t
-                      LEFT JOIN "users" u ON t."userId" = u.id
-                      LEFT JOIN "topics" top ON t."topicId" = top.id
-                      LEFT JOIN "templates_tags" tt ON t.id = tt."templateId"
-                      LEFT JOIN "tags" tg ON tt."tagId" = tg.id
-                      LEFT JOIN "comments" c ON t.id = c."templateId"
-                      WHERE 
-                        (to_tsvector('simple', t.title || ' ' || t.description || ' ' || coalesce(t."customString1Question", '') || ' ' || coalesce(t."customString1Description", '') 
-                        || ' ' || coalesce(t."customString2Question", '') || ' ' || coalesce(t."customString2Description", '') || ' ' || coalesce(t."customString3Question", '') 
-                        || ' ' || coalesce(t."customString3Description", '') || ' ' || coalesce(t."customString4Question", '') || ' ' || coalesce(t."customString4Description", '') 
-                        || ' ' || coalesce(t."customInt1Question", '') || ' ' || coalesce(t."customInt1Description", '') || ' ' || coalesce(t."customInt2Question", '') 
-                        || ' ' || coalesce(t."customInt2Description", '') || ' ' || coalesce(t."customInt3Question", '') || ' ' || coalesce(t."customInt3Description", '') 
-                        || ' ' || coalesce(t."customInt4Question", '') || ' ' || coalesce(t."customInt4Description", '') || ' ' || coalesce(t."customText1Question", '') 
-                        || ' ' || coalesce(t."customText1Description", '') || ' ' || coalesce(t."customText2Question", '') || ' ' || coalesce(t."customText2Description", '') 
-                        || ' ' || coalesce(t."customText3Question", '') || ' ' || coalesce(t."customText3Description", '') || ' ' || coalesce(t."customText4Question", '') 
-                        || ' ' || coalesce(t."customText4Description", '') || ' ' || coalesce(t."customBool1Question", '') || ' ' || coalesce(t."customBool1Description", '') 
-                        || ' ' || coalesce(t."customBool2Question", '') || ' ' || coalesce(t."customBool2Description", '') || ' ' || coalesce(t."customBool3Question", '') 
-                        || ' ' || coalesce(t."customBool3Description", '') || ' ' || coalesce(t."customBool4Question", '') || ' ' || coalesce(t."customBool4Description", '')) 
-                        @@ to_tsquery('simple', ${searchQuery}))
-                        OR to_tsvector('simple', c.text) @@ to_tsquery('simple', ${searchQuery})
-                      LIMIT ${take}
-                      OFFSET ${skip};
-                `);
+                t.id AS template_id, 
+                t.title, 
+                t.description, 
+                t."createdAt", 
+                t.image, 
+                t.mode, 
+                u.id AS user_id, 
+                u.username, 
+                u.email, 
+                u."isActive",
+                top.id AS topic_id, 
+                top.name AS topic_name,
+                COALESCE(array_agg(DISTINCT jsonb_build_object('id', tg.id, 'name', tg.name)) FILTER (WHERE tg.id IS NOT NULL), '{}') AS tags,
+                array_agg(DISTINCT jsonb_build_object('id', c.id, 'text', c.text)) FILTER (WHERE c.id IS NOT NULL) AS comments
+              FROM "templates" t
+              LEFT JOIN "users" u ON t."userId" = u.id
+              LEFT JOIN "topics" top ON t."topicId" = top.id
+              LEFT JOIN "templates_tags" tt ON t.id = tt."templateId"
+              LEFT JOIN "tags" tg ON tt."tagId" = tg.id
+              LEFT JOIN "comments" c ON t.id = c."templateId"
+              WHERE 
+                (to_tsvector('simple', t.title || ' ' || t.description || ' ' || coalesce(t."customString1Question", '') || ' ' || coalesce(t."customString1Description", '') 
+                || ' ' || coalesce(t."customString2Question", '') || ' ' || coalesce(t."customString2Description", '') || ' ' || coalesce(t."customString3Question", '') 
+                || ' ' || coalesce(t."customString3Description", '') || ' ' || coalesce(t."customString4Question", '') || ' ' || coalesce(t."customString4Description", '') 
+                || ' ' || coalesce(t."customInt1Question", '') || ' ' || coalesce(t."customInt1Description", '') || ' ' || coalesce(t."customInt2Question", '') 
+                || ' ' || coalesce(t."customInt2Description", '') || ' ' || coalesce(t."customInt3Question", '') || ' ' || coalesce(t."customInt3Description", '') 
+                || ' ' || coalesce(t."customInt4Question", '') || ' ' || coalesce(t."customInt4Description", '') || ' ' || coalesce(t."customText1Question", '') 
+                || ' ' || coalesce(t."customText1Description", '') || ' ' || coalesce(t."customText2Question", '') || ' ' || coalesce(t."customText2Description", '') 
+                || ' ' || coalesce(t."customText3Question", '') || ' ' || coalesce(t."customText3Description", '') || ' ' || coalesce(t."customText4Question", '') 
+                || ' ' || coalesce(t."customText4Description", '') || ' ' || coalesce(t."customBool1Question", '') || ' ' || coalesce(t."customBool1Description", '') 
+                || ' ' || coalesce(t."customBool2Question", '') || ' ' || coalesce(t."customBool2Description", '') || ' ' || coalesce(t."customBool3Question", '') 
+                || ' ' || coalesce(t."customBool3Description", '') || ' ' || coalesce(t."customBool4Question", '') || ' ' || coalesce(t."customBool4Description", '')) 
+                @@ to_tsquery('simple', ${searchQuery})
+                OR to_tsvector('simple', c.text) @@ to_tsquery('simple', ${searchQuery}))
+                ${tags.length > 0 ? Prisma.sql`
+                AND t.id IN (
+                    SELECT tt."templateId"
+                    FROM "templates_tags" tt
+                    WHERE tt."tagId" IN (${Prisma.join(tags)})
+                    GROUP BY tt."templateId"
+                    HAVING COUNT(DISTINCT tt."tagId") = ${tags.length}
+                )` : Prisma.empty}
+              GROUP BY t.id, u.id, top.id
+              LIMIT ${take}
+              OFFSET ${skip};
+    `
+        );
 
-        const totalCount = await prisma.$queryRaw(
-            Prisma.sql`SELECT COUNT(*)
-                          FROM "templates" t
-                             LEFT JOIN "comments" c ON t.id = c."templateId"
-                              WHERE 
-                                (to_tsvector('simple', t.title || ' ' || t.description || ' ' || coalesce(t."customString1Question", '') || ' ' || coalesce(t."customString1Description", '') 
-                                || ' ' || coalesce(t."customString2Question", '') || ' ' || coalesce(t."customString2Description", '') || ' ' || coalesce(t."customString3Question", '') 
-                                || ' ' || coalesce(t."customString3Description", '') || ' ' || coalesce(t."customString4Question", '') || ' ' || coalesce(t."customString4Description", '') 
-                                || ' ' || coalesce(t."customInt1Question", '') || ' ' || coalesce(t."customInt1Description", '') || ' ' || coalesce(t."customInt2Question", '') 
-                                || ' ' || coalesce(t."customInt2Description", '') || ' ' || coalesce(t."customInt3Question", '') || ' ' || coalesce(t."customInt3Description", '') 
-                                || ' ' || coalesce(t."customInt4Question", '') || ' ' || coalesce(t."customInt4Description", '') || ' ' || coalesce(t."customText1Question", '') 
-                                || ' ' || coalesce(t."customText1Description", '') || ' ' || coalesce(t."customText2Question", '') || ' ' || coalesce(t."customText2Description", '') 
-                                || ' ' || coalesce(t."customText3Question", '') || ' ' || coalesce(t."customText3Description", '') || ' ' || coalesce(t."customText4Question", '') 
-                                || ' ' || coalesce(t."customText4Description", '') || ' ' || coalesce(t."customBool1Question", '') || ' ' || coalesce(t."customBool1Description", '') 
-                                || ' ' || coalesce(t."customBool2Question", '') || ' ' || coalesce(t."customBool2Description", '') || ' ' || coalesce(t."customBool3Question", '') 
-                                || ' ' || coalesce(t."customBool3Description", '') || ' ' || coalesce(t."customBool4Question", '') || ' ' || coalesce(t."customBool4Description", '')) 
-                                @@ to_tsquery('simple', ${searchQuery}))
-                                OR to_tsvector('simple', c.text) @@ to_tsquery('simple', ${searchQuery})
-                              LIMIT ${take}
-                              OFFSET ${skip};
-                `);
 
-        const groupedTemplates = templates.reduce((acc, row) => {
-            const template = acc.find(t => t.id === row.template_id);
+        const count = await prisma.$queryRaw(
+            Prisma.sql`SELECT COUNT(DISTINCT t.id) AS total_count
+              FROM "templates" t
+              LEFT JOIN "users" u ON t."userId" = u.id
+              LEFT JOIN "topics" top ON t."topicId" = top.id
+              LEFT JOIN "templates_tags" tt ON t.id = tt."templateId"
+              LEFT JOIN "tags" tg ON tt."tagId" = tg.id
+              LEFT JOIN "comments" c ON t.id = c."templateId"
+              WHERE 
+                (to_tsvector('simple', t.title || ' ' || t.description || ' ' || coalesce(t."customString1Question", '') || ' ' || coalesce(t."customString1Description", '') 
+                || ' ' || coalesce(t."customString2Question", '') || ' ' || coalesce(t."customString2Description", '') || ' ' || coalesce(t."customString3Question", '') 
+                || ' ' || coalesce(t."customString3Description", '') || ' ' || coalesce(t."customString4Question", '') || ' ' || coalesce(t."customString4Description", '') 
+                || ' ' || coalesce(t."customInt1Question", '') || ' ' || coalesce(t."customInt1Description", '') || ' ' || coalesce(t."customInt2Question", '') 
+                || ' ' || coalesce(t."customInt2Description", '') || ' ' || coalesce(t."customInt3Question", '') || ' ' || coalesce(t."customInt3Description", '') 
+                || ' ' || coalesce(t."customInt4Question", '') || ' ' || coalesce(t."customInt4Description", '') || ' ' || coalesce(t."customText1Question", '') 
+                || ' ' || coalesce(t."customText1Description", '') || ' ' || coalesce(t."customText2Question", '') || ' ' || coalesce(t."customText2Description", '') 
+                || ' ' || coalesce(t."customText3Question", '') || ' ' || coalesce(t."customText3Description", '') || ' ' || coalesce(t."customText4Question", '') 
+                || ' ' || coalesce(t."customText4Description", '') || ' ' || coalesce(t."customBool1Question", '') || ' ' || coalesce(t."customBool1Description", '') 
+                || ' ' || coalesce(t."customBool2Question", '') || ' ' || coalesce(t."customBool2Description", '') || ' ' || coalesce(t."customBool3Question", '') 
+                || ' ' || coalesce(t."customBool3Description", '') || ' ' || coalesce(t."customBool4Question", '') || ' ' || coalesce(t."customBool4Description", '')) 
+                @@ to_tsquery('simple', ${searchQuery})
+                OR to_tsvector('simple', c.text) @@ to_tsquery('simple', ${searchQuery}))
+                ${tags.length > 0 ? Prisma.sql`
+                AND t.id IN (
+                    SELECT tt_sub."templateId"
+                    FROM "templates_tags" tt_sub
+                    JOIN "tags" tg_sub ON tt_sub."tagId" = tg_sub.id
+                    WHERE tg_sub.id IN (${Prisma.join(tags)})
+                    GROUP BY tt_sub."templateId"
+                    HAVING COUNT(DISTINCT tg_sub.id) = ${tags.length}
+                )` : Prisma.empty}
+    `
+        );
 
-            if (template) {
-                template.tags.push({id: row.tag_id, name: row.tag_name});
-            } else {
-                acc.push({
-                    id: row.template_id,
-                    title: row.title,
-                    description: row.description,
-                    createdAt: row.createdAt,
-                    image: row.image,
-                    mode: row.mode,
-                    user: {
-                        id: row.user_id,
-                        username: row.username,
-                        email: row.email,
-                        isActive: row.isActive
-                    },
-                    topic: {
-                        id: row.topic_id,
-                        name: row.topic_name
-                    },
-                    tags: row.tag_id ? [{id: row.tag_id, name: row.tag_name}] : []
-                });
-            }
 
-            return acc;
-        }, []);
+        const result = templates.map(template => {
+            return {
+                id: template.template_id,
+                title: template.title,
+                description: template.description,
+                createdAt: template.createdAt,
+                image: template.image,
+                mode: template.mode,
+                user: {
+                    id: template.user_id,
+                    username: template.username,
+                    email: template.email,
+                    isActive: template.isActive
+                },
+                topic: {
+                    id: template.topic_id,
+                    name: template.topic_name
+                },
+                tags: template.tags || []
+            };
+        });
 
-        return {templates: groupedTemplates, totalCount: Number(totalCount[0].count)}
+        return {templates: result, totalCount: Number(count[0].total_count)}
     }
 
     async getById(templateId, userId) {
@@ -518,14 +546,11 @@ class TemplatesService {
             }
         }
 
-        console.log(template.tags)
-        console.log('data', data.tags)
-
         let tagsToDisconnect = [...template.tags].filter(x => {
-            console.log(x, data.tags)
             return !data.tags.includes(x.name)
         })
         let tagsToConnect = [...data.tags].filter(x => !template.tags.map(i => i.name).includes(x))
+
 
         const templateQuestions = {
             ...this.formatQuestionsForDB(data.questions, "string"),
@@ -533,6 +558,8 @@ class TemplatesService {
             ...this.formatQuestionsForDB(data.questions, "bool"),
             ...this.formatQuestionsForDB(data.questions, "text"),
         }
+
+        console.log(templateQuestions)
 
         let updateData = {
             title: data.title,
@@ -578,8 +605,6 @@ class TemplatesService {
             }
         }
 
-        console.log(updateData)
-
 
         return prisma.template.update({
             ...filter,
@@ -594,6 +619,87 @@ class TemplatesService {
                 },
             }
         })
+    }
+
+    async getByTags({tags, skip, take}) {
+
+        if(tags.length === 0 ){
+            return {templates: [], totalCount: 0}
+        }
+
+        const templates = await prisma.template.findMany({
+            take, skip,
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                createdAt: true,
+                image: true,
+                mode: true,
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        isActive: true,
+                    }
+                },
+                topic: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                },
+                tags: {
+                    select: {
+                        tag: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
+                    }
+                },
+                _count: {
+                    select: {
+                        form: true
+                    }
+                }
+            },
+            where: {
+                AND: tags.map(tagId => ({
+                    tags: {
+                        some: {
+                            tag: {
+                                id: tagId,
+                            }
+                        },
+                    },
+                })),
+            }
+        })
+
+
+        const totalCount = await prisma.template.count({
+            where: {
+                AND: tags.map(tagId => ({
+                    tags: {
+                        some: {
+                            tag: {
+                                id: tagId,
+                            }
+                        },
+                    },
+                })),
+            }
+        })
+
+        const result = templates.map(template => ({
+            ...template,
+            tags: template.tags.map(tagRelation => tagRelation.tag)
+        }))
+
+        return {templates: result, totalCount}
     }
 
     async addTags({templateId, tags}) {
@@ -636,21 +742,33 @@ class TemplatesService {
         });
     }
 
-    formatQuestionsForDB(questions, type) {
+    formatQuestionsForDB(questions, type, isUpdate = false) {
         let name = 'String'
 
-        if (type === 'string') name = 'String'
-        else if (type === 'text') name = 'Text'
-        else if (type === 'int') name = 'Int'
-        else if (type === 'bool') name = 'Bool'
+        if (type === 'string') name = 'String';
+        else if (type === 'text') name = 'Text';
+        else if (type === 'int') name = 'Int';
+        else if (type === 'bool') name = 'Bool';
 
-        const arr = questions.filter(q => q.type === type).slice(0, 4).map((q, index) => {
-            return {
-                [`custom${name}${index + 1}State`]: 'PRESENT_REQUIRED',
-                [`custom${name}${index + 1}Question`]: q.question,
-                [`custom${name}${index + 1}Description`]: q.description
+        const arr = []
+
+        const filteredArr = questions.filter(q => q.type === type).slice(0, 4)
+
+        for (let i = 1; i <= 4; i++) {
+            if (filteredArr.length > i - 1) {
+                arr.push({
+                    [`custom${name}${i}State`]: 'PRESENT_REQUIRED',
+                    [`custom${name}${i}Question`]: filteredArr[i - 1].question,
+                    [`custom${name}${i}Description`]: filteredArr[i - 1].description
+                })
+            } else {
+                arr.push({
+                    [`custom${name}${i}State`]: 'NOT_PRESENT',
+                    [`custom${name}${i}Question`]: null,
+                    [`custom${name}${i}Description`]: null
+                })
             }
-        })
+        }
 
         return arr.reduce((acc, item) => ({
             ...acc,

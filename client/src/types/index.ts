@@ -52,6 +52,9 @@ export type TopicData = {
 export type TagData = {
     id: number;
     name: string;
+    _count: {
+        templates: number;
+    }
 }
 
 export type TemplateData = {
@@ -80,6 +83,17 @@ export type QuestionData = {
 
 
 export type AnsweredQuestionData = QuestionData & {answer: string | number | boolean | null;}
+
+export type TableFormData = {
+    id: number;
+    user: UserData;
+    createdAt: Date;
+    template: {
+        id: number;
+        title: number;
+        user: UserData
+    }
+}
 
 export type FormData = {
     templateData: {

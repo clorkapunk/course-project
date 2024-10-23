@@ -1,45 +1,42 @@
-import {Navigate, useNavigate, useParams} from "react-router-dom";
-import {useGetTemplateByIdQuery} from "@/features/templates/templatesApiSlice.ts";
-import {EDIT_FORM_ROUTE, HOME_ROUTE} from "@/utils/routes.ts";
-import FillQuestionCard from "@/components/FillQuestionCard.tsx";
-import {useCallback, useEffect, useState} from "react";
-import {AnsweredQuestionData, ApiErrorResponse} from "@/types";
-import {v4 as uuidv4} from 'uuid'
 import {Button} from "@/components/ui/button.tsx";
-import {
-    useLazyGetUserFormByTemplateQuery,
-    useSubmitFormMutation
-} from "@/features/forms/formsApiSlice.ts";
+import FillQuestionCard from "@/components/FillQuestionCard.tsx";
+import {Navigate, useParams} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {HOME_ROUTE} from "@/utils/routes.ts";
 import {useSelector} from "react-redux";
 import {selectAuthState} from "@/features/auth/authSlice.ts";
-import ViewQuestionCard from "@/components/ViewQuestionCard.tsx";
+import {
+    useGetUserFilledFormQuery, useUpdateFormMutation,
+} from "@/features/forms/formsApiSlice.ts";
+import {useCallback, useEffect, useState} from "react";
 import toast from "react-hot-toast";
-import {useTranslation} from "react-i18next";
+import {ApiErrorResponse} from "@/types";
+import {v4 as uuidv4} from "uuid";
+import {AnsweredQuestionDataWithId} from "@/pages/FillTemplate.tsx";
 
-export interface AnsweredQuestionDataWithId extends AnsweredQuestionData {
-    id: string;
-}
 
-const FillTemplate = () => {
+const EditForm = () => {
+
     const {id} = useParams()
     const {t} = useTranslation()
-    const navigate = useNavigate()
 
     if (!id || isNaN(parseInt(id))) {
         return <Navigate to={HOME_ROUTE} replace/>
     }
 
-    const {data, isLoading} = useGetTemplateByIdQuery({id: parseInt(id)})
+    const {data, isLoading} = useGetUserFilledFormQuery({formId: parseInt(id)})
 
     if (!data && !isLoading) {
         return <Navigate to={HOME_ROUTE} replace/>
     }
 
     const authState = useSelector(selectAuthState)
-    const [fetchFormData, {data: formData}] = useLazyGetUserFormByTemplateQuery()
 
-    const [submitForm] = useSubmitFormMutation()
-    const [answersData, setAnswersData] = useState<AnsweredQuestionDataWithId[]>([])
+    const [updateForm] = useUpdateFormMutation()
+    const [isEditMode, setIsEditMode] = useState(false)
+    const [answersData, setAnswersData] = useState<AnsweredQuestionDataWithId[]>(
+        data?.questions ? data?.questions.map(q => ({id: uuidv4(), ...q})) : []
+    )
     const [answeredAmount, setAnsweredAmount] = useState(0)
 
     const handleChangeAnswer = useCallback((id: string, answer: string | number | boolean) => {
@@ -52,11 +49,11 @@ const FillTemplate = () => {
         })
     }, [])
 
-    const handleSubmit = async () => {
+    const handleUpdate = async () => {
         try {
             await toast.promise(
-                submitForm({
-                    templateId: parseInt(id),
+                updateForm({
+                    formId: parseInt(id),
                     answers: answersData.map(data => {
                         let answer = data.answer
                         if (data.answer !== null && data.type === 'int') answer = parseInt(data.answer.toString())
@@ -87,34 +84,12 @@ const FillTemplate = () => {
     }
 
     useEffect(() => {
-        if (!data?.questions) return
-        setAnswersData(data?.questions.map(q => {
-            let answer: string | number | boolean = '';
-            if (q.type === 'bool') answer = false;
-            return {
-                id: uuidv4(),
-                ...q,
-                answer
-            }
-        }))
+        if(data?.questions){
+            setAnswersData(data?.questions.map(q => ({id: uuidv4(), ...q})))
+        }
     }, [data?.questions]);
 
-    useEffect(() => {
-        if (authState?.id) {
-            try {
-                fetchFormData({
-                    templateId: parseInt(id),
-                    userId: authState?.id
-                })
-            } catch (err) {
-                console.log(err)
-            }
-        }
-    }, [authState?.id]);
 
-    useEffect(() => {
-        if(formData?.id) navigate(EDIT_FORM_ROUTE + `/${formData.id}`)
-    }, [formData]);
 
     return (
         <section className={'min-h-screen flex flex-col items-center gap-4 pb-4'}>
@@ -124,28 +99,40 @@ const FillTemplate = () => {
                     authState?.token &&
                     <p className={'text-zinc-300'}>{answeredAmount} / {data?.questions.length}</p>
                 }
-                <h1 className={"text-xl text-zinc-100"}>{data?.title}</h1>
+                <h1 className={"text-xl text-zinc-100"}>{data?.templateData.title}</h1>
 
-                <Button
-                    className={'fixed right-0 top-50 mr-4 bg-zinc-600 hover:bg-green-600'}
-                    disabled={answeredAmount !== answersData.length}
-                    onClick={handleSubmit}
-                >
-                    Finish
-                </Button>
+                <div className={'fixed right-0 top-50'}>
+                    <Button
+                        variant={'dark'}
+                        className={'mr-4 bg-zinc-600 hover:bg-green-600'}
+                        onClick={() => setIsEditMode(prev => !prev)}
+                    >
+                        {isEditMode ? "Cancel" : "Edit"}
+                    </Button>
+
+                    {
+                        isEditMode &&
+                        <Button
+                            variant={'dark'}
+                            className={' mr-4 bg-zinc-600 hover:bg-green-600'}
+                            disabled={answeredAmount !== answersData.length}
+                            onClick={handleUpdate}
+                        >
+                            Save
+                        </Button>
+                    }
+                </div>
+
+
+
             </div>
 
             <ul className={'w-full max-w-[800px] flex flex-col gap-4'}>
                 {
                     answersData.map((question) => {
-                        return authState?.token ?
-                            <FillQuestionCard
+                        return <FillQuestionCard
+                                disabled={!isEditMode}
                                 handleChange={handleChangeAnswer}
-                                item={question}
-                                key={question.id}
-                            />
-                            :
-                            <ViewQuestionCard
                                 item={question}
                                 key={question.id}
                             />
@@ -158,4 +145,4 @@ const FillTemplate = () => {
     );
 };
 
-export default FillTemplate;
+export default EditForm;

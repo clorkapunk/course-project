@@ -73,6 +73,22 @@
   "filled-forms": "Filled forms",
   "search-by-title": "Search by title",
   "search-by-description": "Search by description",
-  "topic": "Topic"
+  "topic": "Topic",
+  "date-and-time": "Date and time",
+  "theme": "Theme",
+  "author": "Author",
+  "filled-at": "Filled at",
+  "user-menu": "User menu",
+  "templates": "Templates",
+  "my-forms": "My Forms",
+  "filled-templates": "Filled Templates",
+  "latest-templates": "Latest templates",
+  "no-results": "No results",
+  "see-more": "See more",
+  "loading":"Loading",
+  "popular-templates": "Popular templates",
+  "top-popular-tags": "Top {{amount}} popular tags",
+  "search-by-tags": "Search by tags",
+  "enter-tag": "Enter tag"
 
 }

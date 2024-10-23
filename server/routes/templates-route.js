@@ -18,10 +18,20 @@ const router = new Router()
 router.get(
     '/templates',
     checkSchema({
+        tags: {in: ['query'], optional: true, custom: {
+                options: (value) => {
+                    const items = value.split(',');
+                    const allNumbers = items.every(item => !isNaN(Number(item)));
+                    if (!allNumbers) {
+                        throw new Error('All tags items must be numbers');
+                    }
+                    return true;
+                }
+            }},
         page: {in: ['query'], optional: true, isInt: true},
         limit: {in: ['query'], optional: true, isInt: true},
         search: {in: ['query'], optional: true},
-        type: {in: ['query'], optional: true, isIn: {options: [['latest', 'popular', 'search']]}},
+        type: {in: ['query'], optional: true, isIn: {options: [['latest', 'popular', 'search', 'tags']]}},
     }),
     templatesController.getTemplates
 )
@@ -58,6 +68,17 @@ router.get(
 router.get(
     '/tags',
     checkSchema({
+        exclude: {in: ['query'], optional: true, custom: {
+                options: (value) => {
+                    const items = value.split(',');
+                    const allNumbers = items.every(item => !isNaN(Number(item)));
+                    if (!allNumbers) {
+                        throw new Error('All exclude items must be numbers');
+                    }
+                    return true;
+                }
+            }},
+        type: {in: ['params'], optional: true, isIn: {options: [['popular']]}},
         page: {in: ['query'], optional: true, isInt: true},
         limit: {in: ['query'], optional: true, isInt: true},
         search: {in: ['query'], optional: true}

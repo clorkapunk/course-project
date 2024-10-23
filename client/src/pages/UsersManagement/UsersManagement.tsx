@@ -1,6 +1,6 @@
 import {Button} from "@/components/ui/button.tsx";
 import {
-    useGetUsersQuery,
+    useLazyGetUsersQuery,
     useUpdateUsersRoleMutation,
     useUpdateUsersStatusMutation
 } from "@/features/users/usersApiSlice.ts";
@@ -29,21 +29,15 @@ const UsersManagement = () => {
     const [updateUsersRole] = useUpdateUsersRoleMutation()
     const {t} = useTranslation()
 
+    const [fetchUsers, {data, isLoading,}] = useLazyGetUsersQuery()
     const [selectedRows, setSelectedRows] = useState<number[]>([])
-    const [searchField, setSearchField] = useState<string>('email')
-    const [searchString, setSearchString] = useState<string>('')
-    const [page, setPage] = useState<number>(1)
-    const [limit, setLimit] = useState<number>(10)
-    const [sort, setSort] = useState<string>('desc')
-    const [orderField, setOrderField] = useState<string>('id')
-
-    const {data, refetch} = useGetUsersQuery({
-        page,
-        limit,
-        sort,
-        orderBy: orderField,
-        searchBy: searchField,
-        search: searchString
+    const [tableParams, setTableParams] = useState({
+        page: 1,
+        limit: 10,
+        sort: 'desc',
+        orderBy: 'id',
+        searchBy: 'email',
+        search: ''
     })
 
     const handleRoleChange = async (role: number) => {
@@ -62,7 +56,10 @@ const UsersManagement = () => {
                     error: <>Error when updating users role</>,
                 }
             )
-            refetch()
+            fetchUsers({
+                ...tableParams
+            })
+
         } catch (err) {
             const error = err as ApiErrorResponse
             if (!error?.data) {
@@ -94,8 +91,10 @@ const UsersManagement = () => {
                     error: <>Error when updating users status</>,
                 }
             )
+            fetchUsers({
+                ...tableParams
+            })
 
-            refetch()
         } catch (err) {
             const error = err as ApiErrorResponse
             if (!error?.data) {
@@ -112,92 +111,108 @@ const UsersManagement = () => {
         }
     }
 
+    const handleChangeSort = (field: string) => {
+        setTableParams(prev => {
+            if (prev.orderBy === field) {
+                return {
+                    ...prev,
+                    sort: prev.sort === 'asc' ? 'desc' : 'asc'
+                }
+            }
+
+            return {
+                ...prev,
+                orderBy: field,
+                sort: prev.sort === 'asc' ? 'desc' : 'asc'
+            }
+        })
+    }
+
     useEffect(() => {
-        setSelectedRows([])
-        refetch()
-    }, [page, limit, sort, orderField, searchField]);
+        console.log(tableParams)
+    }, [tableParams])
+
+    useEffect(() => {
+        fetchUsers({
+            ...tableParams
+        })
+    }, [tableParams.page, tableParams.limit, tableParams.orderBy, tableParams.sort, tableParams.searchBy]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            refetch()
+            fetchUsers({
+                ...tableParams
+            })
         }, 500);
 
         return () => {
             clearTimeout(timer);
         };
-    }, [searchString]);
-
-
-    const handleChangeSort = (field: string) => {
-        setOrderField(field)
-        setSort(prev => {
-            return prev === 'asc' ? "desc" : 'asc'
-        })
-    }
+    }, [tableParams.search]);
 
     const tableHeader = () => {
         return (<div className={styles.topContainer}>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            className={styles.actionButton}
-                            variant="outline"
-                        >
-                            {t("actions")}
-                            <FaChevronDown/>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        className={`bg-zinc-800 border-zinc-600 text-zinc-100`}
-                        align={'start'}
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        className={styles.actionButton}
+                        variant="secondary"
                     >
-                        <DropdownMenuLabel className={''}>{t('edit-users-details')}</DropdownMenuLabel>
-                        <DropdownMenuSeparator className={'bg-zinc-600'}/>
-                        <DropdownMenuGroup>
-                            <DropdownMenuItem className={'text-zinc-200 focus:bg-zinc-600 focus:text-zinc-100'}
-                                              onClick={() => handleStatusChange(true)}>
-                                {t('activate')}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className={'text-zinc-200 focus:bg-zinc-600 focus:text-zinc-100'}
-                                              onClick={() => handleStatusChange(false)}>
-                                {t('ban')}
-                            </DropdownMenuItem>
-                        </DropdownMenuGroup>
-                        <DropdownMenuSeparator className={'bg-zinc-600'}/>
-                        <DropdownMenuSub>
-                            <DropdownMenuSubTrigger
-                                className={'text-zinc-200 data-[state=open]:bg-zinc-600 focus:bg-zinc-600 focus:text-zinc-100'}>
-                                {t('update-role')}
-                            </DropdownMenuSubTrigger>
-                            <DropdownMenuPortal>
-                                <DropdownMenuSubContent className={'border-zinc-600 bg-zinc-800 text-zinc-100'}>
-                                    {
-                                        Object.keys(Roles).map((role) => (
-                                            <DropdownMenuItem
-                                                className={'text-zinc-200 focus:bg-zinc-600 focus:text-zinc-100'}
-                                                key={role}
-                                                onClick={() => handleRoleChange(Roles[role])}
-                                            >
-                                                {role}
-                                            </DropdownMenuItem>
-                                        ))
-                                    }
-                                </DropdownMenuSubContent>
-                            </DropdownMenuPortal>
-                        </DropdownMenuSub>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                <SelectableSearch
-                    setSearchField={setSearchField}
-                    searchField={searchField}
-                    searchString={searchString}
-                    setSearchString={setSearchString}
-                    fields={[
-                        {label: t('email'), value: 'email'},
-                        {label: t('username'), value: 'username'},
-                    ]}
-                />
-            </div>)
+                        {t("actions")}
+                        <FaChevronDown/>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                    align={'start'}
+                    className={'bg-primary-foreground'}
+                >
+                    <DropdownMenuLabel className={''}>{t('edit-users-details')}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
+                        <DropdownMenuItem
+                                          onClick={() => handleStatusChange(true)}>
+                            {t('activate')}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                                          onClick={() => handleStatusChange(false)}>
+                            {t('ban')}
+                        </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuSub>
+                        <DropdownMenuSubTrigger
+                            >
+                            {t('update-role')}
+                        </DropdownMenuSubTrigger>
+                        <DropdownMenuPortal>
+                            <DropdownMenuSubContent className={'bg-primary-foreground'}>
+                                {
+                                    Object.keys(Roles).map((role) => (
+                                        <DropdownMenuItem
+
+                                            key={role}
+                                            onClick={() => handleRoleChange(Roles[role])}
+                                        >
+                                            {role}
+                                        </DropdownMenuItem>
+                                    ))
+                                }
+                            </DropdownMenuSubContent>
+                        </DropdownMenuPortal>
+                    </DropdownMenuSub>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <SelectableSearch
+                setSearchBy={(searchBy: string) => setTableParams(prev => ({...prev, searchBy}))}
+                searchBy={tableParams.searchBy}
+                setSearch={(search: string) => setTableParams(prev => ({...prev, search}))}
+                search={tableParams.search}
+                fields={[
+                    {label: t('email'), value: 'email'},
+                    {label: t('username'), value: 'username'},
+                ]}
+            />
+        </div>)
     }
 
 
@@ -256,14 +271,24 @@ const UsersManagement = () => {
                     checked: !!selectedRows.find(id => id === item.id)
                 })) : []}
                 pagination={{
-                    enabled: true,
                     limit: data?.limit || 10,
                     page: data?.page || 1,
                     pages: data?.pages || 1,
                     total: data?.total || 0,
-                    setLimit,
-                    setPage
+                    setPage: (page: number) => {
+                        setTableParams(prev => ({
+                            ...prev,
+                            page,
+                        }))
+                    },
+                    setLimit: (limit: number) => {
+                        setTableParams(prev => ({
+                            ...prev,
+                            limit,
+                        }))
+                    }
                 }}
+                isLoading={isLoading}
             />
         </section>
     )

@@ -1,129 +1,197 @@
 import {
-    useGetLatestTemplatesQuery,
-    useGetTagsQuery
+    useGetPopularTagsQuery,
+    useGetTagsQuery,
+    useLazyGetLatestTemplatesQuery,
+    useLazyGetPopularTemplatesQuery,
+    useLazyGetTemplatesByTagsQuery
 } from "@/features/templates/templatesApiSlice.ts";
-import {Input} from "@/components/ui/input.tsx";
-import {AspectRatio} from "@/components/ui/aspect-ratio.tsx";
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
-import {Button} from "@/components/ui/button.tsx";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {Badge} from "@/components/ui/badge.tsx";
-import {Link, useNavigate} from "react-router-dom";
-import {FILL_TEMPLATE_ROUTE, SEARCH_TEMPLATES_ROUTE} from "@/utils/routes.ts";
+import TemplatesGrid from "@/components/TemplatesGrid.tsx";
+import {useTranslation} from "react-i18next";
+import {Input} from "@/components/ui/input.tsx";
+import {Command, CommandEmpty, CommandGroup, CommandItem, CommandList} from "@/components/ui/command.tsx";
 
 const Main = () => {
-    const [latestPage, setLatestPage] = useState(1);
-    const {data: latestTemplates} = useGetLatestTemplatesQuery({page: latestPage, limit: 4})
-    const [tagsPage] = useState(1)
-    const {data: tags} = useGetTagsQuery({
-        page: tagsPage,
+    const {t} = useTranslation()
+
+    const [fetchLatestTemplates, {data: latestTemplates, isLoading: isLatestLoading}] = useLazyGetLatestTemplatesQuery()
+    const [fetchPopularTemplates, {
+        data: popularTemplates,
+        isLoading: isPopularLoading
+    }] = useLazyGetPopularTemplatesQuery()
+
+
+    const tagsInputRef = useRef<HTMLInputElement>(null)
+    const [tagSearch, setTagSearch] = useState('')
+    const [isTagsSuggestionsShow, setIsTagsSuggestionsShow] = useState(false)
+    const [inputTags, setInputTags] = useState<{ id: number; name: string }[]>([])
+    const [excludeTags, setExcludeTags] = useState(inputTags.map(i => i.id))
+    const {data: tags, refetch: tagsRefetch} = useGetTagsQuery({
+        page: 1,
+        limit: 5,
+        search: tagSearch,
+        exclude: excludeTags
+    }, {refetchOnMountOrArgChange: false})
+    const {data: popularTags} = useGetPopularTagsQuery({
         limit: 10,
-        search: ''
+        type: 'popular'
     })
-    const [search, setSearch] = useState('')
-    const navigate = useNavigate()
+
+    const [fetchTemplatesByTags, {
+        data: tagsTemplates,
+        isLoading: isTagsTemplatesLoading
+    }] = useLazyGetTemplatesByTagsQuery()
+
+
+    const handleAddTag = (id: number, name: string) => {
+        setTagSearch('')
+        setInputTags(prev => {
+            if (prev.find(i => i.id === id)) return prev
+            return [...prev, {id, name}]
+        })
+    }
+
+    const handleTagDelete = (id: number) => {
+        setInputTags(prev => prev.filter(i => i.id !== id))
+    }
 
     useEffect(() => {
-        if(search !== '') navigate(`${SEARCH_TEMPLATES_ROUTE}?s=${search}`)
-    }, [search]);
+        setIsTagsSuggestionsShow(tagSearch !== '')
+        const timer = setTimeout(() => {
+            tagsRefetch()
+        }, 500);
+
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [tagSearch])
+
+    useEffect(() => {
+        setExcludeTags(inputTags.map(i => i.id))
+
+        fetchTemplatesByTags({
+            page: 1,
+            limit: 4,
+            tags: inputTags.map(i => i.id)
+        })
+
+
+    }, [inputTags])
 
     return (
-        <section className={'h-screen  flex flex-col gap-4'}>
-            <div className={'h-[72px] p-4 bg-zinc-800 border-b border-zinc-600'}>
-                <Input
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    placeholder={'Search for anything...'}
-                    className={"bg-zinc-600 placeholder:text-zinc-400"}
-                />
-            </div>
+        <section className={'min-h-screen  flex flex-col gap-12 p-4'}>
 
-            <div className={'flex flex-col gap-4 p-4'}>
-                <h1 className={'text-zinc-100 text-xl'}>Latest templates</h1>
-                <ul className={'w-full flex flex-wrap m-0 p-0 gap-4'}>
-                    <TooltipProvider>
-                        {
-                            latestTemplates?.data?.map(template =>
-                                <li
-                                    key={template.id}
-                                    className={'w-[24%]'}
-                                >
-                                    <Link to={`${FILL_TEMPLATE_ROUTE}/${template.id}`}>
-                                        <AspectRatio
-                                            ratio={16 / 9}
-                                            className="p-2 bg-zinc-800 relative overflow-hidden cursor-pointer flex flex-col items-center justify-center rounded-md hover:brightness-125 hover:scale-105"
-                                            onClick={() => {
-                                            }}
-                                        >
-                                            {
-                                                template.image &&
-                                                <img
-                                                    className={'w-full h-full object-cover absolute top-0 right-0'}
-                                                    alt={'image'}
-                                                    src={template.image}
-                                                />
-                                            }
+            <TemplatesGrid
+                isLoading={isLatestLoading}
+                data={latestTemplates}
+                label={t('latest-templates')}
+                handleLoadMore={(page: number) => {
+                    fetchLatestTemplates({
+                        page,
+                        limit: 4
+                    })
+                }}
+            />
 
-                                            <Tooltip>
-                                                <TooltipTrigger asChild className={'z-10'}>
-                                                    <div className={'text-zinc-200 text-center bg-zinc-900 bg-opacity-95 p-2 rounded-md'}>
-                                                        {template.title}
-                                                    </div>
-                                                </TooltipTrigger>
-                                                <TooltipContent>
-                                                    <p>{template.title}</p>
-                                                </TooltipContent>
-                                            </Tooltip>
 
-                                            <p className={'bg-zinc-900 text-zinc-100 p-2 rounded-md mt-2 z-10'}>
-                                                {`by: ${template.user.username}`}
-                                            </p>
+            <TemplatesGrid
+                isLoading={isPopularLoading}
+                data={popularTemplates}
+                label={t('popular-templates')}
+                handleLoadMore={(page: number) => {
+                    fetchPopularTemplates({
+                        page,
+                        limit: 4
+                    })
+                }}
+            />
 
-                                        </AspectRatio>
-                                    </Link>
-                                </li>
-                            )
-                        }
-                    </TooltipProvider>
 
+            <div className={'flex flex-col gap-4'}>
+                <h3>{t('top-popular-tags', {amount: popularTags?.data?.length || 10})}</h3>
+                <ul className={' bg-accent p-2 flex flex-wrap gap-2 rounded-md cursor-pointer'}>
                     {
-
-                    }
-                </ul>
-
-                {
-                    latestTemplates && (latestTemplates.pages > latestTemplates.page) &&
-                    <Button
-                        className={'w-fit'}
-                        variant={'dark'}
-                        onClick={() => {
-                            if (!latestTemplates) return
-                            if (latestTemplates?.pages > latestTemplates?.page) {
-                                setLatestPage(latestTemplates?.page + 1)
-                            }
-                        }}
-                    >
-                        See more...
-                    </Button>
-                }
-
-            </div>
-
-            <div className={'p-4'}>
-                <ul className={'bg-zinc-800 p-2 flex gap-2 rounded-md'}>
-                    {
-                        tags?.data?.map(tag =>
+                        popularTags?.data?.map(tag =>
                             <li key={tag.id}>
-                                <Link to={""}>
-                                    <Badge>
-                                        {tag.name}
-                                    </Badge>
-                                </Link>
+                                <Badge
+                                    onClick={() => {
+                                        handleAddTag(tag.id, tag.name)
+                                    }}
+                                    className={'rounded-md text-nowrap bg-card hover:cursor-pointer hover:bg-primary hover:text-primary-foreground'}
+                                    variant={'secondary'}
+                                >
+                                    {`${tag.name} (${tag._count.templates})`}
+                                </Badge>
                             </li>
                         )
                     }
                 </ul>
             </div>
+
+            <div
+                className={' flex flex-col gap-4'}
+                onClick={() => {
+                    tagsInputRef.current?.focus()
+                }}
+            >
+                <h3>{t('search-by-tags')}</h3>
+                <Command className="rounded-lg border">
+                    <div
+                        className={`${isTagsSuggestionsShow && 'border-b'}   rounded-md flex flex-wrap items-center p-2`}>
+                        <ul className={'flex gap-2 flex-wrap items-center'}>
+                            {
+                                inputTags.map(tag =>
+                                    <Badge
+                                        key={tag.id}
+                                        onClick={() => handleTagDelete(tag.id)}
+                                        className={'bg-accent text-primary cursor-pointer hover:bg-red-600 hover:text-primary-foreground'}
+                                    >
+                                        {tag.name}
+                                    </Badge>
+                                )
+                            }
+                            <Input
+                                placeholder={inputTags.length === 0 ? `${t('enter-tag')}...` : ''}
+                                ref={tagsInputRef}
+                                onChange={(e) => setTagSearch(e.target.value)}
+                                value={tagSearch}
+                                className={'focus-visible:ring-0 focus-visible:ring-offset-0 border-none w-fit h-[24px] p-0'}
+                            />
+                        </ul>
+
+                    </div>
+
+                    <CommandList className={`${isTagsSuggestionsShow ? 'block' : 'hidden'}`}>
+                        <CommandEmpty>{t('no-results')}</CommandEmpty>
+                        <CommandGroup>
+                            {
+                                tags?.data && tags?.data?.map((tag) =>
+                                    <CommandItem key={tag.id} value={tag.name} onSelect={() => {
+                                        handleAddTag(tag.id, tag.name)
+                                        setIsTagsSuggestionsShow(false)
+                                    }}>
+                                        <span>{tag.name}</span>
+                                    </CommandItem>)
+
+                            }
+
+                        </CommandGroup>
+                    </CommandList>
+                </Command>
+                <TemplatesGrid
+                    isLoading={isTagsTemplatesLoading}
+                    handleLoadMore={(page: number) => {
+                        fetchTemplatesByTags({
+                            page,
+                            limit: 4,
+                            tags: inputTags.map(i => i.id)
+                        })
+                    }}
+                    data={tagsTemplates}
+                />
+            </div>
+
 
         </section>
     );

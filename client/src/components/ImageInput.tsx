@@ -30,7 +30,7 @@ const ImageInput = ({handleChange, handleDelete, existingImage}: { handleChange:
 
             <Button
                 className={'border-dashed border-2 min-w-[80px] h-[80px] flex justify-center p-1 bg-transparent'}
-                variant={file ? 'destructive' : 'dark'}
+                variant={file ? 'destructive' : 'default'}
                 onClick={file ? onDeleteHandler : handleClick}
             >
                 {

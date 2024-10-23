@@ -59,10 +59,7 @@ type DataType = RequiredData & {
     [key: string]: any
 }
 
-type Pagination = | {
-    enabled: false,
-} | {
-    enabled: true;
+type Pagination = {
     limit: number;
     page: number;
     pages: number;
@@ -74,18 +71,20 @@ type Pagination = | {
 type Props = {
     fields: Field[],
     data: DataType[],
-    pagination: Pagination,
+    pagination?: Pagination,
     header?: ReactNode
+    isLoading?: boolean;
 }
 
-const SortableTable = ({fields, data, pagination, header}: Props) => {
+const SortableTable = ({fields, data, pagination, header, isLoading = false}: Props) => {
+
     const {t} = useTranslation()
 
     return (
 
-        <div className={styles.container}>
+        <div className={`${styles.container} border border-border`}>
             {!!header && header}
-            <div className={styles.tableContainer}>
+            <div className={`${styles.tableContainer} border border-border dark:border-zinc-600`}>
                 <Table>
                     <TableHeader>
                         <TableRow className={styles.tableRow}>
@@ -94,7 +93,7 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
                                     if (field.type === 'select') {
                                         return (<TableHead
                                             key={field.name}
-                                            className={`${styles.tableHead} w-[${field.width}px]  min-w-fit`}
+                                            className={`${styles.tableHead} w-[${field.width}px] min-w-fit bg-accent text-primary`}
                                         >
                                             <Checkbox
                                                 className={styles.checkbox}
@@ -105,10 +104,10 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
                                         </TableHead>)
                                     } else if (field.type === 'button') {
                                         return (<TableHead key={field.name}
-                                                           className={`${styles.tableHead} w-[${field.width?.toString()}px]  min-w-fit`}
+                                                           className={`${styles.tableHead} w-[${field.width?.toString()}px] min-w-fit bg-accent text-primary`}
                                         >
                                             <Button
-                                                className={styles.button}
+                                                className={'hover:bg-primary-foreground'}
                                                 variant="ghost"
                                                 onClick={field.onClick}
                                             >
@@ -119,7 +118,7 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
                                     } else {
                                         return (<TableHead
                                             key={field.name}
-                                            className={`${styles.tableHead} w-[${field.width}px]  min-w-fit`}
+                                            className={`${styles.tableHead} w-[${field.width}px] bg-accent  min-w-fit text-primary`}
                                         >
                                             {field.text}
                                         </TableHead>)
@@ -135,7 +134,7 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
                             data?.length
                                 ? (data.map((item) => (
                                     <TableRow
-                                        className={styles.tableRow}
+                                        className={`${styles.tableRow} border-t border-border  transition-none`}
                                         key={item.id}
                                         data-state={item.dataState && "selected"}
                                     >
@@ -150,7 +149,7 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
                                                         />
                                                     </TableCell>)
                                                 } else {
-                                                    return (<TableCell key={field.name} className={styles.tableCell}
+                                                    return (<TableCell key={field.name} className={`${styles.tableCell} `}
                                                                        align={field.align ? field.align : "left"}>
                                                         {field.cellComponent
                                                             ? field.cellComponent(item)
@@ -165,9 +164,9 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
                                 : (<TableRow className={styles.tableRow}>
                                     <TableCell
                                         colSpan={fields.length}
-                                        className={`${styles.tableCell} text-center py-10`}
+                                        className={`${styles.tableCell} text-center py-10 `}
                                     >
-                                        {t('no-result')}
+                                        {isLoading ? 'Loading...' : t('no-result')}
                                     </TableCell>
                                 </TableRow>)
                         }
@@ -176,36 +175,37 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
 
             </div>
             {
-                pagination.enabled &&
+                pagination &&
                 <div className={styles.paginationContainer}>
                     <Select
+
                         value={pagination.limit.toString()}
                         onValueChange={(value) => {
                             pagination.setPage(1)
                             pagination.setLimit(parseInt(value))
                         }}
                     >
-                        <SelectTrigger className={'w-[130px] border-none bg-zinc-800 text-zinc-100 hover:bg-zinc-600 '}>
+                        <SelectTrigger className={'w-[130px] border-none bg-accent hover:bg-primary-foreground'}>
                             <SelectValue/>
                         </SelectTrigger>
-                        <SelectContent className={'bg-zinc-800 border-zinc-600 text-zinc-100'}>
+                        <SelectContent className={'bg-primary-foreground'}>
                             <SelectGroup>
                                 <SelectLabel>{t("page-size")}</SelectLabel>
-                                <SelectSeparator className={'bg-zinc-600'}/>
-                                <SelectItem className={'text-zinc-200 focus:bg-zinc-600 focus:text-zinc-100'}
-                                            value="10" defaultChecked>10 {t('per-page')}</SelectItem>
-                                <SelectItem className={'text-zinc-200 focus:bg-zinc-600 focus:text-zinc-100'}
-                                            value="20" defaultChecked>20 {t('per-page')}</SelectItem>
-                                <SelectItem className={'text-zinc-200 focus:bg-zinc-600 focus:text-zinc-100'}
-                                            value="30" defaultChecked>30 {t('per-page')}</SelectItem>
+                                <SelectSeparator />
+                                <SelectItem
+                                    value="10" defaultChecked>10 {t('per-page')}</SelectItem>
+                                <SelectItem
+                                    value="20" defaultChecked>20 {t('per-page')}</SelectItem>
+                                <SelectItem
+                                    value="30" defaultChecked>30 {t('per-page')}</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
 
 
-                    <div className={'flex'}>
+                    <div className={'flex border rounded-md'}>
                         <div
-                            className={styles.pageInfo}
+                            className={`${styles.pageInfo} text-primary`}
                         >
                             <p>
                                 {pagination.page &&
@@ -215,7 +215,7 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
 
                         <Button
                             className={styles.prevButton}
-                            variant="outline"
+                            variant="secondary"
                             size={'icon'}
                             onClick={() => {
                                 if (pagination.page === 1) return;
@@ -227,7 +227,7 @@ const SortableTable = ({fields, data, pagination, header}: Props) => {
                         </Button>
                         <Button
                             className={styles.nextButton}
-                            variant="outline"
+                            variant="secondary"
                             size={'icon'}
                             onClick={() => {
                                 if (pagination.pages === pagination.page) return;

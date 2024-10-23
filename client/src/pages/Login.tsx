@@ -98,7 +98,7 @@ const Login = () => {
 
     return (
         <section className={'h-screen flex items-center justify-center'}>
-            <div className={'w-full max-w-[400px] flex flex-col bg-primary rounded-xl p-6 text-slate-200 border border-zinc-600'}>
+            <div className={'w-full max-w-[400px] flex flex-col rounded-xl border p-6 bg-primary-foreground'}>
                 <p
                     aria-live={'assertive'}
                     ref={errRef}
@@ -122,7 +122,7 @@ const Login = () => {
                         {t("email")}:
                     </label>
                     <Input
-                        className={'mb-4 bg-primary-foreground text-primary'}
+                        className={'mb-4'}
                         type='email'
                         id='email'
                         ref={userRef}
@@ -138,7 +138,7 @@ const Login = () => {
                         {t("password")}:
                     </label>
                     <Input
-                        className={'mb-4 bg-primary-foreground text-primary'}
+                        className={'mb-4'}
                         type='password'
                         id='password'
                         value={password}
@@ -150,7 +150,7 @@ const Login = () => {
                         type={'submit'}
                         disabled={(!email || !password) || isLoading}
                         className={'mt-4'}
-                        variant={'secondary'}
+
                     >
                         {
                             isLoading
@@ -170,9 +170,9 @@ const Login = () => {
 
                     <Button
                         type={'button'}
-                        variant={'secondary'}
                         className={'mb-2 flex items-center gap-4'}
                         onClick={handleGoogleAuth}
+
                     >
                        <img
                            alt={'google'}

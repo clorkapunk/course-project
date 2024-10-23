@@ -21,11 +21,18 @@ class TemplatesController {
             const search = req.query.search || ""
             const type = req.query.type || 'latest'
             const page = parseInt(req.query.page) || 1;
+            let tags = []
+
+
+            if(req.query.tags){
+                tags = req.query.tags.split(',')
+                tags = tags.filter(i => i.trim() !== '').map(i => parseInt(i))
+            }
+
+
 
             const toDate = new Date()
             toDate.setDate(toDate.getDate() - 4)
-
-            console.log(toDate)
 
             let result;
 
@@ -46,7 +53,15 @@ class TemplatesController {
                 result = await templatesService.getSearched({
                     take: limit,
                     skip: (page - 1) * limit,
-                    search
+                    search,
+                    tags
+                })
+            }
+            else if(type === 'tags'){
+                result = await templatesService.getByTags({
+                    take: limit,
+                    skip: (page - 1) * limit,
+                    tags
                 })
             }
 
@@ -128,7 +143,6 @@ class TemplatesController {
                 image = null
             } else {
                 image = await googleDriveService.uploadToGoogleDrive(req.file);
-                // deleteFile(req.file.path)
             }
 
             const template = await templatesService.create({
@@ -146,9 +160,6 @@ class TemplatesController {
             res.json({template})
 
         } catch (err) {
-            if(req.file){
-                // deleteFile(req.file.path)
-            }
             next(err)
         }
     }
@@ -169,17 +180,33 @@ class TemplatesController {
             const page = parseInt(req.query.page) || 1
             const limit = parseInt(req.query.limit) || 5;
             const search = req.query.search || ""
+            const type = req.query.type || "default"
+            const exclude = req.query.exclude
+                ? req.query.exclude.split(',').filter(i => i.trim() !== '').map(i => parseInt(i))
+                : [];
 
-            const {tags, totalCount} = await tagsService.getPaged({
-                skip: (page - 1) * limit,
-                take: limit,
-                search
-            });
+            let result;
+
+            if(type === 'popular'){
+                result = await tagsService.getPopular({
+                    take: limit
+                });
+            }
+            else{
+                result = await tagsService.get({
+                    skip: (page - 1) * limit,
+                    take: limit,
+                    search,
+                    exclude
+                });
+            }
+
+
 
             return res.json({
-                data: tags,
-                total: totalCount,
-                pages: Math.ceil(totalCount / limit),
+                data: result.tags,
+                total: result.totalCount,
+                pages: Math.ceil(result.totalCount / limit),
                 page,
                 limit
             })
@@ -216,7 +243,6 @@ class TemplatesController {
                 ...req.body
             }
 
-
             const templateId = parseInt(req.params.id)
             const {id, role} = req.user
 
@@ -225,7 +251,6 @@ class TemplatesController {
                 image = null
             } else {
                 image = await googleDriveService.uploadToGoogleDrive(req.file);
-                deleteFile(req.file.path)
                 data = {
                     ...data,
                     image
@@ -255,9 +280,6 @@ class TemplatesController {
             return res.json(result)
 
         }catch (err){
-            if(req.file){
-                deleteFile(req.file.path)
-            }
             next(err)
         }
     }

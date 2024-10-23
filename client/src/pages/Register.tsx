@@ -128,7 +128,7 @@ const Register = () => {
         <section className={'h-screen flex items-center justify-center'}>
 
 
-            <div className={'w-full max-w-[400px] flex flex-col bg-primary rounded-xl p-6 text-slate-200'}>
+            <div className={'w-full max-w-[400px] flex flex-col border bg-primary-foreground rounded-xl p-6'}>
                 <p
                     aria-live={'assertive'}
                     ref={errRef}
@@ -157,7 +157,7 @@ const Register = () => {
                     </span>
                     </label>
                     <Input
-                        className={'mb-4 bg-primary-foreground text-primary'}
+                        className={'mb-4'}
                         type='text'
                         id='username'
                         ref={userRef}
@@ -193,7 +193,7 @@ const Register = () => {
                     </span>
                     </label>
                     <Input
-                        className={'mb-4 bg-primary-foreground text-primary'}
+                        className={'mb-4'}
                         type='email'
                         id='email'
                         value={email}
@@ -229,7 +229,7 @@ const Register = () => {
                     </span>
                     </label>
                     <Input
-                        className={'mb-4 bg-primary-foreground text-primary'}
+                        className={'mb-4'}
                         type='password'
                         id='password'
                         value={password}
@@ -264,7 +264,7 @@ const Register = () => {
                     </span>
                     </label>
                     <Input
-                        className={'mb-4 bg-primary-foreground text-primary'}
+                        className={'mb-4'}
                         type='password'
                         id='matchPassword'
                         value={matchPassword}
@@ -288,7 +288,7 @@ const Register = () => {
                     <Button
                         disabled={(!validName || !validPassword || !validMatchPassword) || isLoading}
                         className={'mt-4'}
-                        variant={'secondary'}
+                        variant={'default'}
                     >
                         {
                             isLoading
@@ -308,7 +308,7 @@ const Register = () => {
 
                     <Button
                         type={'button'}
-                        variant={'secondary'}
+                        variant={'default'}
                         className={'mb-2 flex items-center gap-4'}
                         onClick={handleGoogleAuth}
                     >

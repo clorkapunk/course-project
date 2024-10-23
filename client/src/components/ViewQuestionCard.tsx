@@ -18,7 +18,7 @@ const ViewQuestionCard = ({item}: {
 
             <div className={'p-8 pt-4 bg-gradient-to-b from-transparent to-zinc-950 flex items-center justify-center'}>
 
-                <Button variant={'dark'} size={'sm'} onClick={() => navigate(LOGIN_ROUTE)}>
+                <Button size={'sm'} onClick={() => navigate(LOGIN_ROUTE)}>
                     <FaLock className={'mr-2'}/> Login to answer questions
                 </Button>
 

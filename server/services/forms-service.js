@@ -3,6 +3,7 @@ const templatesService = require("../services/templates-service")
 const usersService = require("../services/users-service")
 const ApiError = require("../exceptions/api-errors");
 const ErrorCodes = require("../config/error-codes");
+const googleDriveService = require("./google-drive-service");
 
 class FormsService {
 
@@ -53,7 +54,7 @@ class FormsService {
 
     }
 
-    async getByUserAndTemplate(userId, filterTemplateId){
+    async getByUserAndTemplate(userId, filterTemplateId) {
         let form = await prisma.form.findFirst({
             where: {
                 userId,
@@ -90,7 +91,7 @@ class FormsService {
             }
         })
 
-        if(!form){
+        if (!form) {
             throw ApiError.BadRequest(
                 ``,
                 ErrorCodes.UserNotExist
@@ -120,6 +121,241 @@ class FormsService {
                 ...this.formatAnswersForDB(answers, "bool")
             }
         })
+    }
+
+    async getByUserId({userId, skip, take, orderField, sort, searchField, search}) {
+
+        let orderBy = {}
+        if (orderField === 'title') {
+            orderBy = {
+                template: {
+                    title: sort
+                }
+            }
+        } else if (orderField === 'email') {
+            orderBy = {
+                template: {
+                    user: {
+                        email: sort
+                    }
+                }
+
+            }
+        } else {
+            orderBy = {
+                [orderField]: sort
+            }
+        }
+
+        let searchObj = {}
+        if (searchField === 'title') {
+            searchObj = {
+                template: {
+                    title: {
+                        contains: search,
+                        mode: "insensitive"
+                    }
+                }
+            }
+        } else if (searchField === 'email' || searchField === 'username') {
+            searchObj = {
+                template: {
+                    user: {
+                        [searchField]: {
+                            contains: search,
+                            mode: "insensitive"
+                        }
+                    }
+                }
+            }
+        }
+
+        const forms = await prisma.form.findMany({
+            skip, take,
+            select: {
+                id: true,
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        isActive: true,
+                    }
+                },
+                createdAt: true,
+                template: {
+                    select: {
+                        id: true,
+                        title: true,
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true,
+                                isActive: true
+                            }
+                        }
+                    }
+                },
+            },
+            where: {
+                userId,
+                ...searchObj
+            },
+            orderBy
+        })
+
+        const totalCount = await prisma.form.count({
+            where: {
+                userId,
+                ...searchObj
+            },
+        })
+
+        return {forms, totalCount}
+    }
+
+    async deleteAll(ids, userId) {
+        let filter = {
+            where: {id: {in: ids}}
+        }
+        if (userId) {
+            filter = {
+                where: {id: {in: ids}, userId}
+            }
+        }
+
+        return prisma.form.deleteMany({
+            ...filter
+        })
+    }
+
+    async update(id, answers, userId) {
+        let filter = {
+            where: {id}
+        }
+
+        if (userId) {
+            filter = {
+                where: {id, userId}
+            }
+        }
+
+        return prisma.form.update({
+            ...filter,
+            data: {
+                ...this.formatAnswersForDB(answers, "string"),
+                ...this.formatAnswersForDB(answers, "int"),
+                ...this.formatAnswersForDB(answers, "text"),
+                ...this.formatAnswersForDB(answers, "bool")
+            }
+        })
+    }
+
+    async getUserTemplates({userId, skip, take, orderField, sort, searchField, search}) {
+        let orderBy = {}
+        if (orderField === 'title') {
+            orderBy = {
+                template: {
+                    title: sort
+                }
+            }
+        }
+        else if (orderField === 'email' || orderField === 'username') {
+            orderBy = {
+                user: {
+                    [orderField]: sort
+                }
+            }
+        }
+        else {
+            orderBy = {
+                [orderField]: sort
+            }
+        }
+
+
+        let filter = {
+            where: {
+                template: {
+                    user: {
+                        id: userId
+                    }
+                }
+            }
+        }
+        if (searchField === 'email' || searchField === 'username') {
+            filter = {
+                where: {
+                    template: {
+                        user: {
+                            id: userId
+                        }
+                    },
+                    user: {
+                        [searchField]: {
+                            contains: search,
+                            mode: 'insensitive'
+                        }
+                    }
+                }
+            }
+        }
+        else if (searchField === 'title') {
+            filter = {
+                where: {
+                    template: {
+                        user: {
+                            id: userId
+                        },
+                        title: {
+                            contains: search,
+                            mode: 'insensitive'
+                        }
+                    },
+
+                }
+            }
+        }
+
+
+        const forms = await prisma.form.findMany({
+            take, skip,
+            ...filter,
+            orderBy,
+            select: {
+                id: true,
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        isActive: true,
+                    }
+                },
+                createdAt: true,
+                template: {
+                    select: {
+                        id: true,
+                        title: true,
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true,
+                                isActive: true,
+                            }
+                        }
+                    }
+                }
+            }
+        })
+
+        const totalCount = await prisma.form.count({
+            ...filter
+        })
+
+        return {forms, totalCount}
     }
 
     formatAnswersForDB(answers, type) {
@@ -176,12 +412,12 @@ class FormsService {
 
         ['string', 'int', 'bool', 'text'].forEach(type => {
             const typedQuestions = questions.filter(q => q.type === type)
-            const typedAnswers =  answers.filter(a => a.type === type)
+            const typedAnswers = answers.filter(a => a.type === type)
 
             typedQuestions.forEach((question, index) => {
 
                 let answer = null
-                if(typedAnswers.length >= index + 1){
+                if (typedAnswers.length >= index + 1) {
                     answer = typedAnswers[index].answer
                 }
 
@@ -194,7 +430,6 @@ class FormsService {
 
                 resultQuestions.push(temp)
             })
-
 
 
         })

@@ -1,5 +1,5 @@
 import {Button} from "@/components/ui/button.tsx";
-import {Link, useNavigate} from "react-router-dom";
+import {Link, useLocation, useNavigate} from "react-router-dom";
 import {
     HOME_ROUTE,
     LOGIN_ROUTE,
@@ -11,9 +11,9 @@ import logo from '@/assets/react.svg'
 import {
     FaAnglesLeft,
     FaGlobe,
-    FaHouse,
+    FaHouse, FaMoon,
     FaRightFromBracket,
-    FaRightToBracket, FaSquarePlus, FaUserGear,
+    FaRightToBracket, FaSquarePlus, FaSun, FaUserGear,
     FaUsersGear
 } from "react-icons/fa6";
 import {Separator} from "@/components/ui/separator.tsx";
@@ -33,6 +33,7 @@ import {
     DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
+import {useTheme} from "@/components/ThemeProvider.tsx";
 
 
 const availableLanguages = ['en', 'ru']
@@ -43,6 +44,8 @@ const Sidebar = () => {
     const navigate = useNavigate()
     const isMobile = useIsMobile()
     const [logout] = useLogoutMutation()
+    const {theme, setTheme} = useTheme()
+    const location = useLocation()
 
     const sidebarItems = [
         {
@@ -59,7 +62,7 @@ const Sidebar = () => {
             ]
         },
         {
-            title: t("hz-menu"),
+            title: t("user-menu"),
             isAuth: true,
             roles: [Roles.User, Roles.Admin],
             options: [
@@ -105,11 +108,12 @@ const Sidebar = () => {
     }
 
     return (
+
         <nav
-            className={`${styles.container} ${!isOpened && styles.closed}`}
+            className={`${styles.container} ${!isOpened && styles.closed} bg-background border-border`}
         >
             <div>
-                <div className={`${styles.header} ${!isOpened && styles.closed}`}>
+                <div className={`${styles.header} ${!isOpened && styles.closed} bg-accent`}>
                     <img
                         className={`${styles.logo} ${!isOpened && styles.closed}`}
                         src={logo}
@@ -129,7 +133,7 @@ const Sidebar = () => {
                             if (section.isAuth && !section.roles.some(role => role === authState?.role)) return;
                             return (
                                 <React.Fragment key={section.title}>
-                                    <Separator orientation={'horizontal'} className={'bg-zinc-600'}/>
+                                    <Separator orientation={'horizontal'}/>
                                     <div className={`${styles.section} ${!isOpened && styles.closed}`}>
                                         <h3 className={`${styles.title} ${!isOpened && styles.closed}`}>
                                             {section.title}
@@ -144,8 +148,9 @@ const Sidebar = () => {
                                                                     <TooltipTrigger asChild>
                                                                         <Link to={item.route}>
                                                                             <Button
-                                                                                className={`${styles.button} ${!isOpened && styles.closed}`}
-                                                                                variant={'ghost'}>
+                                                                                className={`${styles.button} ${!isOpened && styles.closed} ${location.pathname === item.route && "bg-primary-foreground"}`}
+                                                                                variant={'ghost'}
+                                                                            >
                                                                                 <div className={'text-xl'}>
                                                                                     {item.icon}
                                                                                 </div>
@@ -173,55 +178,75 @@ const Sidebar = () => {
                 }
             </div>
 
-            <div className={styles.bottomContainer}>
-                <TooltipProvider>
 
-                    <DropdownMenu>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant="default"
-                                        className={styles.langButton}
-                                        size={'sm'}
-                                    >
-                                        <FaGlobe className={`${isOpened ? "block" : "hidden"}`}/>
-                                        {i18n.language.toUpperCase()}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                            </TooltipTrigger>
-                            <DropdownMenuContent className={`${styles.langMenu} z-[100]`}>
-                                <DropdownMenuLabel
-                                    className={'text-zinc-200 bg-zinc-800'}>{t("select-language")}</DropdownMenuLabel>
-                                <DropdownMenuSeparator className={'bg-zinc-600'}/>
-                                <DropdownMenuRadioGroup
-                                    value={i18n.language}
-                                    onValueChange={(value) => i18n.changeLanguage(value)}
-                                >
-                                    {
-                                        availableLanguages.map((language) => (
-                                            <DropdownMenuRadioItem
-                                                className={styles.option}
-                                                key={language}
-                                                value={language}
-                                            >
-                                                {t(language)}
-                                            </DropdownMenuRadioItem>
-                                        ))
-                                    }
-                                </DropdownMenuRadioGroup>
-                            </DropdownMenuContent>
-                            <TooltipContent side={'right'} hidden={isOpened}>
-                                <p>{t('language')}</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </DropdownMenu>
+
+            <div className={styles.bottomContainer}>
+
+               <TooltipProvider>
+                   <div className={'flex flex-col gap-2'}>
+                       <DropdownMenu>
+                           <Tooltip>
+                               <TooltipTrigger asChild>
+                                   <DropdownMenuTrigger asChild>
+                                       <Button
+                                           variant={'secondary'}
+                                           className={styles.langButton}
+                                           size={'sm'}
+                                       >
+                                           <FaGlobe className={`${isOpened ? "block" : "hidden"}`}/>
+                                           {i18n.language.toUpperCase()}
+                                       </Button>
+                                   </DropdownMenuTrigger>
+                               </TooltipTrigger>
+                               <DropdownMenuContent className={`${styles.langMenu} z-[100]`}>
+                                   <DropdownMenuLabel
+                                       >{t("select-language")}</DropdownMenuLabel>
+                                   <DropdownMenuSeparator />
+                                   <DropdownMenuRadioGroup
+                                       value={i18n.language}
+                                       onValueChange={(value) => i18n.changeLanguage(value)}
+                                   >
+                                       {
+                                           availableLanguages.map((language) => (
+                                               <DropdownMenuRadioItem
+                                                   className={styles.option}
+                                                   key={language}
+                                                   value={language}
+                                               >
+                                                   {t(language)}
+                                               </DropdownMenuRadioItem>
+                                           ))
+                                       }
+                                   </DropdownMenuRadioGroup>
+                               </DropdownMenuContent>
+                               <TooltipContent side={'right'} hidden={isOpened}>
+                                   <p>{t('language')}</p>
+                               </TooltipContent>
+                           </Tooltip>
+                       </DropdownMenu>
+
+                       <Tooltip>
+                           <TooltipTrigger asChild>
+                               <Button
+                                   variant={'secondary'}
+                                   size={'sm'}
+                                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                               >
+                                   {theme === 'light' ? <FaSun/> : <FaMoon/>}
+                               </Button>
+                           </TooltipTrigger>
+                           <TooltipContent side={'right'} hidden={isOpened}>
+                               <p>{t('theme')}</p>
+                           </TooltipContent>
+                       </Tooltip>
+                   </div>
+
                 </TooltipProvider>
 
 
                 {
                     authState?.token ?
-                        <div className={`${styles.userContainer} ${!isOpened && styles.closed}`}>
+                        <div className={`${styles.userContainer} ${!isOpened && styles.closed} bg-accent`}>
                             {
                                 isOpened &&
                                 <div className={'flex flex-col w-[75%]'}>
@@ -232,7 +257,7 @@ const Sidebar = () => {
                             <Button
                                 onClick={signOut}
                                 className={`${styles.button} ${!isOpened && styles.closed}`}
-                                variant={'ghost'}
+                                variant={'default'}
                                 size={'icon'}
                             >
                                 <FaRightFromBracket/>
@@ -248,7 +273,7 @@ const Sidebar = () => {
                                 }}
                                 className={`${styles.button} ${!isOpened && styles.closed}`}
                                 size={'icon'}
-                                variant={'ghost'}
+                                variant={'secondary'}
                             >
                                 {
                                     isOpened
@@ -265,9 +290,8 @@ const Sidebar = () => {
 
                 }
             </div>
-
-
         </nav>
+
     );
 };
 

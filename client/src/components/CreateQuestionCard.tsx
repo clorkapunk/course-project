@@ -52,7 +52,6 @@ const CreateQuestionCard = ({otherProps, index, item, handleChange, handleDelete
                 <div className={'flex items-center justify-center gap-4'}>
                     <Button
                         className={'rounded-full'}
-                        variant={'dark'}
                         onClick={() => handleDelete(item.id)}
                         size={'icon'}
                     >

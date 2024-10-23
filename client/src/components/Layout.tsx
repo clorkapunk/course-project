@@ -1,12 +1,16 @@
 import {Outlet} from "react-router-dom";
 import {Toaster} from "react-hot-toast";
 import Sidebar from "@/components/Sidebar/Sidebar.tsx";
+import GlobalSearch from "@/components/GlobalSearch.tsx";
 
 const Layout = () => {
+
+
     return (
-        <main className={'bg-primary flex h-full max-w-[100dvw]'}>
+        <main className={'bg-background flex h-full max-w-[100dvw]'}>
             <Sidebar/>
-            <div className={'bg-zinc-900 flex-grow-0 w-full max-w-[100dvw]'}>
+            <div className={'flex-grow-0 w-full max-w-[100dvw] h-full flex flex-col min-h-screen'}>
+                <GlobalSearch/>
                 <Outlet/>
             </div>
             <Toaster/>

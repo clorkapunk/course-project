@@ -73,5 +73,21 @@
   "filled-forms": "Заполненные формы",
   "search-by-title": "Поиск по названию",
   "search-by-description": "Поиск по описанию",
-  "topic": "Тема"
+  "topic": "Тема",
+  "date-and-time": "Дата и время",
+  "theme": "Тема",
+  "author": "Автор",
+  "filled-at": "Заполнено в",
+  "user-menu": "Меню пользователя",
+  "templates": "Шаблоны",
+  "my-forms": "Мои Формы",
+  "filled-templates": "Заполненные Шаблоны",
+  "latest-templates": "Последние шаблоны",
+  "no-results": "Нет результатов",
+  "see-more": "Увидеть больше",
+  "loading":"Loading",
+  "popular-templates": "Популярные шаблоны",
+  "top-popular-tags": "Топ {{amount}} популярных тегов",
+  "search-by-tags": "Поиск по тегам",
+  "enter-tag": "Введите тег"
 }
