@@ -124,8 +124,21 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
             } else if (name === 'description') {
                 prevState[index].description = value;
             }
+
+            console.log('done')
+            setErrors(prev => ({
+                ...prev,
+                questions: !!prevState.find(q => {
+                    return q.question === '' || q.description === ''
+                })
+            }))
+
             return prevState
         })
+
+
+
+
     }, [])
 
     const handleAddAllowedUser = (user: UserData) => {
@@ -178,6 +191,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
 
         if (errors.title || errors.topicId || errors.description || errors.questions) {
             toast.error(t('fill-all-required-fields'))
+            console.log(errors)
             return
         }
 
@@ -210,15 +224,6 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
             questions: prev.questions
         }))
     }, [topicId, title, description])
-
-    useEffect(() => {
-        setErrors(prev => ({
-            ...prev,
-            questions: !!questions.find(q => {
-                return q.question === '' || q.description === ''
-            })
-        }))
-    }, [questions]);
 
     return (
         <section className={'flex flex-col gap-4'}>
