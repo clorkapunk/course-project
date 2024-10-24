@@ -161,6 +161,16 @@ class UsersService {
         return user
     }
 
+    async deleteMany(ids){
+        return prisma.user.deleteMany({
+            where: {
+                id: {
+                    in: ids
+                }
+            }
+        })
+    }
+
 }
 
 module.exports = new UsersService();

@@ -85,7 +85,7 @@
   "latest-templates": "Последние шаблоны",
   "no-results": "Нет результатов",
   "see-more": "Увидеть больше",
-  "loading":"Loading",
+  "loading":"Загрузка",
   "popular-templates": "Популярные шаблоны",
   "top-popular-tags": "Топ {{amount}} популярных тегов",
   "search-by-tags": "Поиск по тегам",
@@ -121,5 +121,4 @@
   "enter-positive-number": "Введите положительное число",
   "login-to-answer-questions": "Войдите, чтобы ответить на вопросы",
   "search-for-anything": "Ищите что угодно"
-
 }

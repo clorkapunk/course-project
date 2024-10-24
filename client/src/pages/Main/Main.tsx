@@ -15,7 +15,7 @@ import {Command, CommandEmpty, CommandGroup, CommandItem, CommandList} from "@/c
 const Main = () => {
     const {t} = useTranslation()
 
-    const [fetchLatestTemplates, {data: latestTemplates, isLoading: isLatestLoading}] = useLazyGetLatestTemplatesQuery()
+    const [fetchLatestTemplates, {data: latestTemplates, isFetching: isLatestLoading}] = useLazyGetLatestTemplatesQuery()
     const [fetchPopularTemplates, {
         data: popularTemplates,
         isLoading: isPopularLoading
@@ -33,14 +33,14 @@ const Main = () => {
         search: tagSearch,
         exclude: excludeTags
     }, {refetchOnMountOrArgChange: false})
-    const {data: popularTags} = useGetPopularTagsQuery({
+    const {data: popularTags, isFetching: isPopularTagsLoading} = useGetPopularTagsQuery({
         limit: 10,
         type: 'popular'
     })
 
     const [fetchTemplatesByTags, {
         data: tagsTemplates,
-        isLoading: isTagsTemplatesLoading
+        isFetching: isTagsTemplatesLoading
     }] = useLazyGetTemplatesByTagsQuery()
 
 
@@ -112,7 +112,8 @@ const Main = () => {
                 <h3>{t('top-popular-tags', {amount: popularTags?.data?.length || 10})}</h3>
                 <ul className={' bg-accent p-2 flex flex-wrap gap-2 rounded-md cursor-pointer'}>
                     {
-                        popularTags?.data?.map(tag =>
+                        popularTags?.data
+                            ? popularTags?.data?.map(tag =>
                             <li key={tag.id}>
                                 <Badge
                                     onClick={() => {
@@ -123,8 +124,15 @@ const Main = () => {
                                 >
                                     {`${tag.name} (${tag._count.templates})`}
                                 </Badge>
-                            </li>
-                        )
+                            </li>)
+                            :
+                            <div className={'w-full text-center py-2'}>
+                                {
+                                    !isPopularTagsLoading
+                                    ? `${t('no-results')}`
+                                    : `${t('loading')}...`
+                                }
+                            </div>
                     }
                 </ul>
             </div>

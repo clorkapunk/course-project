@@ -26,7 +26,7 @@ const Profile = () => {
     const authState = useSelector(selectAuthState)
     const [tab, setTab] = useState('templates')
 
-    const [fetchTemplates, {data: templatesData, isLoading: isTemplatesLoading}] = useLazyGetUserTemplatesQuery()
+    const [fetchTemplates, {data: templatesData, isFetching: isTemplatesLoading}] = useLazyGetUserTemplatesQuery()
     const [deleteTemplates] = useDeleteTemplatesMutation()
     const [templatesSelectedRows, setTemplatesSelectedRows] = useState<number[]>([]);
     const [templatesTableParams, setTemplatesTableParams] = useState({
@@ -91,7 +91,7 @@ const Profile = () => {
         }
     }
 
-    const [fetchUserForms, {data: userFormsData, isLoading: isUserFormsLoading}] = useLazyGetUserFormsQuery()
+    const [fetchUserForms, {data: userFormsData, isFetching: isUserFormsLoading}] = useLazyGetUserFormsQuery()
     const [deleteForms] = useDeleteFormsMutation()
     const [userFormsSelectedRows, setUserFormsSelectedRows] = useState<number[]>([]);
     const [userFormsTableParams, setUserFormsTableParams] = useState({
@@ -156,7 +156,7 @@ const Profile = () => {
         }
     }
 
-    const [fetchFilledTemplates, {data: filledTemplatesData, isLoading: isFilledTemplatesLoading}] = useLazyGetUserTemplatesFormsQuery()
+    const [fetchFilledTemplates, {data: filledTemplatesData, isFetching: isFilledTemplatesLoading}] = useLazyGetUserTemplatesFormsQuery()
     // const [deleteForms] = useDeleteFormsMutation()
     const [filledTemplatesSelectedRows, setFilledTemplatesSelectedRows] = useState<number[]>([]);
     const [filledTemplatesTableParams, setFilledTemplatesTableParams] = useState({
@@ -399,7 +399,7 @@ const Profile = () => {
                             setLimit: (limit) => setTemplatesTableParams(prev => ({...prev, limit})),
                             setPage: (page) => setTemplatesTableParams(prev => ({...prev, page})),
                         }}
-                        isLoading={isTemplatesLoading}
+                        isFetching={isTemplatesLoading}
                     />
                 </TabsContent>
                 <TabsContent value="my-forms">
@@ -479,7 +479,7 @@ const Profile = () => {
                             setLimit: (limit) => setUserFormsTableParams(prev => ({...prev, limit})),
                             setPage: (page) => setUserFormsTableParams(prev => ({...prev, page})),
                         }}
-                        isLoading={isUserFormsLoading}
+                        isFetching={isUserFormsLoading}
                     />
                 </TabsContent>
                 <TabsContent value="filled-templates">
@@ -567,7 +567,7 @@ const Profile = () => {
                             setLimit: (limit) => setFilledTemplatesTableParams(prev => ({...prev, limit})),
                             setPage: (page) => setFilledTemplatesTableParams(prev => ({...prev, page})),
                         }}
-                        isLoading={isFilledTemplatesLoading}
+                        isFetching={isFilledTemplatesLoading}
                     />
                 </TabsContent>
             </Tabs>

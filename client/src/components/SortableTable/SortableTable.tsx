@@ -73,10 +73,10 @@ type Props = {
     data: DataType[],
     pagination?: Pagination,
     header?: ReactNode
-    isLoading?: boolean;
+    isFetching?: boolean;
 }
 
-const SortableTable = ({fields, data, pagination, header, isLoading = false}: Props) => {
+const SortableTable = ({fields, data, pagination, header, isFetching = false}: Props) => {
 
     const {t} = useTranslation()
 
@@ -166,7 +166,7 @@ const SortableTable = ({fields, data, pagination, header, isLoading = false}: Pr
                                         colSpan={fields.length}
                                         className={`${styles.tableCell} text-center py-10 `}
                                     >
-                                        {isLoading ? 'Loading...' : t('no-result')}
+                                        {isFetching ?   `${t('loading')}...` : t('no-result')}
                                     </TableCell>
                                 </TableRow>)
                         }

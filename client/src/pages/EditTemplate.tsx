@@ -79,7 +79,6 @@ const EditTemplate = () => {
                             existingData={data}
                             handleSubmit={handleSubmit}
                         />
-                        
                     </section>
             }
         </>

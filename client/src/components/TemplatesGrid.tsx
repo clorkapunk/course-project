@@ -65,7 +65,10 @@ const TemplatesGrid = ({data, label, handleLoadMore, isLoading}: Props) => {
                     </>
                     :
                     <div className={'w-full bg-accent rounded-md px-2 p-4 text-center'}>
-                        {t('no-results')}
+                        {
+                            isLoading ? `${t('loading')}...` :  t('no-results')
+                        }
+
                     </div>
             }
 

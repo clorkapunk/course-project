@@ -157,41 +157,11 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
         setInputTags(prev => prev.filter(tag => tag !== name))
     }
 
-    useEffect(() => {
-        setQuestionsAmount({
-            string: questions.filter(i => i.type === 'string').length,
-            text: questions.filter(i => i.type === 'text').length,
-            int: questions.filter(i => i.type === 'int').length,
-            bool: questions.filter(i => i.type === 'bool').length,
-        })
-    }, [questions])
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            tagsRefetch()
-        }, 1000);
-
-        return () => {
-            clearTimeout(timer);
-        };
-    }, [tagSearch])
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            usersRefetch()
-        }, 500);
-
-        return () => {
-            clearTimeout(timer);
-        };
-    }, [userSearch]);
-
     const onSubmit = () => {
         const body = new FormData()
 
         if (errors.title || errors.topicId || errors.description || errors.questions) {
             toast.error(t('fill-all-required-fields'))
-            console.log(errors)
             return
         }
 
@@ -217,13 +187,42 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
     }
 
     useEffect(() => {
+        setQuestionsAmount({
+            string: questions.filter(i => i.type === 'string').length,
+            text: questions.filter(i => i.type === 'text').length,
+            int: questions.filter(i => i.type === 'int').length,
+            bool: questions.filter(i => i.type === 'bool').length,
+        })
+    }, [questions]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            tagsRefetch()
+        }, 1000);
+
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [tagSearch]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            usersRefetch()
+        }, 500);
+
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [userSearch]);
+
+    useEffect(() => {
         setErrors(prev => ({
             title: title === '',
             description: description === '',
             topicId: topicId === null,
             questions: prev.questions
         }))
-    }, [topicId, title, description])
+    }, [topicId, title, description]);
 
     return (
         <section className={'flex flex-col gap-4'}>

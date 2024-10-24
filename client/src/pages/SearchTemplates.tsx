@@ -8,7 +8,7 @@ import Loading from "@/components/Loading.tsx";
 
 const SearchTemplates = () => {
     const {search} = useSelector(selectSearch)
-    const [triggerSearch, {data, isLoading}] = useLazySearchTemplatesQuery()
+    const [triggerSearch, {data, isFetching}] = useLazySearchTemplatesQuery()
 
 
     useEffect(() => {
@@ -20,6 +20,7 @@ const SearchTemplates = () => {
             clearTimeout(timer);
         }
     }, [search])
+
     return (
         <section className={'h-screen  flex flex-col gap-4 p-8'}>
             {
@@ -36,7 +37,7 @@ const SearchTemplates = () => {
                             )
                         }
                     </ul>)
-                    : isLoading
+                    : isFetching
                         ? <Loading/>
                         : <div className={'w-full text-center p-4'}>no results for query "{search}"</div>
             }

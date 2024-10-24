@@ -124,6 +124,19 @@ class UsersController {
             next(err)
         }
     }
+
+    async deleteUsers(req, res, next){
+        try {
+            checkValidationErrors(req, next)
+
+            const ids = req.body.ids
+
+
+        }
+        catch (err){
+            next(err)
+        }
+    }
 }
 
 module.exports = new UsersController();
