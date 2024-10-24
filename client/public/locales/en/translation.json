@@ -90,6 +90,9 @@
   "top-popular-tags": "Top {{amount}} popular tags",
   "search-by-tags": "Search by tags",
   "enter-tag": "Enter tag",
-  "private-template-toast": "The template creator has restricted access to it"
+  "private-template-toast": "The template creator has restricted access to it",
+  "you-have-access-to-template": "You have access to this template",
+  "fill-all-required-fields": "Fill all required fields",
+  "select-topic": "Select topic"
 
 }

@@ -90,5 +90,8 @@
   "top-popular-tags": "Топ {{amount}} популярных тегов",
   "search-by-tags": "Поиск по тегам",
   "enter-tag": "Введите тег",
-  "private-template-toast": "Создатель шаблона ограничил доступ к нему"
+  "private-template-toast": "Создатель шаблона ограничил доступ к нему",
+  "you-have-access-to-template": "У вас есть доступ к этому шаблону",
+  "fill-all-required-fields": "Заполните все обязательные поля",
+  "select-topic": "Выберите тему"
 }

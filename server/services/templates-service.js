@@ -204,13 +204,16 @@ class TemplatesService {
                 top.id AS topic_id, 
                 top.name AS topic_name,
                 COALESCE(array_agg(DISTINCT jsonb_build_object('id', tg.id, 'name', tg.name)) FILTER (WHERE tg.id IS NOT NULL), '{}') AS tags,
-                array_agg(DISTINCT jsonb_build_object('id', c.id, 'text', c.text)) FILTER (WHERE c.id IS NOT NULL) AS comments
+                array_agg(DISTINCT jsonb_build_object('id', c.id, 'text', c.text)) FILTER (WHERE c.id IS NOT NULL) AS comments,
+                COALESCE(array_agg(DISTINCT jsonb_build_object('id', u2.id, 'email', u2.email, 'username', u2.username, 'isActive', u2."isActive")) FILTER (WHERE u2.id IS NOT NULL), '{}') AS users
               FROM "templates" t
               LEFT JOIN "users" u ON t."userId" = u.id
               LEFT JOIN "topics" top ON t."topicId" = top.id
               LEFT JOIN "templates_tags" tt ON t.id = tt."templateId"
               LEFT JOIN "tags" tg ON tt."tagId" = tg.id
               LEFT JOIN "comments" c ON t.id = c."templateId"
+              LEFT JOIN "templates_users" tu ON t.id = tu."templateId"  -- Промежуточная таблица для связи пользователей
+              LEFT JOIN "users" u2 ON tu."userId" = u2.id  -- Присоединяем пользователей
               WHERE 
                 (to_tsvector('simple', t.title || ' ' || t.description || ' ' || coalesce(t."customString1Question", '') || ' ' || coalesce(t."customString1Description", '') 
                 || ' ' || coalesce(t."customString2Question", '') || ' ' || coalesce(t."customString2Description", '') || ' ' || coalesce(t."customString3Question", '') 
@@ -238,6 +241,56 @@ class TemplatesService {
               OFFSET ${skip};
     `
         );
+
+    //     const templates = await prisma.$queryRaw(
+    //         Prisma.sql`SELECT
+    //             t.id AS template_id,
+    //             t.title,
+    //             t.description,
+    //             t."createdAt",
+    //             t.image,
+    //             t.mode,
+    //             u.id AS user_id,
+    //             u.username,
+    //             u.email,
+    //             u."isActive",
+    //             top.id AS topic_id,
+    //             top.name AS topic_name,
+    //             COALESCE(array_agg(DISTINCT jsonb_build_object('id', tg.id, 'name', tg.name)) FILTER (WHERE tg.id IS NOT NULL), '{}') AS tags,
+    //             array_agg(DISTINCT jsonb_build_object('id', c.id, 'text', c.text)) FILTER (WHERE c.id IS NOT NULL) AS comments
+    //           FROM "templates" t
+    //           LEFT JOIN "users" u ON t."userId" = u.id
+    //           LEFT JOIN "topics" top ON t."topicId" = top.id
+    //           LEFT JOIN "templates_tags" tt ON t.id = tt."templateId"
+    //           LEFT JOIN "tags" tg ON tt."tagId" = tg.id
+    //           LEFT JOIN "comments" c ON t.id = c."templateId"
+    //           WHERE
+    //             (to_tsvector('simple', t.title || ' ' || t.description || ' ' || coalesce(t."customString1Question", '') || ' ' || coalesce(t."customString1Description", '')
+    //             || ' ' || coalesce(t."customString2Question", '') || ' ' || coalesce(t."customString2Description", '') || ' ' || coalesce(t."customString3Question", '')
+    //             || ' ' || coalesce(t."customString3Description", '') || ' ' || coalesce(t."customString4Question", '') || ' ' || coalesce(t."customString4Description", '')
+    //             || ' ' || coalesce(t."customInt1Question", '') || ' ' || coalesce(t."customInt1Description", '') || ' ' || coalesce(t."customInt2Question", '')
+    //             || ' ' || coalesce(t."customInt2Description", '') || ' ' || coalesce(t."customInt3Question", '') || ' ' || coalesce(t."customInt3Description", '')
+    //             || ' ' || coalesce(t."customInt4Question", '') || ' ' || coalesce(t."customInt4Description", '') || ' ' || coalesce(t."customText1Question", '')
+    //             || ' ' || coalesce(t."customText1Description", '') || ' ' || coalesce(t."customText2Question", '') || ' ' || coalesce(t."customText2Description", '')
+    //             || ' ' || coalesce(t."customText3Question", '') || ' ' || coalesce(t."customText3Description", '') || ' ' || coalesce(t."customText4Question", '')
+    //             || ' ' || coalesce(t."customText4Description", '') || ' ' || coalesce(t."customBool1Question", '') || ' ' || coalesce(t."customBool1Description", '')
+    //             || ' ' || coalesce(t."customBool2Question", '') || ' ' || coalesce(t."customBool2Description", '') || ' ' || coalesce(t."customBool3Question", '')
+    //             || ' ' || coalesce(t."customBool3Description", '') || ' ' || coalesce(t."customBool4Question", '') || ' ' || coalesce(t."customBool4Description", ''))
+    //             @@ to_tsquery('simple', ${searchQuery})
+    //             OR to_tsvector('simple', c.text) @@ to_tsquery('simple', ${searchQuery}))
+    //             ${tags.length > 0 ? Prisma.sql`
+    //             AND t.id IN (
+    //                 SELECT tt."templateId"
+    //                 FROM "templates_tags" tt
+    //                 WHERE tt."tagId" IN (${Prisma.join(tags)})
+    //                 GROUP BY tt."templateId"
+    //                 HAVING COUNT(DISTINCT tt."tagId") = ${tags.length}
+    //             )` : Prisma.empty}
+    //           GROUP BY t.id, u.id, top.id
+    //           LIMIT ${take}
+    //           OFFSET ${skip};
+    // `
+    //     );
 
 
         const count = await prisma.$queryRaw(
@@ -293,6 +346,7 @@ class TemplatesService {
                     id: template.topic_id,
                     name: template.topic_name
                 },
+                users: template.users || [],
                 tags: template.tags || []
             };
         });

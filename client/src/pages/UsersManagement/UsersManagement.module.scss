@@ -43,7 +43,11 @@
 
 @media screen and (max-width: 768px) {
   .page{
-    padding-top: 64px;
+    padding-top: 72px;
+
+    .topContainer {
+      flex-direction: column;
+    }
   }
 
 }

@@ -155,7 +155,7 @@ const UsersManagement = () => {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button
-                        className={styles.actionButton}
+                        className={`${styles.actionButton}`}
                         variant="secondary"
                     >
                         {t("actions")}

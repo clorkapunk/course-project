@@ -11,3 +11,9 @@
 
   }
 }
+
+@media screen and (width <= 768px) {
+    .searchContainer {
+      max-width: 100%;
+    }
+}

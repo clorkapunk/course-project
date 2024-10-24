@@ -39,6 +39,7 @@ import {useTranslation} from "react-i18next";
 import {useGetTagsQuery, useGetTopicsQuery} from "@/features/templates/templatesApiSlice.ts";
 import {useGetUsersQuery} from "@/features/users/usersApiSlice.ts";
 import toast from "react-hot-toast";
+
 export interface QuestionDataWithId extends QuestionData {
     id: string;
 }
@@ -73,7 +74,13 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
         int: 0,
         bool: 0
     })
-
+    const [inputTags, setInputTags] = useState<string[]>(existingData?.tags.map(i => i.name) || [])
+    const [errors, setErrors] = useState({
+        title: false,
+        description: false,
+        topicId: false,
+        questions: false
+    })
     const [isConfirmOpen, setIsConfirmOpen] = useState(false)
     const [image, setImage] = useState<File | null>(null)
     const [title, setTitle] = useState(existingData?.title || '')
@@ -83,7 +90,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
         existingData ? (existingData?.mode === 'public') : true
     )
     const [allowedUsers, setAllowedUsers] = useState<UserData[]>([])
-    const [inputTags, setInputTags] = useState<string[]>(existingData?.tags.map(i => i.name) || [])
+
     const [questions, setQuestions] = useState<QuestionDataWithId[]>(
         existingData?.questions?.map(q => ({...q, id: uuidv4()}))
         || [{id: uuidv4(), type: "string", question: "", description: ""}]
@@ -169,26 +176,55 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
     const onSubmit = () => {
         const body = new FormData()
 
-        if (!topicId) return
+        if (errors.title || errors.topicId || errors.description || errors.questions) {
+            toast.error(t('fill-all-required-fields'))
+            return
+        }
+
+
         if (image) {
             body.append('file', image)
         }
+
+
         body.append("title", title)
         body.append("description", description)
-        body.append("topicId", topicId)
+        body.append("topicId", topicId!)
         body.append("mode", isPublicMode ? "public" : 'private')
         body.append("questions", JSON.stringify(questions))
         body.append('tags', JSON.stringify(inputTags))
-        body.append('allowedUsers', JSON.stringify(allowedUsers.map(user => user.id)))
-
+        if(isPublicMode) {
+            body.append('allowedUsers', JSON.stringify([]))
+        }
+        else{
+            body.append('allowedUsers', JSON.stringify(allowedUsers.map(user => user.id)))
+        }
         handleSubmit(body)
     }
 
+    useEffect(() => {
+        setErrors(prev => ({
+            title: title === '',
+            description: description === '',
+            topicId: topicId === null,
+            questions: prev.questions
+        }))
+    }, [topicId, title, description])
+
+    useEffect(() => {
+        setErrors(prev => ({
+            ...prev,
+            questions: !!questions.find(q => {
+                return q.question === '' || q.description === ''
+            })
+        }))
+    }, [questions]);
+
     return (
-        <section className={'min-h-screen p-4 flex flex-col gap-4 pt-[72px]'}>
+        <section className={'flex flex-col gap-4'}>
             <div className={'flex gap-4'}>
                 <Input
-                    className={'w-[200%]'}
+                    className={`w-[200%] bg-accent ${errors.title && "border-red-600 border-x-0 border-t-0 border-b"}`}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder={'Enter title, for example, "Biology. First lesson"'}
@@ -197,18 +233,17 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                     value={topicId || ''}
                     onValueChange={(value) => setTopicId(value)}>
                     <SelectTrigger
-                        className={`${styles.select} w-full border-none bg-zinc-800 text-zinc-100 hover:bg-zinc-600`}>
+                        className={`${styles.select} w-full bg-accent hover:bg-primary-foreground h-full ${errors.topicId ? "border-red-600 border-x-0 border-t-0 border-b" : "border-none"}`}>
                         <SelectValue placeholder={'Pick topic'}/>
                     </SelectTrigger>
-                    <SelectContent className={'bg-zinc-800 border-zinc-600 text-zinc-100 '}>
+                    <SelectContent className={'bg-primary-foreground'}>
                         <SelectGroup>
                             <SelectLabel>{t("select-topic")}</SelectLabel>
-                            <SelectSeparator className={'bg-zinc-600'}/>
+                            <SelectSeparator/>
                             {
                                 topics?.map(topic =>
                                     <SelectItem
                                         key={topic.id}
-                                        className={'text-zinc-200 focus:bg-zinc-600 focus:text-zinc-100'}
                                         value={topic.id.toString()}
                                         defaultChecked
                                     >
@@ -222,7 +257,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
             </div>
             <div className={'flex items-stretch gap-4'}>
                 <Textarea
-                    className={'resize-none'}
+                    className={`resize-none bg-accent ${errors.description && "border-red-600 border-x-0 border-t-0 border-b"}`}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder={'Add description...'}
@@ -234,7 +269,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                 />
             </div>
 
-            <div className={'bg-zinc-800 rounded-md p-2 text-zinc-200 flex flex-col gap-2'}>
+            <div className={'bg-accent rounded-md p-2 flex flex-col gap-2'}>
                 <p className={'text-md'}>Tags</p>
                 <div className={'flex flex-wrap gap-1 '}>
                     {
@@ -242,7 +277,8 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                             <Button
                                 onClick={() => handleDeleteTag(tag)}
                                 size={'sm'}
-                                className={'bg-zinc-600 py-2 px-4 hover:bg-red-600'}
+                                className={'hover:bg-red-600'}
+                                variant={'outline'}
                                 key={tag}
                             >
                                 {tag}
@@ -253,35 +289,37 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
-                                    size={'sm'}
+                                size={'sm'}
+                                className={'hover:bg-primary-foreground'}
+                                variant={'ghost'}
                             >
                                 +
                             </Button>
                         </PopoverTrigger>
-                        <PopoverContent align={'start'} className="w-[200px] p-0 bg-zinc-800 border-none">
+                        <PopoverContent  align={'start'} className="w-[200px] p-0 bg-primary-foreground">
                             <Input
+                                className={'border-x-0 border-t-0 bg-accent'}
                                 value={tagSearch}
                                 onChange={(e) => setTagSearch(e.target.value)}
                                 placeholder="Search tag..."
-                                className={'bg-zinc-600 placeholder:text-zinc-400'}
                             />
-                            <div className={'flex flex-col py-2 px-1'}>
+                            <div className={'flex flex-col py-1 px-1'}>
                                 {tags?.data?.map((tag) => (
                                     <Button
                                         onClick={() => handleAddTag(tag.name)}
-
-                                        className={'justify-between'}
+                                        variant={'ghost'}
+                                        className={'justify-between border-none'}
                                         key={tag.id}
                                     >
                                         {tag.name}
                                     </Button>
                                 ))}
                                 {
-                                    tagSearch &&
+                                    (tagSearch && !tags?.data?.find(t => t.name === tagSearch)) &&
                                     <Button
                                         onClick={() => handleAddTag(tagSearch)}
-
-                                        className={'justify-between'}
+                                        variant={'outline'}
+                                        className={'justify-between border-none'}
                                     >
                                         {tagSearch}
                                     </Button>
@@ -307,7 +345,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
 
                 {
                     !isPublicMode &&
-                    <div className={'bg-zinc-800 rounded-md p-2 text-zinc-200 flex flex-col gap-2'}>
+                    <div className={'bg-accent rounded-md p-2 flex flex-col gap-2'}>
                         <p className={'text-md'}>Allowed users</p>
                         <div className={'flex flex-wrap gap-1 '}>
                             {
@@ -315,7 +353,8 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                     <Button
                                         onClick={() => handleDeleteAllowedUser(user)}
                                         size={'sm'}
-                                        className={'bg-zinc-600 py-2 px-4 hover:bg-red-600'}
+                                        variant={'outline'}
+                                        className={'hover:bg-red-600'}
                                         key={user.id}>
                                         {user.email}
                                     </Button>
@@ -324,23 +363,27 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
 
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button  size={'sm'}>
+                                    <Button
+                                        size={'sm'}
+                                        className={'hover:bg-primary-foreground'}
+                                        variant={'ghost'}
+                                    >
                                         +
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent align={'start'} className="w-[200px] p-0 bg-zinc-800 border-none">
+                                <PopoverContent  align={'start'} className="w-[200px] p-0 bg-primary-foreground">
                                     <Input
+                                        className={'border-x-0 border-t-0 bg-accent'}
                                         value={userSearch}
                                         onChange={(e) => setUserSearch(e.target.value)}
-                                        placeholder="Search user..."
-                                        className={'bg-zinc-600 placeholder:text-zinc-400'}
+                                        placeholder="Search tag..."
                                     />
-                                    <div className={'flex flex-col py-2 px-1'}>
+                                    <div className={'flex flex-col py-1 px-1'}>
                                         {users?.data?.map((user) => (
                                             <Button
                                                 onClick={() => handleAddAllowedUser(user)}
-
-                                                className={'justify-between'}
+                                                variant={'ghost'}
+                                                className={'justify-between border-none'}
                                                 key={user.id}
                                                 value={user.id.toString()}
                                             >
@@ -361,7 +404,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                 <div className={'flex justify-end gap-2'}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button >
+                            <Button>
                                 <FaPlus/>
                             </Button>
                         </DropdownMenuTrigger>
@@ -405,7 +448,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
 
                     <Dialog open={isConfirmOpen} onOpenChange={(value) => setIsConfirmOpen(value)}>
                         <DialogTrigger asChild>
-                            <Button >{submitButtonText}</Button>
+                            <Button>{submitButtonText}</Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px] bg-zinc-900 border-none text-zinc-100">
                             <DialogHeader>

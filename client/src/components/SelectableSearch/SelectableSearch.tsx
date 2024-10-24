@@ -31,7 +31,7 @@ const SelectableSearch = ({searchBy, setSearchBy, fields, search, setSearch}: Pr
         <div className={styles.searchContainer}>
             <Select value={searchBy} onValueChange={(value) => setSearchBy(value)}>
                 <SelectTrigger
-                    className={`${styles.select} w-[180px] h-full border-none bg-accent hover:bg-primary-foreground`}>
+                    className={`${styles.select} w-[180px] h-full min-h-[40px] border-none bg-accent hover:bg-primary-foreground`}>
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent className={'bg-primary-foreground'}>

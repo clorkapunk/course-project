@@ -291,8 +291,9 @@ const Profile = () => {
                                  search: string;
                                  fields: { label: string; value: string }[]
                              }) => {
-        return (<div className={'flex justify-between'}>
+        return (<div className={'flex justify-between gap-2'}>
             <Button
+                className={'flex-shrink-0'}
                 variant={'secondary'}
                 size={'icon'}
                 onClick={handleDelete}
@@ -310,10 +311,10 @@ const Profile = () => {
     }
 
     return (
-        <section className={'p-4'}>
+        <section className={'p-4 pt-[72px] md:pt-4'}>
 
-            <Tabs value={tab} className="w-full" onValueChange={(value) => setTab(value)}>
-                <TabsList className="grid w-full grid-cols-3">
+            <Tabs value={tab} className="w-full" orientation={'vertical'} onValueChange={(value) => setTab(value)}>
+                <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 h-fit">
                     <TabsTrigger value="templates">{t('templates')}</TabsTrigger>
                     <TabsTrigger value="my-forms">{t('my-forms')}</TabsTrigger>
                     <TabsTrigger value="filled-templates">{t('filled-templates')}</TabsTrigger>

@@ -3,13 +3,15 @@ import {FILL_TEMPLATE_ROUTE} from "@/utils/routes.ts";
 import {TemplateData} from "@/types";
 import {AspectRatio} from "@/components/ui/aspect-ratio.tsx";
 import {ImageOff} from "lucide-react";
-import {FaCalendar, FaComment, FaFile, FaHeart, FaLightbulb, FaLock, FaUser} from "react-icons/fa6";
+import {FaCalendar, FaComment, FaFile, FaHeart, FaLightbulb, FaLock, FaLockOpen, FaUser} from "react-icons/fa6";
 import {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {selectAuthState} from "@/features/auth/authSlice.ts";
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
+import {useTranslation} from "react-i18next";
 
 const TemplateCard = ({template}: { template: TemplateData }) => {
-
+    const {t} = useTranslation()
     const authState = useSelector(selectAuthState)
     const [info, _setInfo] = useState([
         {icon: <FaUser/>, text: template.user.username},
@@ -52,11 +54,24 @@ const TemplateCard = ({template}: { template: TemplateData }) => {
                             <ImageOff className={'w-full h-1/4 min-h-[20px]'}/>
                     }
                     {
-                        !isAllowed &&
+                        !isAllowed ?
                         <div
                             className={'absolute top-0 right-0 w-full h-full flex justify-center items-center bg-red-600 bg-opacity-50'}>
                             <FaLock/>
                         </div>
+                            :
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <div className={'bg-primary-foreground p-1.5 2xl:p-2 absolute top-1 left-1 rounded-md aspect-square flex justify-center items-center  '}>
+                                            <FaLockOpen className={'w-full h-[10px] md:h-[12px] 2xl:h-[16px]'}/>
+                                        </div>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>{t('you-have-access-to-template')}</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
 
                     }
                 </AspectRatio>

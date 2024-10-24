@@ -36,10 +36,14 @@ const CreateTemplate = () => {
     }
 
     return (
-        <TemplateForm
-            submitButtonText={t('publish')}
-            handleSubmit={handleSubmit}
-        />
+        <section className={'p-4 pt-[72px] md:pt-4 flex flex-col gap-4'}>
+            <h1 className={'text-base text-center md:text-xl md:text-left'}>Create your template</h1>
+            <TemplateForm
+                submitButtonText={t('publish')}
+                handleSubmit={handleSubmit}
+            />
+        </section>
+
     );
 };
 
