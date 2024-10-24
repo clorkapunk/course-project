@@ -29,7 +29,7 @@ const UsersManagement = () => {
     const [updateUsersRole] = useUpdateUsersRoleMutation()
     const {t} = useTranslation()
 
-    const [fetchUsers, {data, isLoading,}] = useLazyGetUsersQuery()
+    const [fetchUsers, {data, isFetching,}] = useLazyGetUsersQuery()
     const [selectedRows, setSelectedRows] = useState<number[]>([])
     const [tableParams, setTableParams] = useState({
         page: 1,
@@ -288,7 +288,7 @@ const UsersManagement = () => {
                         }))
                     }
                 }}
-                isLoading={isLoading}
+                isFetching={isFetching}
             />
         </section>
     )
