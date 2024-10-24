@@ -179,7 +179,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
     useEffect(() => {
         const timer = setTimeout(() => {
             usersRefetch()
-        }, 2000);
+        }, 500);
 
         return () => {
             clearTimeout(timer);
@@ -314,7 +314,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                     <Button
                                         onClick={() => handleAddTag(tag.name)}
                                         variant={'ghost'}
-                                        className={'justify-between border-none'}
+                                        className={'justify-between border-none truncate'}
                                         key={tag.id}
                                     >
                                         {tag.name}
@@ -325,7 +325,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                     <Button
                                         onClick={() => handleAddTag(tagSearch)}
                                         variant={'outline'}
-                                        className={'justify-between border-none'}
+                                        className={'text-start border-none truncate block'}
                                     >
                                         {tagSearch}
                                     </Button>
@@ -377,7 +377,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                         +
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent  align={'start'} className="w-[200px] p-0 bg-primary-foreground">
+                                <PopoverContent  align={'start'} className="w-fit min-w-[200px] max-w-full p-0 bg-primary-foreground">
                                     <Input
                                         className={'border-x-0 border-t-0 bg-accent focus-visible:ring-offset-0 focus-visible:ring-0'}
                                         value={userSearch}
@@ -389,7 +389,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                             <Button
                                                 onClick={() => handleAddAllowedUser(user)}
                                                 variant={'ghost'}
-                                                className={'justify-between border-none'}
+                                                className={'text-start border-none truncate block'}
                                                 key={user.id}
                                                 value={user.id.toString()}
                                             >
