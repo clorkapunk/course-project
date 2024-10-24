@@ -108,7 +108,7 @@ const Main = () => {
             />
 
 
-            <div className={'flex flex-col gap-4'}>
+            <div className={'flex flex-col gap-2 md:gap-4'}>
                 <h3>{t('top-popular-tags', {amount: popularTags?.data?.length || 10})}</h3>
                 <ul className={' bg-accent p-2 flex flex-wrap gap-2 rounded-md cursor-pointer'}>
                     {
@@ -130,7 +130,7 @@ const Main = () => {
             </div>
 
             <div
-                className={' flex flex-col gap-4'}
+                className={' flex flex-col gap-2 md:gap-4'}
                 onClick={() => {
                     tagsInputRef.current?.focus()
                 }}

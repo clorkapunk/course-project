@@ -98,7 +98,7 @@ const Login = () => {
 
     return (
         <section className={'h-screen flex items-center justify-center'}>
-            <div className={'w-full max-w-[400px] flex flex-col rounded-xl border p-6 bg-primary-foreground'}>
+            <div className={'w-full max-w-[400px] flex flex-col rounded-xl border p-3 md:p-6 bg-accent'}>
                 <p
                     aria-live={'assertive'}
                     ref={errRef}
@@ -122,7 +122,7 @@ const Login = () => {
                         {t("email")}:
                     </label>
                     <Input
-                        className={'mb-4'}
+                        className={'mb-4 bg-primary-foreground'}
                         type='email'
                         id='email'
                         ref={userRef}
@@ -138,7 +138,7 @@ const Login = () => {
                         {t("password")}:
                     </label>
                     <Input
-                        className={'mb-4'}
+                        className={'mb-4 bg-primary-foreground'}
                         type='password'
                         id='password'
                         value={password}

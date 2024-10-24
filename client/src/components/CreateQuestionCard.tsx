@@ -5,6 +5,7 @@ import {Button} from "@/components/ui/button.tsx";
 import {Textarea} from "@/components/ui/textarea.tsx";
 import {FaTrash} from "react-icons/fa6";
 import {QuestionDataWithId} from "@/components/TemplateForm.tsx";
+import {useTranslation} from "react-i18next";
 
 type Props = {
     index: number | undefined;
@@ -22,9 +23,13 @@ type Props = {
 }
 
 const CreateQuestionCard = ({otherProps, index, item, handleChange, handleDelete}: Props) => {
-
+    const {t} = useTranslation()
     const [question, setQuestion] = useState(item.question)
     const [description, setDescription] = useState(item.description)
+    const [errors, setErrors] = useState({
+        question: false,
+        description: false
+    })
 
     useEffect(() => {
         handleChange(question, 'question', item.id)
@@ -34,43 +39,49 @@ const CreateQuestionCard = ({otherProps, index, item, handleChange, handleDelete
         handleChange(description, 'description', item.id)
     }, [description]);
 
+    useEffect(() => {
+        setErrors({
+            question: question === '',
+            description: description === ''
+        })
+    }, [question, description]);
 
 
     return (
-        <Card {...otherProps} className={'bg-zinc-800 border-none mb-2 hover:cursor-move'}>
-            <CardHeader className={'flex flex-row justify-between items-center py-2'}>
-                <CardTitle className={'text-zinc-200 text-xl flex items-center gap-4'}>
+        <Card {...otherProps} className={'bg-accent border-none mb-2 hover:cursor-move'}>
+            <CardHeader className={'flex flex-row justify-between items-center py-1 md:py-2'}>
+                <CardTitle className={'text-xl flex items-center gap-2 md:gap-4'}>
                     {index ? (index + 1) : 1}.
                     <div>
-                        {item.type === "string" && "Single-line"}
-                        {item.type === "int" && "Positive integer"}
-                        {item.type === "text" && "Multiple-line"}
-                        {item.type === "bool" && "Checkbox"}
+                        {item.type === "string" && t('single-line-string')}
+                        {item.type === "int" && t('positive-integer')}
+                        {item.type === "text" && t('multiple-line-text')}
+                        {item.type === "bool" && t('checkbox')}
                     </div>
                 </CardTitle>
 
-                <div className={'flex items-center justify-center gap-4'}>
-                    <Button
-                        className={'rounded-full'}
-                        onClick={() => handleDelete(item.id)}
-                        size={'icon'}
-                    >
-                        <FaTrash/>
-                    </Button>
-                </div>
+                <Button
+                    onClick={() => handleDelete(item.id)}
+                    className={'hover:text-red-500 hover:bg-primary-foreground'}
+                    variant={'secondary'}
+                    size={'icon'}
+                >
+                    <FaTrash/>
+                </Button>
+
             </CardHeader>
             <CardContent>
                 <Input
-                    placeholder={'Enter question'}
+                    placeholder={`${t('enter-question')}...`}
                     type={'text'}
                     value={question}
-                    className={'mb-2 bg-zinc-600 placeholder:text-zinc-300'}
+                    className={`mb-2 bg-primary-foreground ${errors.question && "border-red-600 border-x-0 border-t-0 border-b"}`}
                     onChange={(e) => setQuestion(e.target.value)}
                     name={'question'}/>
                 <Textarea
-                    placeholder={'Enter question description'}
+                    placeholder={`${t('enter-question-description')}...`}
                     value={description}
-                    className={'bg-zinc-600 placeholder:text-zinc-300'}
+                    className={`bg-primary-foreground ${errors.description && "border-red-600 border-x-0 border-t-0 border-b"}`}
                     onChange={(e) => setDescription(e.target.value)}
                     name={'description'}
                 />

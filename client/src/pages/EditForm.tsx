@@ -103,7 +103,7 @@ const EditForm = () => {
 
                 <div className={'fixed right-0 top-50'}>
                     <Button
-                        variant={'dark'}
+
                         className={'mr-4 bg-zinc-600 hover:bg-green-600'}
                         onClick={() => setIsEditMode(prev => !prev)}
                     >
@@ -113,7 +113,7 @@ const EditForm = () => {
                     {
                         isEditMode &&
                         <Button
-                            variant={'dark'}
+
                             className={' mr-4 bg-zinc-600 hover:bg-green-600'}
                             disabled={answeredAmount !== answersData.length}
                             onClick={handleUpdate}

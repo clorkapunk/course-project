@@ -128,7 +128,7 @@ const Register = () => {
         <section className={'h-screen flex items-center justify-center'}>
 
 
-            <div className={'w-full max-w-[400px] flex flex-col border bg-primary-foreground rounded-xl p-6'}>
+            <div className={'w-full max-w-[400px] flex flex-col border bg-accent rounded-xl p-6'}>
                 <p
                     aria-live={'assertive'}
                     ref={errRef}
@@ -157,7 +157,7 @@ const Register = () => {
                     </span>
                     </label>
                     <Input
-                        className={'mb-4'}
+                        className={'mb-4 bg-primary-foreground'}
                         type='text'
                         id='username'
                         ref={userRef}
@@ -193,7 +193,7 @@ const Register = () => {
                     </span>
                     </label>
                     <Input
-                        className={'mb-4'}
+                        className={'mb-4 bg-primary-foreground'}
                         type='email'
                         id='email'
                         value={email}
@@ -229,7 +229,7 @@ const Register = () => {
                     </span>
                     </label>
                     <Input
-                        className={'mb-4'}
+                        className={'mb-4 bg-primary-foreground'}
                         type='password'
                         id='password'
                         value={password}
@@ -264,7 +264,7 @@ const Register = () => {
                     </span>
                     </label>
                     <Input
-                        className={'mb-4'}
+                        className={'mb-4 bg-primary-foreground'}
                         type='password'
                         id='matchPassword'
                         value={matchPassword}
@@ -301,9 +301,9 @@ const Register = () => {
                     </Button>
 
                     <div className={'flex items-center gap-3 my-4'}>
-                        <hr className={'w-full border-slate-500'}/>
+                        <hr className={'w-full border-zinc-600'}/>
                         {t('or')}
-                        <hr className={'w-full border-slate-500'}/>
+                        <hr className={'w-full border-zinc-600'}/>
                     </div>
 
                     <Button

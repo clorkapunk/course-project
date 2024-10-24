@@ -26,7 +26,10 @@ const TemplateCard = ({template}: { template: TemplateData }) => {
 
     useEffect(() => {
         if (template?.mode === 'public') return
-        if (!authState?.id) return;
+        if (!authState?.id) {
+            setIsAllowed(false)
+            return;
+        }
         if (!template.allowedUsers.find(user => user.id === authState.id) && template.user.id !== authState.id) {
             setIsAllowed(false)
         }
@@ -54,16 +57,19 @@ const TemplateCard = ({template}: { template: TemplateData }) => {
                             <ImageOff className={'w-full h-1/4 min-h-[20px]'}/>
                     }
                     {
-                        !isAllowed ?
-                        <div
-                            className={'absolute top-0 right-0 w-full h-full flex justify-center items-center bg-red-600 bg-opacity-50'}>
-                            <FaLock/>
-                        </div>
+                        !isAllowed
+                            ?
+                            <div
+                                className={'absolute top-0 right-0 w-full h-full flex justify-center items-center bg-red-600 bg-opacity-50'}>
+                                <FaLock/>
+                            </div>
                             :
+                            template?.mode === 'private' &&
                             <TooltipProvider>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <div className={'bg-primary-foreground p-1.5 2xl:p-2 absolute top-1 left-1 rounded-md aspect-square flex justify-center items-center  '}>
+                                        <div
+                                            className={'bg-primary-foreground p-1.5 2xl:p-2 absolute top-1 left-1 rounded-md aspect-square flex justify-center items-center  '}>
                                             <FaLockOpen className={'w-full h-[10px] md:h-[12px] 2xl:h-[16px]'}/>
                                         </div>
                                     </TooltipTrigger>

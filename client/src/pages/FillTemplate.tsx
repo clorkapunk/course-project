@@ -125,25 +125,30 @@ const FillTemplate = () => {
     }, [formData]);
 
     return (
-        <section className={'min-h-screen flex flex-col items-center gap-4 pb-4'}>
+        <section className={'flex flex-col items-center'}>
             <div
-                className={'flex flex-col items-center gap-2 bg-zinc-800 h-[72px] justify-center w-full sticky top-0 border-b border-zinc-600'}>
+                className={'flex  items-center bg-accent px-[60px] h-[72px] justify-between w-full sticky top-0 border-b'}>
+                <div className={'flex flex-col sm:items-center gap-1 w-full'}>
+                    {
+                        authState?.token &&
+                        <p className={"text-sm md:text-base leading-none text-center"}>{answeredAmount} / {data?.questions.length}</p>
+                    }
+                    <h1 className={"text-lg md:text-xl leading-none text-center truncate w-full"}>{data?.title}</h1>
+                </div>
                 {
                     authState?.token &&
-                    <p className={'text-zinc-300'}>{answeredAmount} / {data?.questions.length}</p>
+                    <Button
+                        variant={'default'}
+                        className={'hidden md:block md:fixed top-50 mr-4 right-0 hover:bg-green-600'}
+                        disabled={answeredAmount !== answersData.length}
+                        onClick={handleSubmit}
+                    >
+                        {t('finish')}
+                    </Button>
                 }
-                <h1 className={"text-xl text-zinc-100"}>{data?.title}</h1>
-
-                <Button
-                    className={'fixed right-0 top-50 mr-4 bg-zinc-600 hover:bg-green-600'}
-                    disabled={answeredAmount !== answersData.length}
-                    onClick={handleSubmit}
-                >
-                    Finish
-                </Button>
             </div>
 
-            <ul className={'w-full max-w-[800px] flex flex-col gap-4'}>
+            <ul className={'w-full max-w-[800px] flex flex-col gap-2 md:gap-4 p-2 md:p-4 2xl:p-8'}>
                 {
                     answersData.map((question) => {
                         return authState?.token ?
@@ -160,6 +165,21 @@ const FillTemplate = () => {
                     })
                 }
             </ul>
+            {
+                authState?.token &&
+                <div className={'p-2 md:p-4 2xl:p-8 w-full'}>
+                    <Button
+                        variant={'default'}
+                        className={'md:hidden block w-full hover:bg-green-600'}
+                        disabled={answeredAmount !== answersData.length}
+                        onClick={handleSubmit}
+                    >
+                        {t('finish')}
+                    </Button>
+                </div>
+            }
+
+
         </section>
     );
 };

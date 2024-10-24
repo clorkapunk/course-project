@@ -4,6 +4,7 @@ import {useLocation, useNavigate} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
 import {useEffect, useRef, useState} from "react";
 import {HOME_ROUTE, SEARCH_TEMPLATES_ROUTE} from "@/utils/routes.ts";
+import {useTranslation} from "react-i18next";
 
 const GlobalSearch = () => {
     const location = useLocation();
@@ -15,6 +16,7 @@ const GlobalSearch = () => {
         HOME_ROUTE,
         SEARCH_TEMPLATES_ROUTE,
     ])
+    const {t} = useTranslation()
 
     useEffect(() => {
         if(search === ''){
@@ -36,7 +38,7 @@ const GlobalSearch = () => {
     return (
         <div className={'h-[72px] p-4 bg-accent border-b sticky top-0 z-40 pl-[60px] md:pl-4'}>
             <Input
-                placeholder={'Search for anything...'}
+                placeholder={`${t('search-for-anything')}...`}
                 ref={inputRef}
                 value={search}
                 onChange={(e) => dispatch(setSearch({search: e.target.value}))}

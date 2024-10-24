@@ -227,14 +227,14 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                     className={`w-[200%] bg-accent ${errors.title && "border-red-600 border-x-0 border-t-0 border-b"}`}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder={'Enter title, for example, "Biology. First lesson"'}
+                    placeholder={t('create-template-title-placeholder')}
                 />
                 <Select
                     value={topicId || ''}
                     onValueChange={(value) => setTopicId(value)}>
                     <SelectTrigger
                         className={`${styles.select} w-full bg-accent hover:bg-primary-foreground h-full ${errors.topicId ? "border-red-600 border-x-0 border-t-0 border-b" : "border-none"}`}>
-                        <SelectValue placeholder={'Pick topic'}/>
+                        <SelectValue placeholder={t('pick-topic')}/>
                     </SelectTrigger>
                     <SelectContent className={'bg-primary-foreground'}>
                         <SelectGroup>
@@ -260,7 +260,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                     className={`resize-none bg-accent ${errors.description && "border-red-600 border-x-0 border-t-0 border-b"}`}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder={'Add description...'}
+                    placeholder={`${t('create-template-description-placeholder')}...`}
                 />
                 <ImageInput
                     existingImage={existingData?.image}
@@ -270,7 +270,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
             </div>
 
             <div className={'bg-accent rounded-md p-2 flex flex-col gap-2'}>
-                <p className={'text-md'}>Tags</p>
+                <p className={'text-md'}>{t('tags')}</p>
                 <div className={'flex flex-wrap gap-1 '}>
                     {
                         inputTags.map((tag) =>
@@ -298,10 +298,11 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                         </PopoverTrigger>
                         <PopoverContent  align={'start'} className="w-[200px] p-0 bg-primary-foreground">
                             <Input
-                                className={'border-x-0 border-t-0 bg-accent'}
+                                className={'border-x-0 border-t-0 bg-accent focus-visible:ring-offset-0 focus-visible:ring-0'}
                                 value={tagSearch}
+                                maxLength={20}
                                 onChange={(e) => setTagSearch(e.target.value)}
-                                placeholder="Search tag..."
+                                placeholder={`${t("search-tag")}...`}
                             />
                             <div className={'flex flex-col py-1 px-1'}>
                                 {tags?.data?.map((tag) => (
@@ -336,17 +337,17 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                     <Switch
                         className={"data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"}
                         checked={isPublicMode}
-                        id="airplane-mode"
+                        id="public-mode"
                         onCheckedChange={(value) => setIsPublicMode(value)}
                     />
-                    <Label htmlFor="airplane-mode" className={'text-zinc-100'}>Public mode</Label>
+                    <Label htmlFor="public-mode">{t("public-mode")}</Label>
                 </div>
 
 
                 {
                     !isPublicMode &&
                     <div className={'bg-accent rounded-md p-2 flex flex-col gap-2'}>
-                        <p className={'text-md'}>Allowed users</p>
+                        <p className={'text-md'}>{t('allowed-users')}</p>
                         <div className={'flex flex-wrap gap-1 '}>
                             {
                                 allowedUsers.map((user) =>
@@ -373,10 +374,10 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                 </PopoverTrigger>
                                 <PopoverContent  align={'start'} className="w-[200px] p-0 bg-primary-foreground">
                                     <Input
-                                        className={'border-x-0 border-t-0 bg-accent'}
+                                        className={'border-x-0 border-t-0 bg-accent focus-visible:ring-offset-0 focus-visible:ring-0'}
                                         value={userSearch}
                                         onChange={(e) => setUserSearch(e.target.value)}
-                                        placeholder="Search tag..."
+                                        placeholder={`${t('search-user')}...`}
                                     />
                                     <div className={'flex flex-col py-1 px-1'}>
                                         {users?.data?.map((user) => (
@@ -404,19 +405,22 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                 <div className={'flex justify-end gap-2'}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button>
+                            <Button
+                                size={'icon'}
+                                variant={'secondary'}
+                            >
                                 <FaPlus/>
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
-                            <DropdownMenuLabel>Question type</DropdownMenuLabel>
+                            <DropdownMenuLabel>{t('answer-type')}</DropdownMenuLabel>
                             <DropdownMenuSeparator/>
                             <DropdownMenuItem
                                 disabled={questionsAmount.string >= 4}
                                 className={'justify-between'}
                                 onClick={() => handleAddQuestion("string")}
                             >
-                                Single-line string
+                                {t('single-line-string')}
                                 <span>{questionsAmount.string} / 4</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -424,7 +428,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                 className={'justify-between'}
                                 onClick={() => handleAddQuestion("text")}
                             >
-                                Multiple-line text
+                                {t('multiple-line-text')}
                                 <span>{questionsAmount.text} / 4</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -432,7 +436,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                 className={'justify-between'}
                                 onClick={() => handleAddQuestion("int")}
                             >
-                                Positive integer
+                                {t('positive-integer')}
                                 <span>{questionsAmount.int} / 4</span>
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -440,7 +444,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                 className={'justify-between'}
                                 onClick={() => handleAddQuestion("bool")}
                             >
-                                Checkbox
+                                {t('checkbox')}
                                 <span>{questionsAmount.bool} / 4</span>
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -448,32 +452,37 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
 
                     <Dialog open={isConfirmOpen} onOpenChange={(value) => setIsConfirmOpen(value)}>
                         <DialogTrigger asChild>
-                            <Button>{submitButtonText}</Button>
+                            <Button
+                                className={'hover:bg-green-600'}
+                                variant={'secondary'}
+                            >
+                                {submitButtonText}
+                            </Button>
                         </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px] bg-zinc-900 border-none text-zinc-100">
+                        <DialogContent className="sm:max-w-[425px] rounded-md">
                             <DialogHeader>
-                                <DialogTitle className={'text-zinc-100'}>Confirmation</DialogTitle>
-                                <DialogDescription className={'text-zinc-400'}>
-                                    Are you sure you want to publish this template?
+                                <DialogTitle>{t('confirmation')}</DialogTitle>
+                                <DialogDescription>
+                                    {t('template-publish-confirmation-question')}
                                 </DialogDescription>
                             </DialogHeader>
-                            <DialogFooter>
+                            <DialogFooter className={'flex flex-row gap-2 sm:justify-end sm:gap-0'}>
                                 <Button
-
-                                    className={'hover:bg-red-600'}
+                                    variant={'default'}
+                                    className={'w-full sm:w-fit'}
                                     onClick={() => setIsConfirmOpen(false)}
                                 >
-                                    No
+                                    {t('no')}
                                 </Button>
                                 <Button
-
-                                    className={'hover:bg-green-600'}
+                                    variant={'default'}
+                                    className={'w-full sm:w-fit'}
                                     onClick={() => {
                                         onSubmit()
                                         setIsConfirmOpen(false)
                                     }}
                                 >
-                                    Yes
+                                    {t('yes')}
                                 </Button>
                             </DialogFooter>
                         </DialogContent>
