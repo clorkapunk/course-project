@@ -109,7 +109,7 @@ model Template {
   customBool4Question      String?
   customBool4Description   String?
   topic                    Topic          @relation(fields: [topicId], references: [id], onDelete: SetDefault)
-  user                     User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user                     User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
   tags                     TemplateTag[]
   allowedUsers             TemplateUser[]
   like                     Like[]

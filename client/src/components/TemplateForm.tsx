@@ -417,7 +417,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                 <FaPlus/>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-56">
+                        <DropdownMenuContent className="w-56 bg-primary-foreground">
                             <DropdownMenuLabel>{t('answer-type')}</DropdownMenuLabel>
                             <DropdownMenuSeparator/>
                             <DropdownMenuItem

@@ -59,31 +59,29 @@ const TemplateCard = ({template}: { template: TemplateData }) => {
                     {
                         !isAllowed
                             ?
-                            <div
-                                className={'absolute top-0 right-0 w-full h-full flex justify-center items-center bg-red-600 bg-opacity-50'}>
+                            <div className={'absolute top-0 right-0 w-full h-full flex justify-center items-center bg-red-600 bg-opacity-50'}>
                                 <FaLock/>
                             </div>
                             :
                             template?.mode === 'private' &&
-                            <TooltipProvider>
-                                <Tooltip>
+                            <TooltipProvider >
+                                <Tooltip >
                                     <TooltipTrigger asChild>
                                         <div
                                             className={'bg-primary-foreground p-1.5 2xl:p-2 absolute top-1 left-1 rounded-md aspect-square flex justify-center items-center  '}>
                                             <FaLockOpen className={'w-full h-[10px] md:h-[12px] 2xl:h-[16px]'}/>
                                         </div>
                                     </TooltipTrigger>
-                                    <TooltipContent>
+                                    <TooltipContent  align={'start'}>
                                         <p>{t('you-have-access-to-template')}</p>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
-
                     }
                 </AspectRatio>
             </Link>
             <div className={'2xl:gap-2 p-1 2xl:p-2 flex flex-col gap-1'}>
-                <p className={'text-sm lg:text-base'}>{template.title}</p>
+                <p title={template.title} className={'text-sm lg:text-base h-[1.5em] truncate'}>{template.title}</p>
                 <ul className={'w-full flex flex-wrap gap-1'}>
                     {
                         info.map((i, index) =>

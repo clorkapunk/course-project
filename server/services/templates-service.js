@@ -606,6 +606,7 @@ class TemplatesService {
 
         if(template.mode === 'private'){
             const users = this.formatAllowedUsersFromDB(template?.allowedUsers)
+            console.log(userId, users.map(user => user.id))
             if(!users.find(user => user.id === userId) && template.user.id !== userId){
                 console.log('error')
                 throw ApiError.BadRequest(

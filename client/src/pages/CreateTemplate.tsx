@@ -3,12 +3,15 @@ import {useCreateTemplateMutation} from "@/features/templates/templatesApiSlice.
 import {ApiErrorResponse} from "@/types";
 import toast from "react-hot-toast";
 import TemplateForm from "@/components/TemplateForm.tsx";
+import {HOME_ROUTE} from "@/utils/routes.ts";
+import {useNavigate} from "react-router-dom";
 
 
 
 const CreateTemplate = () => {
     const {t} = useTranslation()
     const [createTemplate] = useCreateTemplateMutation()
+    const navigate = useNavigate()
 
     const handleSubmit = async (body: FormData) => {
         try {
@@ -21,6 +24,7 @@ const CreateTemplate = () => {
                     error: <>Error when creating template.</>,
                 }
             )
+            navigate(HOME_ROUTE)
         } catch (err) {
             const error = err as ApiErrorResponse
             if (!error?.data) {

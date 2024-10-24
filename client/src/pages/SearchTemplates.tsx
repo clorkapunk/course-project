@@ -21,17 +21,16 @@ const SearchTemplates = () => {
         }
     }, [search])
     return (
-        <section className={'h-screen  flex flex-col gap-4 '}>
+        <section className={'h-screen  flex flex-col gap-4 p-8'}>
             {
                 data?.data?.length
-                    ? (<ul className={'flex flex-col p-4 pt-0 gap-2'}>
+                    ? (<ul className={'flex flex-col pt-0 gap-2'}>
                         {
                             data?.data?.map(template =>
-
                                 <Link to={`${FILL_TEMPLATE_ROUTE}/${template.id}`} key={template.id}>
-                                    <li className={'bg-zinc-800 rounded-md p-2 px-4'}>
-                                        <h3 className={'text-zinc-100'}>{template.title}</h3>
-                                        <p className={'text-zinc-400'}>{template.description}</p>
+                                    <li className={'bg-accent rounded-md p-2 px-4'}>
+                                        <h3 className={'text-primary'}>{template.title}</h3>
+                                        <p className={'text-primary/70'}>{template.description}</p>
                                     </li>
                                 </Link>
                             )

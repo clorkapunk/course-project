@@ -91,6 +91,8 @@ class FormsService {
             }
         })
 
+        console.log(userId, filterTemplateId, form)
+
         if (!form) {
             throw ApiError.BadRequest(
                 ``,
@@ -205,6 +207,8 @@ class FormsService {
             orderBy
         })
 
+        console.log(userId, forms.map(i => i.id))
+
         const totalCount = await prisma.form.count({
             where: {
                 userId,
@@ -235,9 +239,22 @@ class FormsService {
             where: {id}
         }
 
+        const form = await prisma.form.findFirst({
+            ...filter,
+            select: {
+                template: {
+                    select: {
+                        userId
+                    }
+                }
+            }
+        })
+
         if (userId) {
-            filter = {
-                where: {id, userId}
+            if(form.template.userId !== userId){
+                filter = {
+                    where: {id, userId}
+                }
             }
         }
 
@@ -260,15 +277,13 @@ class FormsService {
                     title: sort
                 }
             }
-        }
-        else if (orderField === 'email' || orderField === 'username') {
+        } else if (orderField === 'email' || orderField === 'username') {
             orderBy = {
                 user: {
                     [orderField]: sort
                 }
             }
-        }
-        else {
+        } else {
             orderBy = {
                 [orderField]: sort
             }
@@ -300,8 +315,7 @@ class FormsService {
                     }
                 }
             }
-        }
-        else if (searchField === 'title') {
+        } else if (searchField === 'title') {
             filter = {
                 where: {
                     template: {

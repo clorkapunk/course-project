@@ -12,10 +12,11 @@ class FormsController {
         try {
             checkValidationErrors(req, next);
 
-            const id = parseInt(req.params.id) || 1
+            const id = parseInt(req.params.id)
+            const userId = req.user.id
 
             const form = await formsService.getById(id)
-            const template = await templatesService.getById(form.templateId)
+            const template = await templatesService.getById(form.templateId, userId)
 
             const response = formsService.combineFormWithTemplate(template, form)
 
@@ -48,7 +49,7 @@ class FormsController {
         try {
             checkValidationErrors(req, next);
 
-            const {id} = req.user.id
+            const {id} = req.user
             const limit = parseInt(req.query.limit) || 10;
             const page = parseInt(req.query.page) || 1;
             const sort = req.query.sort || "desc"

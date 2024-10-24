@@ -16,6 +16,7 @@ import ViewQuestionCard from "@/components/ViewQuestionCard.tsx";
 import toast from "react-hot-toast";
 import {useTranslation} from "react-i18next";
 import ResponseErrorCodes from "@/utils/response-error-codes.ts";
+import Loading from "@/components/Loading.tsx";
 
 export interface AnsweredQuestionDataWithId extends AnsweredQuestionData {
     id: string;
@@ -34,7 +35,7 @@ const FillTemplate = () => {
 
 
     const authState = useSelector(selectAuthState)
-    const [fetchFormData, {data: formData}] = useLazyGetUserFormByTemplateQuery()
+    const [fetchFormData, {data: formData, isLoading: isFormDataLoading}] = useLazyGetUserFormByTemplateQuery()
 
     const [submitForm] = useSubmitFormMutation()
     const [answersData, setAnswersData] = useState<AnsweredQuestionDataWithId[]>([])
@@ -70,6 +71,7 @@ const FillTemplate = () => {
                     error: <>Error when accepting form</>,
                 }
             )
+            navigate(HOME_ROUTE)
         } catch (err) {
             const error = err as ApiErrorResponse
             if (!error?.data) {
@@ -85,9 +87,9 @@ const FillTemplate = () => {
     }
 
     useEffect(() => {
-        if(!data && !isLoading) {
+        if (!data && !isLoading) {
             const responseError = error as ApiErrorResponse
-            if(responseError?.data.code === ResponseErrorCodes.AccessDenied){
+            if (responseError?.data.code === ResponseErrorCodes.AccessDenied) {
                 toast.error(t('private-template-toast'))
             }
             navigate(HOME_ROUTE)
@@ -109,6 +111,7 @@ const FillTemplate = () => {
 
     useEffect(() => {
         if (authState?.id && data?.id) {
+            console.log('here')
             try {
                 fetchFormData({
                     templateId: data?.id,
@@ -121,66 +124,78 @@ const FillTemplate = () => {
     }, [authState?.id, data?.id]);
 
     useEffect(() => {
-        if(formData?.id) navigate(EDIT_FORM_ROUTE + `/${formData.id}`)
+
+        if (formData?.id) navigate(EDIT_FORM_ROUTE + `/${formData.id}`)
     }, [formData]);
 
     return (
-        <section className={'flex flex-col items-center'}>
-            <div
-                className={'flex  items-center bg-accent px-[60px] h-[72px] justify-between w-full sticky top-0 border-b'}>
-                <div className={'flex flex-col sm:items-center gap-1 w-full'}>
+        <>
+
+            <section className={'flex flex-col items-center'}>
+                <div
+                    className={'flex z-10  items-center bg-accent px-[60px] h-[72px] justify-between w-full sticky top-0 border-b'}>
+                    <div className={'flex flex-col sm:items-center gap-1 w-full'}>
+                        {
+                            authState?.token &&
+                            <p className={"text-sm md:text-base leading-none text-center"}>{answeredAmount} / {data?.questions.length || 0}</p>
+                        }
+                        <h1 className={"text-lg md:text-xl leading-none text-center truncate w-full"}>{data?.title}</h1>
+                    </div>
                     {
                         authState?.token &&
-                        <p className={"text-sm md:text-base leading-none text-center"}>{answeredAmount} / {data?.questions.length}</p>
+                        <Button
+                            variant={'default'}
+                            className={'hidden md:block md:fixed top-50 mr-4 right-0 hover:bg-green-600'}
+                            disabled={answeredAmount !== answersData.length}
+                            onClick={handleSubmit}
+                        >
+                            {t('finish')}
+                        </Button>
                     }
-                    <h1 className={"text-lg md:text-xl leading-none text-center truncate w-full"}>{data?.title}</h1>
                 </div>
+
                 {
-                    authState?.token &&
-                    <Button
-                        variant={'default'}
-                        className={'hidden md:block md:fixed top-50 mr-4 right-0 hover:bg-green-600'}
-                        disabled={answeredAmount !== answersData.length}
-                        onClick={handleSubmit}
-                    >
-                        {t('finish')}
-                    </Button>
+                    (isLoading || isFormDataLoading)
+                        ? <Loading/>
+                        : <>
+                            <ul className={'w-full max-w-[800px] flex flex-col gap-2 md:gap-4 p-2 md:p-4 2xl:p-8'}>
+                                {
+                                    answersData.map((question) => {
+                                        return authState?.token ?
+                                            <FillQuestionCard
+                                                handleChange={handleChangeAnswer}
+                                                item={question}
+                                                key={question.id}
+                                            />
+                                            :
+                                            <ViewQuestionCard
+                                                item={question}
+                                                key={question.id}
+                                            />
+                                    })
+                                }
+                            </ul>
+                            {
+                                authState?.token &&
+                                <div className={'p-2 md:p-4 2xl:p-8 w-full'}>
+                                    <Button
+                                        variant={'default'}
+                                        className={'md:hidden block w-full hover:bg-green-600'}
+                                        disabled={answeredAmount !== answersData.length}
+                                        onClick={handleSubmit}
+                                    >
+                                        {t('finish')}
+                                    </Button>
+                                </div>
+                            }
+                        </>
                 }
-            </div>
-
-            <ul className={'w-full max-w-[800px] flex flex-col gap-2 md:gap-4 p-2 md:p-4 2xl:p-8'}>
-                {
-                    answersData.map((question) => {
-                        return authState?.token ?
-                            <FillQuestionCard
-                                handleChange={handleChangeAnswer}
-                                item={question}
-                                key={question.id}
-                            />
-                            :
-                            <ViewQuestionCard
-                                item={question}
-                                key={question.id}
-                            />
-                    })
-                }
-            </ul>
-            {
-                authState?.token &&
-                <div className={'p-2 md:p-4 2xl:p-8 w-full'}>
-                    <Button
-                        variant={'default'}
-                        className={'md:hidden block w-full hover:bg-green-600'}
-                        disabled={answeredAmount !== answersData.length}
-                        onClick={handleSubmit}
-                    >
-                        {t('finish')}
-                    </Button>
-                </div>
-            }
 
 
-        </section>
+            </section>
+
+        </>
+
     );
 };
 

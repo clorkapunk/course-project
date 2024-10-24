@@ -45,7 +45,7 @@ const EditTemplate = () => {
             }
 
             await toast.promise(
-                updateTemplate({body,templateId: data?.id}).unwrap(),
+                updateTemplate({body, templateId: data?.id}).unwrap(),
                 {
                     loading: 'Saving...',
                     success: <>Template successfully updated!</>,
@@ -73,15 +73,16 @@ const EditTemplate = () => {
                 isLoading ?
                     <Loading/>
                     :
-                    <TemplateForm
-                        submitButtonText={"Update"}
-                        existingData={data}
-                        handleSubmit={handleSubmit}
-                    />
+                    <section className={'p-4 pt-[72px] md:pt-4 flex flex-col gap-4'}>
+                        <TemplateForm
+                            submitButtonText={"Update"}
+                            existingData={data}
+                            handleSubmit={handleSubmit}
+                        />
+                        
+                    </section>
             }
         </>
-
-
 
 
     );

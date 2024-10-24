@@ -26,7 +26,6 @@ router.get(
 
 router.get(
     "/form-answers",
-
     checkSchema({
         tid: {in: ['query'], isInt: true},
         uid: {in: ['query'], isInt: true},
