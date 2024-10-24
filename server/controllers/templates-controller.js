@@ -10,6 +10,7 @@ const {log} = require("debug");
 const {prisma} = require("../prisma/prisma-client");
 const {checkValidationErrors} = require("../check-validation-errors");
 const Roles = require('../config/roles')
+const tokenService = require("../services/token-service");
 
 class TemplatesController {
 
@@ -81,9 +82,24 @@ class TemplatesController {
         try{
             checkValidationErrors(req, next)
 
+            let userId = undefined
+            if(req.headers.authorization){
+                const authorizationHeader = req.headers.authorization
+                const accessToken = authorizationHeader.split(' ')[1];
+                if(!accessToken){
+                    return next(ApiError.UnauthorizedError())
+                }
+                const userData = tokenService.validateAccessToken(accessToken)
+                if(!userData) {
+                    return next(ApiError.ForbiddenError())
+                }
+                userId = userData.id
+            }
+
+
             const id = parseInt(req.params.id) || 1
 
-            const template = await templatesService.getById(id)
+            const template = await templatesService.getById(id, userId)
 
             return res.json(template)
 
@@ -136,7 +152,11 @@ class TemplatesController {
             const topicId = parseInt(req.body.topicId)
             const questions = JSON.parse(req.body.questions)
             const tags = JSON.parse(req.body.tags)
+            let allowedUsers = []
 
+            if(mode === 'private') {
+                allowedUsers = JSON.parse(req.body.allowedUsers)
+            }
 
             let image;
             if (!req.file) {
@@ -153,7 +173,8 @@ class TemplatesController {
                 mode,
                 userId: req.user.id,
                 questions,
-                tags
+                tags,
+                allowedUsers
             })
 
 

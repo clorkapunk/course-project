@@ -89,5 +89,6 @@
   "popular-templates": "Популярные шаблоны",
   "top-popular-tags": "Топ {{amount}} популярных тегов",
   "search-by-tags": "Поиск по тегам",
-  "enter-tag": "Введите тег"
+  "enter-tag": "Введите тег",
+  "private-template-toast": "Создатель шаблона ограничил доступ к нему"
 }

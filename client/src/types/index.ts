@@ -64,6 +64,7 @@ export type TemplateData = {
     createdAt: Date;
     image?: string;
     mode: string,
+    allowedUsers: UserData[],
     topic: TopicData,
     tags: TagData[],
     questions: QuestionData[],

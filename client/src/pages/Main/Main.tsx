@@ -80,7 +80,7 @@ const Main = () => {
     }, [inputTags])
 
     return (
-        <section className={'min-h-screen  flex flex-col gap-12 p-4'}>
+        <section className={'min-h-screen  flex flex-col gap-12 p-2 lg:p-4 2xl:p-8'}>
 
             <TemplatesGrid
                 isLoading={isLatestLoading}

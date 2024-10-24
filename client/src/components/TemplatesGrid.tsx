@@ -28,16 +28,16 @@ const TemplatesGrid = ({data, label, handleLoadMore, isLoading}: Props) => {
     }, [page]);
 
     return (
-        <div className={'flex flex-col gap-4'}>
+        <div className={'flex flex-col gap-2 md:gap-3 2xl:gap-4 '}>
             {
                 label &&
-                <h1 className={'text-primary text-xl'}>{label}</h1>
+                <h1 className={'text-primary text-base md:text-xl'}>{label}</h1>
             }
 
             {
                 data?.data?.length ?
                     <>
-                        <ul className={'w-full grid grid-cols-4 gap-4'}>
+                        <ul className={'w-full grid gap-2 md:gap-3 2xl:gap-4 grid-cols-2 md:grid-cols-3 2xl:grid-cols-4 '}>
                             <TooltipProvider>
                                 {
                                     data?.data?.map(template =>

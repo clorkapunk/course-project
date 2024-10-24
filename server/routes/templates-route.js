@@ -97,7 +97,8 @@ router.post(
         topicId: {notEmpty: true, isInt: true},
         mode: {notEmpty: true, isString: true, isIn: {options: [['public', 'private']]}},
         questions: {notEmpty: true},
-        tags: {notEmpty: true}
+        tags: {notEmpty: true},
+        allowedUsers: {optional: true}
     }),
     templatesController.createTemplate
 )

@@ -111,7 +111,7 @@ model Template {
   topic                    Topic          @relation(fields: [topicId], references: [id], onDelete: SetDefault)
   user                     User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
   tags                     TemplateTag[]
-  templateUser             TemplateUser[]
+  allowedUsers             TemplateUser[]
   like                     Like[]
   comment                  Comment[]
   form                     Form[]

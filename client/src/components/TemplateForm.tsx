@@ -179,6 +179,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
         body.append("mode", isPublicMode ? "public" : 'private')
         body.append("questions", JSON.stringify(questions))
         body.append('tags', JSON.stringify(inputTags))
+        body.append('allowedUsers', JSON.stringify(allowedUsers.map(user => user.id)))
 
         handleSubmit(body)
     }
@@ -251,7 +252,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
 
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button variant={'dark'}
+                            <Button
                                     size={'sm'}
                             >
                                 +
@@ -268,7 +269,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                 {tags?.data?.map((tag) => (
                                     <Button
                                         onClick={() => handleAddTag(tag.name)}
-                                        variant={'dark'}
+
                                         className={'justify-between'}
                                         key={tag.id}
                                     >
@@ -279,7 +280,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                     tagSearch &&
                                     <Button
                                         onClick={() => handleAddTag(tagSearch)}
-                                        variant={'dark'}
+
                                         className={'justify-between'}
                                     >
                                         {tagSearch}
@@ -323,7 +324,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
 
                             <Popover>
                                 <PopoverTrigger asChild>
-                                    <Button variant={'dark'} size={'sm'}>
+                                    <Button  size={'sm'}>
                                         +
                                     </Button>
                                 </PopoverTrigger>
@@ -338,7 +339,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                         {users?.data?.map((user) => (
                                             <Button
                                                 onClick={() => handleAddAllowedUser(user)}
-                                                variant={'dark'}
+
                                                 className={'justify-between'}
                                                 key={user.id}
                                                 value={user.id.toString()}
@@ -360,7 +361,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                 <div className={'flex justify-end gap-2'}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="dark">
+                            <Button >
                                 <FaPlus/>
                             </Button>
                         </DropdownMenuTrigger>
@@ -404,7 +405,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
 
                     <Dialog open={isConfirmOpen} onOpenChange={(value) => setIsConfirmOpen(value)}>
                         <DialogTrigger asChild>
-                            <Button variant="dark">{submitButtonText}</Button>
+                            <Button >{submitButtonText}</Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px] bg-zinc-900 border-none text-zinc-100">
                             <DialogHeader>
@@ -415,14 +416,14 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                             </DialogHeader>
                             <DialogFooter>
                                 <Button
-                                    variant={'dark'}
+
                                     className={'hover:bg-red-600'}
                                     onClick={() => setIsConfirmOpen(false)}
                                 >
                                     No
                                 </Button>
                                 <Button
-                                    variant={'dark'}
+
                                     className={'hover:bg-green-600'}
                                     onClick={() => {
                                         onSubmit()

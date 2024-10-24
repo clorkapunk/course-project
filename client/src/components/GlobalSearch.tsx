@@ -34,7 +34,7 @@ const GlobalSearch = () => {
     }
 
     return (
-        <div className={'h-[72px] p-4 bg-accent border-b sticky top-0 z-20'}>
+        <div className={'h-[72px] p-4 bg-accent border-b sticky top-0 z-40 pl-[60px] md:pl-4'}>
             <Input
                 placeholder={'Search for anything...'}
                 ref={inputRef}

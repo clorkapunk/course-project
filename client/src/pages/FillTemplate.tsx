@@ -15,6 +15,7 @@ import {selectAuthState} from "@/features/auth/authSlice.ts";
 import ViewQuestionCard from "@/components/ViewQuestionCard.tsx";
 import toast from "react-hot-toast";
 import {useTranslation} from "react-i18next";
+import ResponseErrorCodes from "@/utils/response-error-codes.ts";
 
 export interface AnsweredQuestionDataWithId extends AnsweredQuestionData {
     id: string;
@@ -29,11 +30,8 @@ const FillTemplate = () => {
         return <Navigate to={HOME_ROUTE} replace/>
     }
 
-    const {data, isLoading} = useGetTemplateByIdQuery({id: parseInt(id)})
+    const {data, isLoading, error} = useGetTemplateByIdQuery({id: parseInt(id)})
 
-    if (!data && !isLoading) {
-        return <Navigate to={HOME_ROUTE} replace/>
-    }
 
     const authState = useSelector(selectAuthState)
     const [fetchFormData, {data: formData}] = useLazyGetUserFormByTemplateQuery()
@@ -87,6 +85,16 @@ const FillTemplate = () => {
     }
 
     useEffect(() => {
+        if(!data && !isLoading) {
+            const responseError = error as ApiErrorResponse
+            if(responseError?.data.code === ResponseErrorCodes.AccessDenied){
+                toast.error(t('private-template-toast'))
+            }
+            navigate(HOME_ROUTE)
+        }
+    }, [data, isLoading]);
+
+    useEffect(() => {
         if (!data?.questions) return
         setAnswersData(data?.questions.map(q => {
             let answer: string | number | boolean = '';
@@ -100,17 +108,17 @@ const FillTemplate = () => {
     }, [data?.questions]);
 
     useEffect(() => {
-        if (authState?.id) {
+        if (authState?.id && data?.id) {
             try {
                 fetchFormData({
-                    templateId: parseInt(id),
+                    templateId: data?.id,
                     userId: authState?.id
                 })
             } catch (err) {
                 console.log(err)
             }
         }
-    }, [authState?.id]);
+    }, [authState?.id, data?.id]);
 
     useEffect(() => {
         if(formData?.id) navigate(EDIT_FORM_ROUTE + `/${formData.id}`)
@@ -152,8 +160,6 @@ const FillTemplate = () => {
                     })
                 }
             </ul>
-
-
         </section>
     );
 };

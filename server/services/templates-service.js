@@ -43,6 +43,26 @@ class TemplatesService {
                         }
                     }
                 },
+                allowedUsers: {
+                  select: {
+                      user: {
+                          select: {
+                              id: true,
+                              username: true,
+                              email: true,
+                              isActive: true,
+                          }
+                      }
+
+                  }
+                },
+                _count: {
+                    select: {
+                        form: true,
+                        comment: true,
+                        like: true
+                    }
+                }
             },
             orderBy: {
                 createdAt: 'desc',
@@ -64,6 +84,7 @@ class TemplatesService {
 
         const result = templates.map(template => ({
             ...template,
+            allowedUsers: this.formatAllowedUsersFromDB(template?.allowedUsers),
             tags: template.tags.map(tagRelation => tagRelation.tag)
         }))
 
@@ -104,9 +125,24 @@ class TemplatesService {
                         }
                     }
                 },
+                allowedUsers: {
+                    select: {
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true,
+                                isActive: true,
+                            }
+                        }
+
+                    }
+                },
                 _count: {
                     select: {
-                        form: true
+                        form: true,
+                        comment: true,
+                        like: true
                     }
                 }
             },
@@ -131,6 +167,7 @@ class TemplatesService {
         })
         const result = templates.map(template => ({
             ...template,
+            allowedUsers: this.formatAllowedUsersFromDB(template?.allowedUsers),
             tags: template.tags.map(tagRelation => tagRelation.tag)
         }))
 
@@ -263,7 +300,7 @@ class TemplatesService {
         return {templates: result, totalCount: Number(count[0].total_count)}
     }
 
-    async getById(templateId, userId) {
+    async getUserTemplateById(templateId, userId){
         let filter = {where: {id: templateId}}
 
         if (userId) {
@@ -301,6 +338,26 @@ class TemplatesService {
                                 name: true
                             }
                         }
+                    }
+                },
+                allowedUsers: {
+                    select: {
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true,
+                                isActive: true,
+                            }
+                        }
+
+                    }
+                },
+                _count: {
+                    select: {
+                        form: true,
+                        comment: true,
+                        like: true
                     }
                 },
                 customString1State: true,
@@ -361,7 +418,7 @@ class TemplatesService {
             )
         }
 
-        const {id, title, description, createdAt, image, mode, user, topic} = template
+        const {id, title, description, createdAt, image, mode, user, topic, _count} = template
 
         return {
             id,
@@ -372,6 +429,153 @@ class TemplatesService {
             mode,
             user,
             topic,
+            allowedUsers: this.formatAllowedUsersFromDB(template?.allowedUsers),
+            _count,
+            tags: this.formatTagsFromDB(template?.tags),
+            questions: this.formatQuestionsFromDB(template)
+        }
+    }
+
+    async getById(templateId, userId) {
+        let filter = {where: {id: templateId}}
+
+        const template = await prisma.template.findFirst({
+            ...filter,
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                createdAt: true,
+                image: true,
+                mode: true,
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        isActive: true,
+                    }
+                },
+                topic: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                },
+                tags: {
+                    select: {
+                        tag: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
+                    }
+                },
+                allowedUsers: {
+                    select: {
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true,
+                                isActive: true,
+                            }
+                        }
+
+                    }
+                },
+                _count: {
+                    select: {
+                        form: true,
+                        comment: true,
+                        like: true
+                    }
+                },
+                customString1State: true,
+                customString1Question: true,
+                customString1Description: true,
+                customString2State: true,
+                customString2Question: true,
+                customString2Description: true,
+                customString3State: true,
+                customString3Question: true,
+                customString3Description: true,
+                customString4State: true,
+                customString4Question: true,
+                customString4Description: true,
+                customInt1State: true,
+                customInt1Question: true,
+                customInt1Description: true,
+                customInt2State: true,
+                customInt2Question: true,
+                customInt2Description: true,
+                customInt3State: true,
+                customInt3Question: true,
+                customInt3Description: true,
+                customInt4State: true,
+                customInt4Question: true,
+                customInt4Description: true,
+                customText1State: true,
+                customText1Question: true,
+                customText1Description: true,
+                customText2State: true,
+                customText2Question: true,
+                customText2Description: true,
+                customText3State: true,
+                customText3Question: true,
+                customText3Description: true,
+                customText4State: true,
+                customText4Question: true,
+                customText4Description: true,
+                customBool1State: true,
+                customBool1Question: true,
+                customBool1Description: true,
+                customBool2State: true,
+                customBool2Question: true,
+                customBool2Description: true,
+                customBool3State: true,
+                customBool3Question: true,
+                customBool3Description: true,
+                customBool4State: true,
+                customBool4Question: true,
+                customBool4Description: true,
+            }
+        })
+
+        if (!template) {
+            throw ApiError.BadRequest(
+                `Template with id ${templateId} not found`,
+                ErrorCodes.ValidationFailed
+            )
+        }
+
+        if(template.mode === 'private'){
+            const users = this.formatAllowedUsersFromDB(template?.allowedUsers)
+            if(!users.find(user => user.id === userId) && template.user.id !== userId){
+                console.log('error')
+                throw ApiError.BadRequest(
+                    `Template with id ${templateId} has a private mode and you do not have access to it`,
+                    ErrorCodes.AccessDenied
+                )
+            }
+        }
+
+
+
+        const {id, title, description, createdAt, image, mode, user, topic, _count} = template
+
+        return {
+            id,
+            title,
+            description,
+            createdAt,
+            image,
+            mode,
+            user,
+            topic,
+            allowedUsers: this.formatAllowedUsersFromDB(template?.allowedUsers),
+            _count,
             tags: this.formatTagsFromDB(template?.tags),
             questions: this.formatQuestionsFromDB(template)
         }
@@ -411,6 +615,19 @@ class TemplatesService {
                         }
                     }
                 },
+                allowedUsers: {
+                    select: {
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true,
+                                isActive: true,
+                            }
+                        }
+
+                    }
+                },
                 topic: {
                     select: {
                         id: true,
@@ -419,7 +636,9 @@ class TemplatesService {
                 },
                 _count: {
                     select: {
-                        form: true
+                        form: true,
+                        comment: true,
+                        like: true
                     }
                 }
             },
@@ -443,16 +662,22 @@ class TemplatesService {
             },
         })
 
-        return {templates, totalCount}
+        const result = templates.map(template => ({
+            ...template,
+            allowedUsers: this.formatAllowedUsersFromDB(template?.allowedUsers),
+            tags: template.tags.map(tagRelation => tagRelation.tag)
+        }))
+
+        return {templates: result, totalCount}
     }
 
-    async create({title, description, userId, topicId, image, mode, questions, tags}) {
+    async create({title, description, userId, topicId, image, mode, questions, tags, allowedUsers}) {
 
         const topic = await prisma.topic.findFirst({where: {id: topicId}})
         if (!topic) {
             throw ApiError.BadRequest(
                 `Topic with id ${topicId} not found`,
-                ErrorCodes.WrongPassword // need to change
+                ErrorCodes.ValidationFailed
             )
         }
 
@@ -482,6 +707,11 @@ class TemplatesService {
                         },
                     })),
                 },
+                allowedUsers: {
+                    create: allowedUsers.map(id => ({
+                        userId: id
+                    })),
+                }
             },
             include: {
                 tags: {
@@ -489,6 +719,7 @@ class TemplatesService {
                         tag: true,
                     },
                 },
+                allowedUsers: true
             }
         })
 
@@ -528,7 +759,7 @@ class TemplatesService {
             filter = {
                 where: {id: templateId, userId: userId}
             }
-            template = await this.getById(templateId, userId)
+            template = await this.getUserTemplateById(templateId, userId)
         } else {
             template = await this.getById(templateId)
         }
@@ -660,9 +891,24 @@ class TemplatesService {
                         }
                     }
                 },
+                allowedUsers: {
+                    select: {
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true,
+                                isActive: true,
+                            }
+                        }
+
+                    }
+                },
                 _count: {
                     select: {
-                        form: true
+                        form: true,
+                        comment: true,
+                        like: true
                     }
                 }
             },
@@ -696,6 +942,7 @@ class TemplatesService {
 
         const result = templates.map(template => ({
             ...template,
+            allowedUsers: this.formatAllowedUsersFromDB(template?.allowedUsers),
             tags: template.tags.map(tagRelation => tagRelation.tag)
         }))
 
@@ -810,6 +1057,12 @@ class TemplatesService {
                 name: tagObject.tag.name
             };
         });
+    }
+
+    formatAllowedUsersFromDB(users){
+        return users.map(user => {
+            return user.user
+        })
     }
 
 

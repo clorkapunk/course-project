@@ -89,6 +89,7 @@
   "popular-templates": "Popular templates",
   "top-popular-tags": "Top {{amount}} popular tags",
   "search-by-tags": "Search by tags",
-  "enter-tag": "Enter tag"
+  "enter-tag": "Enter tag",
+  "private-template-toast": "The template creator has restricted access to it"
 
 }
