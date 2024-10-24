@@ -24,7 +24,7 @@ router.get(
 
 router.get(
     '/users',
-    roleMiddleware(Roles.Admin),
+    roleMiddleware(Roles.Admin, Roles.User),
     checkSchema({
             page: {in: ['query'], optional: true, isInt: true},
             limit: {in: ['query'], optional: true, isInt: true},
