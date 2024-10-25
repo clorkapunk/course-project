@@ -156,13 +156,13 @@ model Topic {
 }
 
 model Like {
-  id         Int      @id @default(autoincrement())
   templateId Int
   userId     Int
   template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
 
+  @@id([userId, templateId])
   @@map("likes")
 }
 

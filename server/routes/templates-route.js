@@ -149,5 +149,23 @@ router.patch(
     templatesController.updateTemplate
 )
 
+router.post(
+    "/like/template/:id",
+    authMiddleware,
+    checkSchema({
+        id: {in: ['params'], notEmpty: true, isInt: true},
+    }),
+    templatesController.likeTemplate
+)
+
+router.delete(
+    "/like/template/:id",
+    authMiddleware,
+    checkSchema({
+        id: {in: ['params'], notEmpty: true, isInt: true},
+    }),
+    templatesController.dislikeTemplate
+)
+
 
 module.exports = router;

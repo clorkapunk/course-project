@@ -3,7 +3,13 @@ import {TagData, TemplateData, TopicData} from "@/types";
 
 export const templatesApiSlice = apiSlice.injectEndpoints({
     endpoints: builder => ({
-        getLatestTemplates: builder.query<{ data: TemplateData[]; page: number; total: number; pages: number; limit: number; },
+        getLatestTemplates: builder.query<{
+            data: TemplateData[];
+            page: number;
+            total: number;
+            pages: number;
+            limit: number;
+        },
             { page: number; limit: number; }>({
             query: ({page, limit}) => {
                 return `/api/templates?page=${page}&limit=${limit}&type=latest`
@@ -61,14 +67,26 @@ export const templatesApiSlice = apiSlice.injectEndpoints({
                 return refetch
             }
         }),
-        searchTemplates: builder.query<{ data: TemplateData[]; page: number; total: number; pages: number; limit: number; },
-            { search: string}>({
+        searchTemplates: builder.query<{
+            data: TemplateData[];
+            page: number;
+            total: number;
+            pages: number;
+            limit: number;
+        },
+            { search: string }>({
             query: ({search = []}) => {
                 return `/api/templates?type=search&search=${search}`
             }
         }),
-        getTemplatesByTags: builder.query<{ data: TemplateData[]; page: number; total: number; pages: number; limit: number; },
-            {page: number; limit: number; tags: number[] }>({
+        getTemplatesByTags: builder.query<{
+            data: TemplateData[];
+            page: number;
+            total: number;
+            pages: number;
+            limit: number;
+        },
+            { page: number; limit: number; tags: number[] }>({
             query: ({tags = []}) => {
                 return `/api/templates?type=tags&tags=${tags.join(',')}`
             },
@@ -197,12 +215,36 @@ export const templatesApiSlice = apiSlice.injectEndpoints({
                 return `/api/tags?limit=${limit}&type=${type}`
             }
         }),
-        getTemplates: builder.query<{ data: TemplateData[]; page: number; limit: number; pages: number; total: number; },
-            { page: number; limit: number; orderBy: string; sort: string; searchBy: string; search: string;}>({
+        getTemplates: builder.query<{
+            data: TemplateData[];
+            page: number;
+            limit: number;
+            pages: number;
+            total: number;
+        },
+            { page: number; limit: number; orderBy: string; sort: string; searchBy: string; search: string; }>({
             query: ({page, limit, search, sort, searchBy, orderBy}) => {
                 return `/api/admin/templates?page=${page}&limit=${limit}&orderBy=${orderBy}&sort=${sort}&searchBy=${searchBy}&search=${search}`
             }
-        })
+        }),
+        likeTemplate: builder.mutation({
+            query({templateId}) {
+                return {
+                    url: `/api/like/template/${templateId}`,
+                    method: 'POST',
+
+                }
+            },
+        }),
+        dislikeTemplate: builder.mutation({
+            query({templateId}) {
+                return {
+                    url: `/api/like/template/${templateId}`,
+                    method: 'DELETE',
+
+                }
+            },
+        }),
 
     })
 })

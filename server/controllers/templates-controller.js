@@ -3,6 +3,7 @@ const ApiError = require("../exceptions/api-errors");
 const templatesService = require("../services/templates-service");
 const googleDriveService = require("../services/google-drive-service");
 const commentsService = require("../services/comments-service")
+const likesService = require("../services/likes-service")
 const topicsService = require("../services/topics-service")
 const tagsService = require("../services/tags-service")
 const {unlink} = require("node:fs");
@@ -340,6 +341,42 @@ class TemplatesController {
 
             return res.json(result)
 
+        }catch (err){
+            next(err)
+        }
+    }
+
+    async likeTemplate(req, res, next){
+        try {
+            checkValidationErrors(req, next)
+
+            const templateId = parseInt(req.params.id)
+            const userId = parseInt(req.user.id)
+
+            const like = await likesService.create({
+                templateId,
+                userId
+            })
+
+            return res.json(like)
+        }catch (err){
+            next(err)
+        }
+    }
+
+    async dislikeTemplate(req, res, next){
+        try {
+            checkValidationErrors(req, next)
+
+            const id = parseInt(req.params.id)
+            const userId = parseInt(req.user.id)
+
+            const like = await likesService.delete({
+                id,
+                userId
+            })
+
+            return res.json(like)
         }catch (err){
             next(err)
         }
