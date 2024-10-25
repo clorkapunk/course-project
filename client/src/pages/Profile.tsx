@@ -1,7 +1,7 @@
 import {Tabs, TabsContent, TabsTrigger} from "@/components/ui/tabs";
 import {TabsList} from "@/components/ui/tabs.tsx";
 import SortableTable from "@/components/SortableTable/SortableTable.tsx";
-import {ApiErrorResponse, TableFormData, TemplateData} from "@/types";
+import {TableFormData, TemplateData} from "@/types";
 import { useEffect, useState} from "react";
 import {
     useDeleteTemplatesMutation,
@@ -20,6 +20,7 @@ import {
     useDeleteFormsMutation,
     useLazyGetUserFormsQuery, useLazyGetUserTemplatesFormsQuery
 } from "@/features/forms/formsApiSlice.ts";
+import catchApiErrors from "@/utils/catch-api-errors.ts";
 
 const Profile = () => {
     const {t} = useTranslation()
@@ -63,31 +64,22 @@ const Profile = () => {
         try {
             const ids = templatesSelectedRows
             if (ids.length === 0) {
-                toast.error("No templates selected")
+                toast.error(t('no-selected-rows'))
                 return;
             }
 
             await toast.promise(
                 deleteTemplates({templatesIds: ids}).unwrap(),
                 {
-                    loading: 'Saving...',
-                    success: <>Templates successfully deleted!</>,
-                    error: <>Error when deleting templates</>,
+                    loading: `${t('saving')}...`,
+                    success: <>{t('action-successfully-completed')}</>,
+                    error: <>{t("error-occurred")}</>,
                 }
             )
             refetchTemplates()
             setTemplatesSelectedRows([])
         } catch (err) {
-            const error = err as ApiErrorResponse
-            if (!error?.data) {
-                toast.error(t("no-server-response"))
-            } else if (error?.status === 400) {
-                toast.error(t('invalid-entry'))
-            } else if (error?.status === 401) {
-                toast.error("Unauthorized")
-            } else {
-                toast.error("Unexpected end")
-            }
+            catchApiErrors(err, t)
         }
     }
 
@@ -128,31 +120,22 @@ const Profile = () => {
         try {
             const ids = userFormsSelectedRows
             if (ids.length === 0) {
-                toast.error("No forms selected")
+                toast.error(t('no-selected-rows'))
                 return;
             }
 
             await toast.promise(
                 deleteForms({ids}).unwrap(),
                 {
-                    loading: 'Saving...',
-                    success: <>Forms successfully deleted!</>,
-                    error: <>Error when deleting forms</>,
+                    loading: `${t('saving')}...`,
+                    success: <>{t('action-successfully-completed')}</>,
+                    error: <>{t("error-occurred")}</>,
                 }
             )
             refetchUserForms()
             setUserFormsSelectedRows([])
         } catch (err) {
-            const error = err as ApiErrorResponse
-            if (!error?.data) {
-                toast.error(t("no-server-response"))
-            } else if (error?.status === 400) {
-                toast.error(t('invalid-entry'))
-            } else if (error?.status === 401) {
-                toast.error("Unauthorized")
-            } else {
-                toast.error("Unexpected end")
-            }
+            catchApiErrors(err, t)
         }
     }
 
@@ -188,35 +171,27 @@ const Profile = () => {
             }
         })
     }
+
     const handleDeleteFilledTemplates = async () => {
         try {
             const ids = filledTemplatesSelectedRows
             if (ids.length === 0) {
-                toast.error("No forms selected")
+                toast.error(t('no-selected-rows'))
                 return;
             }
 
             await toast.promise(
                 deleteForms({ids}).unwrap(),
                 {
-                    loading: 'Saving...',
-                    success: <>Forms successfully deleted!</>,
-                    error: <>Error when deleting forms</>,
+                    loading: `${t('saving')}...`,
+                    success: <>{t('action-successfully-completed')}</>,
+                    error: <>{t("error-occurred")}</>,
                 }
             )
             refetchFilledTemplates()
             setFilledTemplatesSelectedRows([])
         } catch (err) {
-            const error = err as ApiErrorResponse
-            if (!error?.data) {
-                toast.error(t("no-server-response"))
-            } else if (error?.status === 400) {
-                toast.error(t('invalid-entry'))
-            } else if (error?.status === 401) {
-                toast.error("Unauthorized")
-            } else {
-                toast.error("Unexpected end")
-            }
+            catchApiErrors(err, t)
         }
     }
 

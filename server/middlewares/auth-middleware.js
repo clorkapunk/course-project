@@ -1,30 +1,36 @@
 const ApiError = require('../exceptions/api-errors');
 const tokenService = require('../services/token-service')
-const {prisma} = require("../prisma/prisma-client");
+const usersService = require('../services/users-service')
+const ErrorCodes = require("../config/error-codes");
 
-module.exports = function (req, res, next) {
-    try{
+module.exports = async function (req, res, next) {
+    try {
         const authorizationHeader = req.headers.authorization;
-        if(!authorizationHeader){
+        if (!authorizationHeader) {
             return next(ApiError.UnauthorizedError())
         }
 
         const accessToken = authorizationHeader.split(' ')[1];
 
-        if(!accessToken){
+        if (!accessToken) {
             return next(ApiError.UnauthorizedError())
         }
 
         const userData = tokenService.validateAccessToken(accessToken)
 
-        if(!userData) {
+        if (!userData) {
             return next(ApiError.ForbiddenError())
         }
 
-        req.user = userData
+        const user = await usersService.validateUserData(userData)
+
+        if(!user.isActive){
+            return next(ApiError.Banned())
+        }
+
+        req.user = user
         next()
-    }
-    catch (err){
+    } catch (err) {
         return next(ApiError.UnauthorizedError())
     }
 

@@ -74,6 +74,18 @@ export const formsApiSlice = apiSlice.injectEndpoints({
                 return `/api/forms/user-templates/${userId}?page=${page}&limit=${limit}&orderBy=${orderBy}&sort=${sort}&searchBy=${searchBy}&search=${search}`
             }
         }),
+        getTemplateForms: builder.query<{data: TableFormData[], page: number; pages: number; total: number; limit: number;},
+            {templateId: number; page: number; limit: number; orderBy: string; sort: string; searchBy: string; search: string; }>({
+            query: ({templateId, page, limit, search,sort,searchBy,orderBy}) => {
+                return `/api/forms/template/${templateId}?page=${page}&limit=${limit}&orderBy=${orderBy}&sort=${sort}&searchBy=${searchBy}&search=${search}`
+            }
+        }),
+        getForms: builder.query<{data: TableFormData[], page: number; pages: number; total: number; limit: number;},
+            { page: number; limit: number; orderBy: string; sort: string; searchBy: string; search: string; }>({
+            query: ({page, limit, search,sort,searchBy,orderBy}) => {
+                return `/api/admin/forms?page=${page}&limit=${limit}&orderBy=${orderBy}&sort=${sort}&searchBy=${searchBy}&search=${search}`
+            }
+        }),
     })
 })
 
@@ -84,5 +96,7 @@ export const {
     useDeleteFormsMutation,
     useUpdateFormMutation,
     useLazyGetUserFormByTemplateQuery,
-    useLazyGetUserTemplatesFormsQuery
+    useLazyGetUserTemplatesFormsQuery,
+    useLazyGetTemplateFormsQuery,
+    useLazyGetFormsQuery
 } = formsApiSlice

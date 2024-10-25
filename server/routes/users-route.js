@@ -3,6 +3,7 @@ const usersController = require('../controllers/users-controller')
 const roleMiddleware = require('../middlewares/role-middleware')
 const Roles = require("../config/roles");
 const {body, checkSchema} = require('express-validator')
+const {checkValidationErrors} = require("../check-validation-errors");
 
 const router = new Router()
 
@@ -53,6 +54,15 @@ router.put(
             ids: {notEmpty: true, isArray: true},
     }),
     usersController.updateUsersStatus
+)
+
+router.delete(
+    '/users',
+    roleMiddleware(Roles.Admin),
+    checkSchema({
+        ids: {in: ['body'],notEmpty: true, isArray: true}
+    }),
+    usersController.deleteUsers
 )
 
 

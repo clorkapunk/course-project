@@ -131,7 +131,9 @@ class UsersController {
 
             const ids = req.body.ids
 
+            const users = await usersService.deleteMany(ids)
 
+            return res.json(users)
         }
         catch (err){
             next(err)

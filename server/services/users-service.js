@@ -3,6 +3,7 @@ const Roles = require('../config/roles')
 const ActionTypes = require('../config/admin-history-action-types')
 const ApiError = require("../exceptions/api-errors");
 const ErrorCodes = require("../config/error-codes");
+const UserDto = require("../dtos/user-dto");
 
 
 class UsersService {
@@ -169,6 +170,28 @@ class UsersService {
                 }
             }
         })
+    }
+
+    async validateUserData(userData){
+        const user = await prisma.user.findFirst({
+            where: {id: userData.id},
+            select: {
+                id: true,
+                role: true,
+                isActive: true,
+                email: true,
+                username: true,
+            }
+        })
+
+        if(!user){
+            throw ApiError.BadRequest(
+                `User with id ${userData.id} not found`,
+                ErrorCodes.UserNotExist
+            )
+        }
+
+        return new UserDto(user)
     }
 
 }

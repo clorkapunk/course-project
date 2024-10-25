@@ -10,5 +10,6 @@ module.exports = Object.freeze({
         password: "validation_failed_password",
         email: "validation_failed_email",
         username: "validation_failed_username"
-    }
+    },
+    UserBanned: "user_banned"
 });

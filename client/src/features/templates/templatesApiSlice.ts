@@ -196,6 +196,12 @@ export const templatesApiSlice = apiSlice.injectEndpoints({
             query: ({limit, type}) => {
                 return `/api/tags?limit=${limit}&type=${type}`
             }
+        }),
+        getTemplates: builder.query<{ data: TemplateData[]; page: number; limit: number; pages: number; total: number; },
+            { page: number; limit: number; orderBy: string; sort: string; searchBy: string; search: string;}>({
+            query: ({page, limit, search, sort, searchBy, orderBy}) => {
+                return `/api/admin/templates?page=${page}&limit=${limit}&orderBy=${orderBy}&sort=${sort}&searchBy=${searchBy}&search=${search}`
+            }
         })
 
     })
@@ -214,5 +220,6 @@ export const {
     useDeleteTemplatesMutation,
     useUpdateTemplateMutation,
     useLazyGetPopularTemplatesQuery,
-    useGetPopularTagsQuery
+    useGetPopularTagsQuery,
+    useLazyGetTemplatesQuery
 } = templatesApiSlice

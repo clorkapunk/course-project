@@ -31,9 +31,29 @@ router.get(
         page: {in: ['query'], optional: true, isInt: true},
         limit: {in: ['query'], optional: true, isInt: true},
         search: {in: ['query'], optional: true},
-        type: {in: ['query'], optional: true, isIn: {options: [['latest', 'popular', 'search', 'tags']]}},
+        type: {in: ['query'], optional: true, isIn: {options: [['latest', 'popular', 'search', 'tags', 'admin']]}},
     }),
     templatesController.getTemplates
+)
+
+router.get(
+    '/admin/templates',
+    authMiddleware,
+    roleMiddleware(Roles.Admin),
+    checkSchema({
+        page: {in: ['query'], isInt: true},
+        limit: {in: ['query'], isInt: true},
+        sort: {in: ['query'], optional: true, isIn: {options: [['asc', 'desc']]}},
+        orderBy: {
+            in: ['query'],
+            optional: true,
+            isIn: {options: [['title', 'description', 'mode', 'form', 'like', 'comment', 'createdAt', 'email', 'username']]}
+        },
+        searchBy: {in: ['query'], optional: true, isIn: {options: [['title', 'description', 'username', 'email']]}},
+        search: {in: ['query'], optional: true}
+    }),
+    templatesController.getAdminTemplates
+
 )
 
 router.get('/templates/:id',

@@ -65,6 +65,13 @@ class TemplatesController {
                     tags
                 })
             }
+            // else if(type === 'admin'){
+            //     result = await templatesService.get({
+            //         take: limit,
+            //         skip: (page - 1) * limit,
+            //         search
+            //     })
+            // }
 
             return res.json({
                 page,
@@ -102,6 +109,39 @@ class TemplatesController {
             const template = await templatesService.getById(id, userId)
 
             return res.json(template)
+
+        }catch (err){
+            next(err)
+        }
+    }
+
+    async getAdminTemplates(req,res,next){
+        try {
+            checkValidationErrors(req, next)
+
+            const limit = parseInt(req.query.limit) || 10;
+            const page = parseInt(req.query.page) || 1;
+            const sort = req.query.sort || "desc"
+            const orderField = req.query.orderBy || "id"
+            const search = req.query.search || ""
+            const searchField = req.query.searchBy || 'title'
+
+            const {templates, totalCount} = await templatesService.get({
+                take: limit,
+                skip: (page - 1) * limit,
+                search,
+                sort,
+                orderField,
+                searchField
+            })
+
+            return res.json({
+                page,
+                limit,
+                pages: Math.ceil(totalCount / limit),
+                total: totalCount,
+                data: templates
+            })
 
         }catch (err){
             next(err)

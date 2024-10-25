@@ -2,12 +2,20 @@ import {Route, Routes} from "react-router-dom";
 import Layout from "@/components/Layout.tsx";
 import Login from "@/pages/Login.tsx";
 import {
-    ADMIN_HISTORY_ROUTE, ADMIN_USERS_ROUTE, FILL_TEMPLATE_ROUTE,
+    ADMIN_HISTORY_ROUTE,
+    ADMIN_USERS_ROUTE,
+    FILL_TEMPLATE_ROUTE,
     HOME_ROUTE,
     LOGIN_ROUTE,
     OAUTH_CALLBACK,
-    REGISTER_ROUTE, CREATE_TEMPLATE_ROUTE,
-    UNAUTHORIZED_ROUTE, SEARCH_TEMPLATES_ROUTE, PROFILE_ROUTE, EDIT_TEMPLATE_ROUTE, EDIT_FORM_ROUTE,
+    REGISTER_ROUTE,
+    CREATE_TEMPLATE_ROUTE,
+    UNAUTHORIZED_ROUTE,
+    SEARCH_TEMPLATES_ROUTE,
+    PROFILE_ROUTE,
+    EDIT_TEMPLATE_ROUTE,
+    EDIT_FORM_ROUTE,
+    ADMIN_TEMPLATES_ROUTE, ADMIN_FORMS_ROUTE,
 } from "@/utils/routes.ts";
 import Register from "@/pages/Register.tsx";
 import RequireAuth from "@/components/RequireAuth.tsx";
@@ -17,7 +25,7 @@ import PersistLogin from "@/components/PersistLogin.tsx";
 import OAuthGoogleCallback from "@/pages/OAuthGoogleCallback.tsx";
 import NotFound from "@/pages/NotFound.tsx";
 import Roles from '@/utils/roles.ts'
-import UsersManagement from "@/pages/UsersManagement/UsersManagement.tsx";
+import AdminUsers from "@/pages/AdminUsers/AdminUsers.tsx";
 import AdminHistory from "@/pages/AdminHistory/AdminHistory.tsx";
 import CreateTemplate from "@/pages/CreateTemplate.tsx";
 import FillTemplate from "@/pages/FillTemplate.tsx";
@@ -25,6 +33,8 @@ import SearchTemplates from "@/pages/SearchTemplates.tsx";
 import Profile from "@/pages/Profile.tsx";
 import EditTemplate from "@/pages/EditTemplate.tsx";
 import EditForm from "@/pages/EditForm.tsx";
+import AdminForms from "@/pages/AdminForms.tsx";
+import AdminTemplates from "@/pages/AdminTemplates.tsx";
 
 const App = () => {
     return (
@@ -53,7 +63,9 @@ const App = () => {
 
 
                     <Route element={<RequireAuth allowedRoles={[Roles.Admin]}/>}>
-                        <Route path={ADMIN_USERS_ROUTE} element={<UsersManagement/>}/>
+                        <Route path={ADMIN_USERS_ROUTE} element={<AdminUsers/>}/>
+                        <Route path={ADMIN_TEMPLATES_ROUTE} element={<AdminTemplates/>}/>
+                        <Route path={ADMIN_FORMS_ROUTE} element={<AdminForms/>}/>
                         <Route path={ADMIN_HISTORY_ROUTE} element={<AdminHistory/>}/>
                     </Route>
                 </Route>

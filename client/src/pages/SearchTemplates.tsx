@@ -22,7 +22,7 @@ const SearchTemplates = () => {
     }, [search])
 
     return (
-        <section className={'h-screen  flex flex-col gap-4 p-8'}>
+        <section className={'flex flex-col gap-1 md:gap-2 p-4 2xl:p-8'}>
             {
                 data?.data?.length
                     ? (<ul className={'flex flex-col pt-0 gap-2'}>

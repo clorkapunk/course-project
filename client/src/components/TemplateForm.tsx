@@ -39,6 +39,7 @@ import {useTranslation} from "react-i18next";
 import {useGetTagsQuery, useGetTopicsQuery} from "@/features/templates/templatesApiSlice.ts";
 import {useGetUsersQuery} from "@/features/users/usersApiSlice.ts";
 import toast from "react-hot-toast";
+import Loading from "@/components/Loading.tsx";
 
 export interface QuestionDataWithId extends QuestionData {
     id: string;
@@ -54,13 +55,13 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
     const [userSearch, setUserSearch] = useState('')
     const [tagSearch, setTagSearch] = useState('')
     const {t} = useTranslation();
-    const {data: tags, refetch: tagsRefetch} = useGetTagsQuery({
+    const {data: tags, refetch: tagsRefetch, isFetching: isTagsFetching} = useGetTagsQuery({
         page: 1,
         limit: 5,
         search: tagSearch
     })
     const {data: topics} = useGetTopicsQuery({})
-    const {data: users, refetch: usersRefetch} = useGetUsersQuery({
+    const {data: users, refetch: usersRefetch, isFetching: isUsersFetching} = useGetUsersQuery({
         page: 1,
         limit: 5,
         orderBy: "email",
@@ -109,7 +110,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
         if (file && file.type === "image/png" || file.type === 'image/jpeg') {
             setImage(file);
         } else {
-            toast.error('Please select a PNG or JPG file');
+            toast.error(t('wrong-image-type'));
         }
     };
 
@@ -143,6 +144,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
 
     const handleAddAllowedUser = (user: UserData) => {
         setAllowedUsers(prev => (Array.from(new Set([...prev, user]))))
+        setUserSearch('')
     }
 
     const handleDeleteAllowedUser = (user: UserData) => {
@@ -151,6 +153,7 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
 
     const handleAddTag = (name: string) => {
         setInputTags(prev => (Array.from(new Set([...prev, name]))))
+        setTagSearch('')
     }
 
     const handleDeleteTag = (name: string) => {
@@ -161,7 +164,16 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
         const body = new FormData()
 
         if (errors.title || errors.topicId || errors.description || errors.questions) {
+            if(!errors.title && !errors.topicId && !errors.description && errors.questions && questions.length === 0 ){
+                toast.error(t('template-should-contain-at-least-1-question'))
+                return
+            }
             toast.error(t('fill-all-required-fields'))
+            return
+        }
+
+        if(questions.length === 0 ){
+            toast.error(t('template-should-contain-at-least-1-question'))
             return
         }
 
@@ -302,6 +314,14 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                         </PopoverTrigger>
                         <PopoverContent  align={'start'} className="w-[200px] p-0 bg-primary-foreground">
                             <Input
+                                onKeyDown={(event) => {
+                                    if(event.key === 'Enter' && !isTagsFetching) {
+                                        let tag = tags?.data?.find(tag => tag.name === tagSearch)?.name
+                                        if(!tag) tag = tagSearch
+                                        handleAddTag(tag)
+
+                                    }
+                                }}
                                 className={'border-x-0 border-t-0 bg-accent focus-visible:ring-offset-0 focus-visible:ring-0'}
                                 value={tagSearch}
                                 maxLength={20}
@@ -309,26 +329,35 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                 placeholder={`${t("search-tag")}...`}
                             />
                             <div className={'flex flex-col py-1 px-1'}>
-                                {tags?.data?.map((tag) => (
-                                    <Button
-                                        onClick={() => handleAddTag(tag.name)}
-                                        variant={'ghost'}
-                                        className={'justify-between border-none truncate'}
-                                        key={tag.id}
-                                    >
-                                        {tag.name}
-                                    </Button>
-                                ))}
                                 {
-                                    (tagSearch && !tags?.data?.find(t => t.name === tagSearch)) &&
-                                    <Button
-                                        onClick={() => handleAddTag(tagSearch)}
-                                        variant={'outline'}
-                                        className={'text-start border-none truncate block'}
-                                    >
-                                        {tagSearch}
-                                    </Button>
+                                    !isTagsFetching ?
+                                        <>
+                                            {
+                                                (tagSearch && !tags?.data?.find(t => t.name === tagSearch)) &&
+                                                <Button
+                                                    onClick={() => handleAddTag(tagSearch)}
+                                                    variant={'outline'}
+                                                    className={'text-start border-none truncate block'}
+                                                >
+                                                    {tagSearch}
+                                                </Button>
+                                            }
+                                            {tags?.data?.map((tag) => (
+                                                <Button
+                                                    onClick={() => handleAddTag(tag.name)}
+                                                    variant={'ghost'}
+                                                    className={'justify-between border-none truncate'}
+                                                    key={tag.id}
+                                                >
+                                                    {tag.name}
+                                                </Button>
+                                            ))}
+                                        </>
+                                        :
+                                        <Loading isFullScreen={false}/>
                                 }
+
+
                             </div>
                         </PopoverContent>
                     </Popover>
@@ -378,23 +407,39 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                                 </PopoverTrigger>
                                 <PopoverContent  align={'start'} className="w-fit min-w-[200px] max-w-full p-0 bg-primary-foreground">
                                     <Input
+                                        onKeyDown={(event) => {
+                                            if(event.key === 'Enter' && !isUsersFetching) {
+                                                let user = users?.data?.[0]
+                                                if(!user) return;
+                                                handleAddAllowedUser(user)
+                                            }
+                                        }}
                                         className={'border-x-0 border-t-0 bg-accent focus-visible:ring-offset-0 focus-visible:ring-0'}
                                         value={userSearch}
                                         onChange={(e) => setUserSearch(e.target.value)}
                                         placeholder={`${t('search-user')}...`}
                                     />
                                     <div className={'flex flex-col py-1 px-1'}>
-                                        {users?.data?.map((user) => (
-                                            <Button
-                                                onClick={() => handleAddAllowedUser(user)}
-                                                variant={'ghost'}
-                                                className={'text-start border-none truncate block'}
-                                                key={user.id}
-                                                value={user.id.toString()}
-                                            >
-                                                {user.email}
-                                            </Button>
-                                        ))}
+                                        {
+                                            !isUsersFetching
+                                            ?
+                                            <>
+                                                {users?.data?.map((user) => (
+                                                    <Button
+                                                        onClick={() => handleAddAllowedUser(user)}
+                                                        variant={'ghost'}
+                                                        className={'text-start border-none truncate block'}
+                                                        key={user.id}
+                                                        value={user.id.toString()}
+                                                    >
+                                                        {user.email}
+                                                    </Button>
+                                                ))}
+                                            </>
+                                            :
+                                            <Loading isFullScreen={false}/>
+                                        }
+
                                     </div>
                                 </PopoverContent>
                             </Popover>

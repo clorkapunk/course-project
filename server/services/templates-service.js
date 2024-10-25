@@ -8,6 +8,118 @@ const {log} = require("debug");
 
 class TemplatesService {
 
+    async get({skip, take, orderField, sort, searchField, search}){
+        let orderBy = {
+            [orderField]: sort
+        }
+        if (['form', 'like', 'comment'].includes(orderField)) {
+            orderBy = {
+                [orderField]: {
+                    _count: sort
+                }
+            }
+        }
+        else if(['email', 'username'].includes(orderField)){
+            orderBy = {
+                user: {
+                    [orderField]: sort
+                }
+            }
+        }
+
+        let searchObj = {
+            [searchField]: {
+                contains: search,
+                mode: "insensitive"
+            }
+        }
+        if(['email', 'username'].includes(searchField)){
+            searchObj = {
+                user: {
+                    [searchField]: {
+                        contains: search,
+                        mode: "insensitive"
+                    }
+                }
+            }
+        }
+
+        const templates = await prisma.template.findMany({
+            skip, take,
+            select: {
+                id: true,
+                title: true,
+                description: true,
+                createdAt: true,
+                mode: true,
+                image: true,
+                user: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        isActive: true,
+                    }
+                },
+                tags: {
+                    select: {
+                        tag: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
+                    }
+                },
+                allowedUsers: {
+                    select: {
+                        user: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true,
+                                isActive: true,
+                            }
+                        }
+
+                    }
+                },
+                topic: {
+                    select: {
+                        id: true,
+                        name: true
+                    }
+                },
+                _count: {
+                    select: {
+                        form: true,
+                        comment: true,
+                        like: true
+                    }
+                }
+            },
+            where: {
+                ...searchObj
+            },
+            orderBy
+        })
+
+        const totalCount = await prisma.template.count({
+            where: {
+                ...searchObj
+            },
+        })
+
+        const result = templates.map(template => ({
+            ...template,
+            allowedUsers: this.formatAllowedUsersFromDB(template?.allowedUsers),
+            tags: template.tags.map(tagRelation => tagRelation.tag)
+        }))
+
+        return {templates: result, totalCount}
+
+    }
+
     async getLatest({take, skip, toDate}) {
 
         const templates = await prisma.template.findMany({

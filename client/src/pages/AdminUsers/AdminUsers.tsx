@@ -1,5 +1,6 @@
 import {Button} from "@/components/ui/button.tsx";
 import {
+    useDeleteUsersMutation,
     useLazyGetUsersQuery,
     useUpdateUsersRoleMutation,
     useUpdateUsersStatusMutation
@@ -13,20 +14,22 @@ import {
     DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
 import toast from "react-hot-toast";
-import {ApiErrorResponse, UserData} from "@/types";
-import styles from './UsersManagement.module.scss'
+import {UserData} from "@/types";
+import styles from './AdminUsers.module.scss'
 import {FaChevronDown} from "react-icons/fa6";
 import SortableTable from "@/components/SortableTable/SortableTable.tsx";
 import SelectableSearch from "@/components/SelectableSearch/SelectableSearch.tsx";
+import catchApiErrors from "@/utils/catch-api-errors.ts";
 
 
 export function getRoleName(value: number) {
     return Object.keys(Roles).find(key => Roles[key] === value);
 }
 
-const UsersManagement = () => {
+const AdminUsers = () => {
     const [updateUsersStatus] = useUpdateUsersStatusMutation()
     const [updateUsersRole] = useUpdateUsersRoleMutation()
+    const [deleteUsers] = useDeleteUsersMutation()
     const {t} = useTranslation()
 
     const [fetchUsers, {data, isFetching,}] = useLazyGetUsersQuery()
@@ -44,16 +47,16 @@ const UsersManagement = () => {
         try {
             const ids = selectedRows
             if (ids.length === 0) {
-                toast.error("No users selected")
+                toast.error(t('no-selected-rows'))
                 return;
             }
 
             await toast.promise(
                 updateUsersRole({ids, role}).unwrap(),
                 {
-                    loading: 'Saving...',
-                    success: <>Users roles successfully updated!</>,
-                    error: <>Error when updating users role</>,
+                    loading: `${t('saving')}...`,
+                    success: <>{t('action-successfully-completed')}</>,
+                    error: <>{t("error-occurred")}</>,
                 }
             )
             fetchUsers({
@@ -61,16 +64,7 @@ const UsersManagement = () => {
             })
 
         } catch (err) {
-            const error = err as ApiErrorResponse
-            if (!error?.data) {
-                toast.error(t("no-server-response"))
-            } else if (error?.status === 400) {
-                toast.error(t('invalid-entry'))
-            } else if (error?.status === 401) {
-                toast.error("Unauthorized")
-            } else {
-                toast.error("Unexpected end")
-            }
+            catchApiErrors(err, t)
         }
     }
 
@@ -79,16 +73,16 @@ const UsersManagement = () => {
             const ids = selectedRows
 
             if (ids.length === 0) {
-                toast.error("No users selected")
+                toast.error(t('no-selected-rows'))
                 return;
             }
 
             await toast.promise(
                 updateUsersStatus({ids, status}).unwrap(),
                 {
-                    loading: 'Saving...',
-                    success: <>Users status successfully updated!</>,
-                    error: <>Error when updating users status</>,
+                    loading: `${t('saving')}...`,
+                    success: <>{t('action-successfully-completed')}</>,
+                    error: <>{t("error-occurred")}</>,
                 }
             )
             fetchUsers({
@@ -96,18 +90,32 @@ const UsersManagement = () => {
             })
 
         } catch (err) {
-            const error = err as ApiErrorResponse
-            if (!error?.data) {
-                toast.error(t("no-server-response"))
-            } else if (error?.status === 204) {
+            catchApiErrors(err, t)
+        }
+    }
 
-            } else if (error?.status === 400) {
-                toast.error(t('invalid-data'))
-            } else if (error?.status === 401) {
-                toast.error("Unauthorized")
-            } else {
-                toast.error("Unexpected end")
+    const handleDeleteUsers = async () => {
+        try {
+            const ids = selectedRows
+            if (ids.length === 0) {
+                toast.error(t('no-selected-rows'))
+                return;
             }
+
+            await toast.promise(
+                deleteUsers({ids}).unwrap().then(() => {
+                    fetchUsers({
+                        ...tableParams
+                    })
+                }),
+                {
+                    loading: `${t('saving')}...`,
+                    success: <>{t('action-successfully-completed')}</>,
+                    error: <>{t("error-occurred")}</>,
+                }
+            )
+        } catch (err) {
+            catchApiErrors(err, t)
         }
     }
 
@@ -167,21 +175,21 @@ const UsersManagement = () => {
                     className={'bg-primary-foreground'}
                 >
                     <DropdownMenuLabel className={''}>{t('edit-users-details')}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator/>
                     <DropdownMenuGroup>
                         <DropdownMenuItem
-                                          onClick={() => handleStatusChange(true)}>
+                            onClick={() => handleStatusChange(true)}>
                             {t('activate')}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                                          onClick={() => handleStatusChange(false)}>
+                            onClick={() => handleStatusChange(false)}>
                             {t('ban')}
                         </DropdownMenuItem>
                     </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator/>
                     <DropdownMenuSub>
                         <DropdownMenuSubTrigger
-                            >
+                        >
                             {t('update-role')}
                         </DropdownMenuSubTrigger>
                         <DropdownMenuPortal>
@@ -200,6 +208,11 @@ const UsersManagement = () => {
                             </DropdownMenuSubContent>
                         </DropdownMenuPortal>
                     </DropdownMenuSub>
+                    <DropdownMenuSeparator/>
+                    <DropdownMenuItem
+                        onClick={() => handleDeleteUsers()}>
+                        {t('delete')}
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
             <SelectableSearch
@@ -294,6 +307,6 @@ const UsersManagement = () => {
     )
 };
 
-export default UsersManagement;
+export default AdminUsers;
 
 

@@ -5,15 +5,15 @@ import {
     LOGIN_ROUTE,
     ADMIN_USERS_ROUTE,
     ADMIN_HISTORY_ROUTE,
-    CREATE_TEMPLATE_ROUTE, PROFILE_ROUTE
+    CREATE_TEMPLATE_ROUTE, PROFILE_ROUTE, ADMIN_TEMPLATES_ROUTE, ADMIN_FORMS_ROUTE
 } from "@/utils/routes.ts";
 import logo from '@/assets/react.svg'
 import {
     FaAnglesLeft,
     FaGlobe,
-    FaHouse, FaMoon,
+    FaHouse, FaListCheck, FaMoon,
     FaRightFromBracket,
-    FaRightToBracket, FaSquarePlus, FaSun, FaUserGear,
+    FaRightToBracket, FaSquarePlus, FaSun, FaTableList, FaUserGear,
     FaUsersGear
 } from "react-icons/fa6";
 import {Separator} from "@/components/ui/separator.tsx";
@@ -77,7 +77,7 @@ const Sidebar = () => {
                     route: PROFILE_ROUTE,
                     label: t('profile'),
                     icon: <FaUserGear/>
-                }
+                },
             ]
         },
         {
@@ -93,10 +93,23 @@ const Sidebar = () => {
                 },
                 {
                     type: "button",
+                    route: ADMIN_TEMPLATES_ROUTE,
+                    label: t('templates'),
+                    icon: <FaTableList/>
+                },
+                {
+                    type: "button",
+                    route: ADMIN_FORMS_ROUTE,
+                    label: t('forms'),
+                    icon: <FaListCheck/>
+                },
+                {
+                    type: "button",
                     route: ADMIN_HISTORY_ROUTE,
                     label: t('history'),
                     icon: <FaHistory/>
-                }
+                },
+
             ]
         }
 

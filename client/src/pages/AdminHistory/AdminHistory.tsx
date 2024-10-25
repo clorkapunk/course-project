@@ -2,7 +2,7 @@ import styles from './AdminHistory.module.scss'
 import {useGetHistoryQuery} from "@/features/users/usersApiSlice.ts";
 import {HoverCard, HoverCardContent, HoverCardTrigger} from "@/components/ui/hover-card.tsx";
 import HistoryActionTypes from "@/utils/admin-history-action-types.ts";
-import {getRoleName} from "@/pages/UsersManagement/UsersManagement.tsx";
+import {getRoleName} from "@/pages/AdminUsers/AdminUsers.tsx";
 import {useCallback, useEffect, useRef, useState} from "react";
 import {ScrollArea} from "@/components/ui/scroll-area.tsx";
 import {

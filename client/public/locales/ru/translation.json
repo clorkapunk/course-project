@@ -120,5 +120,18 @@
   "enter-answer": "Введите ответ",
   "enter-positive-number": "Введите положительное число",
   "login-to-answer-questions": "Войдите, чтобы ответить на вопросы",
-  "search-for-anything": "Ищите что угодно"
+  "search-for-anything": "Ищите что угодно",
+  "template-should-contain-at-least-1-question": "Шаблон должен содержать как минимум 1 вопрос",
+  "unauthorized": "Не авторизован",
+  "user-banned": "Пользователь забанен",
+  "unexpected-end": "Непредвиденное завершение",
+  "action-successfully-completed": "Действие успешно завершено",
+  "error-occurred": "Произошла ошибка",
+  "saving": "Сохраняется",
+  "no-selected-rows": "Ни одна строка не выбрана",
+  "delete": "Удалить",
+  "forms": "Формы",
+  "public": "Публичный",
+  "private": "Приватный",
+  "wrong-image-type": "Пожалуйста выберите файл в формате PNG или JPG"
 }

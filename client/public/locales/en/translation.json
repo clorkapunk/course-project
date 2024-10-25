@@ -120,5 +120,18 @@
   "enter-answer": "Enter answer",
   "enter-positive-number": "Enter positive integer",
   "login-to-answer-questions": "Login to answer questions",
-  "search-for-anything": "Search for anything"
+  "search-for-anything": "Search for anything",
+  "template-should-contain-at-least-1-question": "The template should contain at least 1 question",
+  "unauthorized": "Unauthorized",
+  "user-banned": "User banned",
+  "unexpected-end": "Unexpected end",
+  "action-successfully-completed": "Action successfully completed",
+  "error-occurred": "Error occurred",
+  "saving": "Saving",
+  "no-selected-rows": "No rows selected",
+  "delete": "Delete",
+  "forms": "Forms",
+  "public": "Public",
+  "private": "Private",
+  "wrong-image-type": "Please select a PNG or JPG file"
 }

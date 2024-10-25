@@ -3,7 +3,7 @@ import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {CaretSortIcon} from "@radix-ui/react-icons";
 import {useTranslation} from "react-i18next";
-import {FaChevronLeft, FaChevronRight} from "react-icons/fa6";
+import {FaChevronDown, FaChevronLeft, FaChevronRight} from "react-icons/fa6";
 
 import {
     Select,
@@ -14,8 +14,10 @@ import {
     SelectTrigger,
     SelectValue
 } from "@/components/ui/select.tsx";
-import {ReactNode} from "react";
+import {ComponentProps, ReactNode, useState} from "react";
 import styles from './SortableTable.module.scss'
+import {Accordion, AccordionContent, AccordionItem} from "@/components/ui/accordion.tsx";
+import React from "react";
 
 
 type Field = |
@@ -46,7 +48,7 @@ type Field = |
         align?: "right" | 'left' | 'center';
         width?: number;
         cellComponent?: (item?: any) => ReactNode;
-    };
+    }
 
 type RequiredData = {
     id: string | number;
@@ -71,20 +73,74 @@ type Pagination = {
 type Props = {
     fields: Field[],
     data: DataType[],
+    nestedTableProps?: Props & { handleNestedChange: (id: number) => void };
     pagination?: Pagination,
     header?: ReactNode
     isFetching?: boolean;
+    containerClassName?: ComponentProps<'div'>['className'];
 }
 
-const SortableTable = ({fields, data, pagination, header, isFetching = false}: Props) => {
+const SortableTable = ({
+                           fields,
+                           data,
+                           pagination,
+                           header,
+                           isFetching = false,
+                           containerClassName = '',
+                           nestedTableProps
+                       }: Props) => {
 
     const {t} = useTranslation()
+    const [openedNestedId, setOpenedNestedId] = useState<string | null>(null)
+
+    const handleChangeNestedOpen = (id: string) => {
+        if (openedNestedId === id) setOpenedNestedId(null)
+        else {
+            setOpenedNestedId(id)
+            if (nestedTableProps) nestedTableProps.handleNestedChange(parseInt(id))
+        }
+
+    }
+
+
+    const tableRow = (item: DataType, isNested = false) => {
+        return (
+            <TableRow
+                className={`${styles.tableRow} ${!isNested ? "border-b-none border-t " : "border-none"}  transition-none`}
+                key={item.id}
+                data-state={item.dataState && "selected"}
+            >
+                {
+                    fields.map(field => {
+                        if (field.type === 'select') {
+                            return (<TableCell key={field.name} className={styles.tableCell}>
+                                <Checkbox
+                                    className={styles.checkbox}
+                                    checked={item.checked}
+                                    onCheckedChange={item.onCheckedChange}
+                                />
+                            </TableCell>)
+                        } else {
+                            return (
+                                <TableCell key={field.name} className={`${styles.tableCell} `}
+                                           align={field.align ? field.align : "left"}>
+                                    {field.cellComponent
+                                        ? field.cellComponent(item)
+                                        : item[field.name]
+                                    }
+                                </TableCell>)
+                        }
+                    })
+                }
+            </TableRow>
+        )
+    }
 
     return (
 
-        <div className={`${styles.container} border border-border`}>
+        <div className={`${styles.container} border border-border ${containerClassName}`}>
             {!!header && header}
-            <div className={`${styles.tableContainer} border border-border dark:border-zinc-600`}>
+            <div className={`${styles.tableContainer} border border-border  dark:border-zinc-600`}>
                 <Table>
                     <TableHeader>
                         <TableRow className={styles.tableRow}>
@@ -107,6 +163,7 @@ const SortableTable = ({fields, data, pagination, header, isFetching = false}: P
                                                            className={`${styles.tableHead} w-[${field.width?.toString()}px] min-w-fit bg-accent text-primary`}
                                         >
                                             <Button
+
                                                 className={'hover:bg-primary-foreground'}
                                                 variant="ghost"
                                                 onClick={field.onClick}
@@ -124,49 +181,88 @@ const SortableTable = ({fields, data, pagination, header, isFetching = false}: P
                                         </TableHead>)
                                     }
                                 })
-
                             }
-
+                            {
+                                !!nestedTableProps &&
+                                <TableHead className={`${styles.tableHead} bg-accent  text-primary w-fit`}/>
+                            }
                         </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <TableBody className={''}>
                         {
-                            data?.length
+                            (!isFetching && data?.length)
                                 ? (data.map((item) => (
-                                    <TableRow
-                                        className={`${styles.tableRow} border-t border-border  transition-none`}
-                                        key={item.id}
-                                        data-state={item.dataState && "selected"}
-                                    >
-                                        {
-                                            fields.map(field => {
-                                                if (field.type === 'select') {
-                                                    return (<TableCell key={field.name} className={styles.tableCell}>
-                                                        <Checkbox
-                                                            className={styles.checkbox}
-                                                            checked={item.checked}
-                                                            onCheckedChange={item.onCheckedChange}
-                                                        />
-                                                    </TableCell>)
-                                                } else {
-                                                    return (<TableCell key={field.name} className={`${styles.tableCell} `}
-                                                                       align={field.align ? field.align : "left"}>
-                                                        {field.cellComponent
-                                                            ? field.cellComponent(item)
-                                                            : item[field.name]
+                                    (nestedTableProps) ?
+                                        <React.Fragment key={item.id}>
+                                            <TableRow
+                                                className={`${styles.tableRow} transition-none w-full border-b-0 border-t`}
+                                                key={item.id}
+                                                data-state={item.dataState && "selected"}
+                                            >
+                                                {
+                                                    fields.map(field => {
+                                                        if (field.type === 'select') {
+                                                            return (<TableCell key={field.name}
+                                                                               className={styles.tableCell}>
+                                                                <Checkbox
+                                                                    className={styles.checkbox}
+                                                                    checked={item.checked}
+                                                                    onCheckedChange={item.onCheckedChange}
+                                                                />
+                                                            </TableCell>)
+                                                        } else {
+                                                            return (
+                                                                <TableCell key={field.name}
+                                                                           className={`${styles.tableCell} `}
+                                                                           align={field.align ? field.align : "left"}>
+                                                                    {field.cellComponent
+                                                                        ? field.cellComponent(item)
+                                                                        : item[field.name]
+                                                                    }
+                                                                </TableCell>)
                                                         }
-                                                    </TableCell>)
+                                                    })
                                                 }
-                                            })
-                                        }
-                                    </TableRow>
+
+                                                <TableCell className={`${styles.tableCell} w-[50px]`}>
+                                                    <div
+                                                        className={'cursor-pointer'}
+                                                        onClick={() => handleChangeNestedOpen(item.id.toString())}
+                                                    >
+                                                        <FaChevronDown
+                                                            className={`${openedNestedId === item.id.toString() && "rotate-180"} transition-transform`}/>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+
+                                            <tr className={''}
+                                                key={`${item.id}acc`}
+                                            >
+                                                <TableCell colSpan={fields.length + 1} className={'p-0 border-none'}>
+                                                    <Accordion key={item.id} type="single" collapsible
+                                                               className="w-full  border-none"
+                                                               value={openedNestedId === item.id.toString() ? "open" : ""}>
+                                                        <AccordionItem value={'open'} className={'border-none w-full '}>
+                                                            <AccordionContent className={' border-none p-0'}>
+                                                                <SortableTable
+                                                                    containerClassName={'p-1 border-none rounded-none gap-1'}
+                                                                    {...nestedTableProps}
+                                                                />
+                                                            </AccordionContent>
+                                                        </AccordionItem>
+                                                    </Accordion>
+                                                </TableCell>
+                                            </tr>
+                                        </React.Fragment>
+                                        :
+                                        tableRow(item)
                                 )))
                                 : (<TableRow className={styles.tableRow}>
                                     <TableCell
                                         colSpan={fields.length}
                                         className={`${styles.tableCell} text-center py-10 `}
                                     >
-                                        {isFetching ?   `${t('loading')}...` : t('no-result')}
+                                        {isFetching ? `${t('loading')}...` : t('no-result')}
                                     </TableCell>
                                 </TableRow>)
                         }
@@ -191,7 +287,7 @@ const SortableTable = ({fields, data, pagination, header, isFetching = false}: P
                         <SelectContent className={'bg-primary-foreground'}>
                             <SelectGroup>
                                 <SelectLabel>{t("page-size")}</SelectLabel>
-                                <SelectSeparator />
+                                <SelectSeparator/>
                                 <SelectItem
                                     value="10" defaultChecked>10 {t('per-page')}</SelectItem>
                                 <SelectItem

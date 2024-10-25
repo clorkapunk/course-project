@@ -23,4 +23,8 @@ module.exports = class ApiErrors extends Error {
     static BadRequest(message, code, errors = []) {
         return new ApiErrors(400, message, code, errors);
     }
+
+    static Banned(){
+        return new ApiErrors(455, 'User banned, ask administrator why', ErrorCodes.UserBanned);
+    }
 }

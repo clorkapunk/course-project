@@ -3,7 +3,7 @@ import {useGetTemplateByIdQuery} from "@/features/templates/templatesApiSlice.ts
 import {EDIT_FORM_ROUTE, HOME_ROUTE} from "@/utils/routes.ts";
 import FillQuestionCard from "@/components/FillQuestionCard.tsx";
 import {useCallback, useEffect, useState} from "react";
-import {AnsweredQuestionData, ApiErrorResponse} from "@/types";
+import {AnsweredQuestionData, ApiErrorResponse,TableFormData} from "@/types";
 import {v4 as uuidv4} from 'uuid'
 import {Button} from "@/components/ui/button.tsx";
 import {
@@ -17,6 +17,7 @@ import toast from "react-hot-toast";
 import {useTranslation} from "react-i18next";
 import ResponseErrorCodes from "@/utils/response-error-codes.ts";
 import Loading from "@/components/Loading.tsx";
+import catchApiErrors from "@/utils/catch-api-errors.ts";
 
 export interface AnsweredQuestionDataWithId extends AnsweredQuestionData {
     id: string;
@@ -64,25 +65,17 @@ const FillTemplate = () => {
                             answer
                         }
                     })
-                }).unwrap(),
+                }).unwrap().then((data: TableFormData) => {
+                    navigate(EDIT_FORM_ROUTE + `/${data.id}`)
+                }),
                 {
-                    loading: 'Saving...',
-                    success: <>Form accepted!</>,
-                    error: <>Error when accepting form</>,
+                    loading: `${t('saving')}...`,
+                    success: <>{t('action-successfully-completed')}</>,
+                    error: <>{t("error-occurred")}</>,
                 }
             )
-            navigate(HOME_ROUTE)
         } catch (err) {
-            const error = err as ApiErrorResponse
-            if (!error?.data) {
-                toast.error(t("no-server-response"))
-            } else if (error?.status === 400) {
-                toast.error(t('invalid-entry'))
-            } else if (error?.status === 401) {
-                toast.error("Unauthorized")
-            } else {
-                toast.error("Unexpected end")
-            }
+            catchApiErrors(err, t)
         }
     }
 
@@ -111,7 +104,6 @@ const FillTemplate = () => {
 
     useEffect(() => {
         if (authState?.id && data?.id) {
-            console.log('here')
             try {
                 fetchFormData({
                     templateId: data?.id,
@@ -128,29 +120,39 @@ const FillTemplate = () => {
         if (formData?.id) navigate(EDIT_FORM_ROUTE + `/${formData.id}`)
     }, [formData]);
 
+
     return (
         <>
 
             <section className={'flex flex-col items-center'}>
                 <div
                     className={'flex z-10  items-center bg-accent px-[60px] h-[72px] justify-between w-full sticky top-0 border-b'}>
-                    <div className={'flex flex-col sm:items-center gap-1 w-full'}>
-                        {
-                            authState?.token &&
-                            <p className={"text-sm md:text-base leading-none text-center"}>{answeredAmount} / {data?.questions.length || 0}</p>
-                        }
-                        <h1 className={"text-lg md:text-xl leading-none text-center truncate w-full"}>{data?.title}</h1>
-                    </div>
                     {
-                        authState?.token &&
-                        <Button
-                            variant={'default'}
-                            className={'hidden md:block md:fixed top-50 mr-4 right-0 hover:bg-green-600'}
-                            disabled={answeredAmount !== answersData.length}
-                            onClick={handleSubmit}
-                        >
-                            {t('finish')}
-                        </Button>
+                        (!isLoading && !isFormDataLoading) &&
+                        <>
+                            <div className={'flex flex-col sm:items-center gap-1 w-full'}>
+
+                                    <p className={"text-sm md:text-base leading-none text-center"}>
+                                        {
+                                            data?.questions &&
+                                            `${answeredAmount} / ${data?.questions.length || 0}`
+                                        }
+                                    </p>
+
+                                <h1 className={"text-lg md:text-xl leading-none text-center truncate w-full"}>{data?.title}</h1>
+                            </div>
+                            {
+                                authState?.token &&
+                                <Button
+                                    variant={'default'}
+                                    className={'hidden md:block md:fixed top-50 mr-4 right-0 hover:bg-green-600'}
+                                    disabled={answeredAmount !== answersData.length}
+                                    onClick={handleSubmit}
+                                >
+                                    {t('finish')}
+                                </Button>
+                            }
+                        </>
                     }
                 </div>
 

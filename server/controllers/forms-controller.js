@@ -198,6 +198,75 @@ class FormsController {
             next(err)
         }
     }
+
+    async getFormsByTemplate(req, res, next){
+        try {
+            checkValidationErrors(req, next)
+
+            const templateId = parseInt(req.params.id)
+            const limit = parseInt(req.query.limit) || 10;
+            const page = parseInt(req.query.page) || 1;
+            const sort = req.query.sort || "desc"
+            const orderField = req.query.orderBy || "createdAt"
+            const search = req.query.search || ""
+            const searchField = req.query.searchBy || ''
+
+            const {forms, totalCount} = await formsService.getByTemplate({
+                templateId,
+                skip: (page - 1) * limit,
+                take: limit,
+                orderField,
+                sort,
+                searchField,
+                search
+            })
+
+            return res.json({
+                page,
+                limit,
+                pages: Math.ceil(totalCount / limit),
+                total: totalCount,
+                data: forms
+            })
+        }catch (err){
+            next(err)
+        }
+    }
+
+    async getForms(req, res,next){
+        try{
+            checkValidationErrors(req,next)
+
+            const limit = parseInt(req.query.limit) || 10;
+            const page = parseInt(req.query.page) || 1;
+            const sort = req.query.sort || "desc"
+            const orderField = req.query.orderBy || "id"
+            const search = req.query.search || ""
+            const searchField = req.query.searchBy || 'title'
+
+            const {forms, totalCount} = await formsService.get({
+                skip: (page - 1) * limit,
+                take: limit,
+                orderField,
+                sort,
+                searchField,
+                search
+            })
+
+
+            return res.json({
+                page,
+                limit,
+                pages: Math.ceil(totalCount / limit),
+                total: totalCount,
+                data: forms
+            })
+
+
+        }catch (err){
+            next(err)
+        }
+    }
 }
 
 module.exports = new FormsController();

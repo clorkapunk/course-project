@@ -3,17 +3,15 @@ import FillQuestionCard from "@/components/FillQuestionCard.tsx";
 import {Navigate, useNavigate, useParams} from "react-router-dom";
 import {useTranslation} from "react-i18next";
 import {HOME_ROUTE} from "@/utils/routes.ts";
-import {useSelector} from "react-redux";
-import {selectAuthState} from "@/features/auth/authSlice.ts";
 import {
     useGetUserFilledFormQuery, useUpdateFormMutation,
 } from "@/features/forms/formsApiSlice.ts";
 import {useCallback, useEffect, useState} from "react";
 import toast from "react-hot-toast";
-import {ApiErrorResponse} from "@/types";
 import {v4 as uuidv4} from "uuid";
 import {AnsweredQuestionDataWithId} from "@/pages/FillTemplate.tsx";
 import Loading from "@/components/Loading.tsx";
+import catchApiErrors from "@/utils/catch-api-errors.ts";
 
 
 const EditForm = () => {
@@ -34,14 +32,6 @@ const EditForm = () => {
         data?.questions ? data?.questions.map(q => ({id: uuidv4(), ...q})) : []
     )
     const [answeredAmount, setAnsweredAmount] = useState(0)
-
-    // if (!data && !isLoading) {
-    //     return <Navigate to={HOME_ROUTE} replace/>
-    // }
-
-    const authState = useSelector(selectAuthState)
-
-
 
     const handleChangeAnswer = useCallback((id: string, answer: string | number | boolean) => {
         setAnswersData(prevState => {
@@ -68,22 +58,13 @@ const EditForm = () => {
                     })
                 }).unwrap(),
                 {
-                    loading: 'Saving...',
-                    success: <>Form accepted!</>,
-                    error: <>Error when accepting form</>,
+                    loading: `${t('saving')}...`,
+                    success: <>{t('action-successfully-completed')}</>,
+                    error: <>{t("error-occurred")}</>,
                 }
             )
         } catch (err) {
-            const error = err as ApiErrorResponse
-            if (!error?.data) {
-                toast.error(t("no-server-response"))
-            } else if (error?.status === 400) {
-                toast.error(t('invalid-entry'))
-            } else if (error?.status === 401) {
-                toast.error("Unauthorized")
-            } else {
-                toast.error("Unexpected end")
-            }
+            catchApiErrors(err, t)
         }
     }
 
@@ -103,35 +84,42 @@ const EditForm = () => {
 
             <div
                 className={'flex z-10  items-center bg-accent px-[60px] h-[72px] justify-between w-full sticky top-0 border-b'}>
-                <div className={'flex flex-col sm:items-center gap-1 w-full'}>
-                    {
-                        authState?.token &&
-                        <p className={"text-sm md:text-base leading-none text-center"}>{answeredAmount} / {data?.questions.length || 0}</p>
-                    }
-                    <h1 title={data?.templateData.title}
-                        className={"text-lg md:text-xl leading-none text-center truncate w-full"}>{data?.templateData.title}</h1>
-                </div>
-                <div className={'hidden md:flex fixed right-0 top-50 mr-4 gap-2'}>
-                    <Button
-                        variant={'default'}
-                        className={'hover:bg-green-600'}
-                        onClick={() => setIsEditMode(prev => !prev)}
-                    >
-                        {isEditMode ? "Cancel" : "Edit"}
-                    </Button>
 
-                    {
-                        isEditMode &&
-                        <Button
-                            variant={'default'}
-                            className={'md:block hover:bg-green-600'}
-                            disabled={answeredAmount !== answersData.length}
-                            onClick={handleUpdate}
-                        >
-                            Save
-                        </Button>
-                    }
-                </div>
+                {
+                    !isLoading &&
+                    <>
+                        <div className={'flex flex-col sm:items-center gap-1 w-full'}>
+                            {
+                                data?.questions &&
+                                <p className={"text-sm md:text-base leading-none text-center"}>{answeredAmount} / {data?.questions.length || 0}</p>
+                            }
+                            <h1 title={data?.templateData.title}
+                                className={"text-lg md:text-xl leading-none text-center truncate w-full"}>{data?.templateData.title}</h1>
+                        </div>
+
+                        <div className={'hidden md:flex fixed right-0 top-50 mr-4 gap-2'}>
+                            <Button
+                                variant={'default'}
+                                className={'hover:bg-green-600'}
+                                onClick={() => setIsEditMode(prev => !prev)}
+                            >
+                                {isEditMode ? "Cancel" : "Edit"}
+                            </Button>
+
+                            {
+                                isEditMode &&
+                                <Button
+                                    variant={'default'}
+                                    className={'md:block hover:bg-green-600'}
+                                    disabled={answeredAmount !== answersData.length}
+                                    onClick={handleUpdate}
+                                >
+                                    Save
+                                </Button>
+                            }
+                        </div>
+                    </>
+                }
             </div>
 
 

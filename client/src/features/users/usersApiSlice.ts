@@ -89,6 +89,13 @@ export const usersApiSlice = apiSlice.injectEndpoints({
                 method: 'PUT',
                 body: {ids, role}
             })
+        }),
+        deleteUsers: builder.mutation({
+            query: ({ids}) => ({
+                url: 'api/users',
+                method: 'DELETE',
+                body: {ids}
+            })
         })
     })
 })
@@ -98,5 +105,6 @@ export const {
     useLazyGetUsersQuery,
     useUpdateUsersRoleMutation,
     useUpdateUsersStatusMutation,
-    useGetHistoryQuery
+    useGetHistoryQuery,
+    useDeleteUsersMutation
 } = usersApiSlice

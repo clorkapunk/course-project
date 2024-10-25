@@ -7,9 +7,9 @@ import {useEffect} from "react";
 import Roles from "@/utils/roles.ts";
 import {useTranslation} from "react-i18next";
 import toast from "react-hot-toast";
-import {ApiErrorResponse} from "@/types";
 import TemplateForm from "@/components/TemplateForm.tsx";
 import Loading from "@/components/Loading.tsx";
+import catchApiErrors from "@/utils/catch-api-errors.ts";
 
 const EditTemplate = () => {
     const {id} = useParams()
@@ -47,23 +47,14 @@ const EditTemplate = () => {
             await toast.promise(
                 updateTemplate({body, templateId: data?.id}).unwrap(),
                 {
-                    loading: 'Saving...',
-                    success: <>Template successfully updated!</>,
-                    error: <>Error when updating template.</>,
+                    loading: `${t('saving')}...`,
+                    success: <>{t('action-successfully-completed')}</>,
+                    error: <>{t("error-occurred")}</>,
                 }
             )
             refetch()
         } catch (err) {
-            const error = err as ApiErrorResponse
-            if (!error?.data) {
-                toast.error(t("no-server-response"))
-            } else if (error?.status === 400) {
-                toast.error(t('invalid-entry'))
-            } else if (error?.status === 401) {
-                toast.error("Unauthorized")
-            } else {
-                toast.error("Unexpected end")
-            }
+            catchApiErrors(err, t)
         }
     }
 

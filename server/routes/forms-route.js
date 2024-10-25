@@ -10,7 +10,7 @@ const router = new Router()
 router.get(
     "/forms/:id",
     checkSchema({
-       id: {in: ['params'], isInt: true},
+        id: {in: ['params'], isInt: true},
     }),
     formsController.getFormById
 )
@@ -37,8 +37,8 @@ router.get(
 router.post(
     "/forms",
     checkSchema({
-       answers: {notEmpty: true, isArray: true},
-       templateId: {notEmpty: true, isInt: true}
+        answers: {notEmpty: true, isArray: true},
+        templateId: {notEmpty: true, isInt: true}
     }),
     formsController.createForm
 )
@@ -108,6 +108,42 @@ router.get(
     formsController.getUserTemplatesForms
 )
 
+router.get(
+    '/forms/template/:id',
+    roleMiddleware(Roles.Admin),
+    checkSchema({
+        id: {in: ['params'], isInt: true},
+        page: {in: ['query'], isInt: true},
+        limit: {in: ['query'], isInt: true},
+        sort: {in: ['query'], optional: true, isIn: {options: [['asc', 'desc']]}},
+        orderBy: {
+            in: ['query'],
+            optional: true,
+            isIn: {options: [['title', 'username', 'email', 'createdAt']]}
+        },
+        searchBy: {in: ['query'], optional: true, isIn: {options: [['title', 'email', 'username']]}},
+        search: {in: ['query'], optional: true}
+    }),
+    formsController.getFormsByTemplate
+)
+
+router.get(
+    '/admin/forms',
+    roleMiddleware(Roles.Admin),
+    checkSchema({
+        page: {in: ['query'], isInt: true},
+        limit: {in: ['query'], isInt: true},
+        sort: {in: ['query'], optional: true, isIn: {options: [['asc', 'desc']]}},
+        orderBy: {
+            in: ['query'],
+            optional: true,
+            isIn: {options: [['title', 'username', 'email', 'createdAt']]}
+        },
+        searchBy: {in: ['query'], optional: true, isIn: {options: [['title', 'email', 'username']]}},
+        search: {in: ['query'], optional: true}
+    }),
+    formsController.getForms
+)
 
 
 module.exports = router;
