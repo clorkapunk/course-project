@@ -17,7 +17,8 @@ class TemplatesController {
 
     async getTemplates(req, res, next) {
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const limit = parseInt(req.query.limit) || 8;
             const search = req.query.search || ""
@@ -88,7 +89,8 @@ class TemplatesController {
 
     async getTemplate(req, res, next){
         try{
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             let userId = undefined
             if(req.headers.authorization){
@@ -104,7 +106,6 @@ class TemplatesController {
                 userId = userData.id
             }
 
-
             const id = parseInt(req.params.id) || 1
 
             const template = await templatesService.getById(id, userId)
@@ -118,7 +119,8 @@ class TemplatesController {
 
     async getAdminTemplates(req,res,next){
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const limit = parseInt(req.query.limit) || 10;
             const page = parseInt(req.query.page) || 1;
@@ -151,7 +153,10 @@ class TemplatesController {
 
     async getUserTemplates(req, res, next){
         try{
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
+
+
 
             const id = parseInt(req.params.id) || 0
             const limit = parseInt(req.query.limit) || 10;
@@ -185,9 +190,8 @@ class TemplatesController {
 
     async createTemplate(req, res, next) {
         try {
-            checkValidationErrors(req, next)
-
-
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const {title, description, mode} = req.body
             const topicId = parseInt(req.body.topicId)
@@ -237,7 +241,8 @@ class TemplatesController {
 
     async getTags(req, res, next) {
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const page = parseInt(req.query.page) || 1
             const limit = parseInt(req.query.limit) || 5;
@@ -279,7 +284,8 @@ class TemplatesController {
 
     async deleteTemplates(req, res, next){
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const templatesIds = req.body.templatesIds
             const {id, role} = req.user
@@ -300,10 +306,14 @@ class TemplatesController {
 
     async updateTemplate(req,res,next){
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
+
             let data = {
                 ...req.body
             }
+
+            console.log("data:",data)
 
             const templateId = parseInt(req.params.id)
             const {id, role} = req.user
@@ -328,7 +338,8 @@ class TemplatesController {
                 ...data,
                 topicId: parseInt(data.topicId),
                 questions: JSON.parse(data.questions),
-                tags: JSON.parse(data.tags)
+                tags: JSON.parse(data.tags),
+                allowedUsers: JSON.parse(data.allowedUsers)
             }
 
             let result
@@ -348,7 +359,8 @@ class TemplatesController {
 
     async likeTemplate(req, res, next){
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const templateId = parseInt(req.params.id)
             const userId = parseInt(req.user.id)
@@ -366,7 +378,8 @@ class TemplatesController {
 
     async dislikeTemplate(req, res, next){
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const id = parseInt(req.params.id)
             const userId = parseInt(req.user.id)

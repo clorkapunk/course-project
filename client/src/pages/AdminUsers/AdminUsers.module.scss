@@ -15,25 +15,11 @@
       display: flex;
       align-items: center;
       gap: 1rem;
-      //background-color: theme('colors.zinc.800');
-      //color: theme('colors.zinc.100');
       border: none;
-
-      //&:hover {
-      //  background-color: theme('colors.zinc.600');
-      //}
-
-
     }
-
-
-
   }
-
-
-
-
 }
+
 @media screen and (max-width: 1024px) {
   .page{
     padding-inline: 1rem;

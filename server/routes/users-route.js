@@ -8,6 +8,16 @@ const {checkValidationErrors} = require("../check-validation-errors");
 const router = new Router()
 
 
+
+router.get(
+    '/user/:id',
+        roleMiddleware(Roles.Admin),
+    checkSchema({
+        id: {in: ['params'], notEmpty: true, isInt: true}
+    }),
+    usersController.getUser
+)
+
 router.get(
     '/users/history',
     roleMiddleware(Roles.Admin),
@@ -63,6 +73,18 @@ router.delete(
         ids: {in: ['body'],notEmpty: true, isArray: true}
     }),
     usersController.deleteUsers
+)
+
+
+router.patch(
+    '/user',
+    checkSchema({
+        id: {optional: true, isInt: true},
+        username: {notEmpty: true, isString: true},
+        oldPassword: {optional: true, isString: true},
+        newPassword: {optional: true, isString: true},
+    }),
+    usersController.changeUser
 )
 
 

@@ -25,13 +25,18 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
+
+
+
+
 app.use('/', require('./routes/auth-route'));
 app.use('/oauth', require('./routes/oauth-route'));
-
 
 app.use('/api', require('./routes/templates-route'))
 
 app.use(authMiddleware)
+app.use('/api', require('./routes/jira-route'))
+app.use('/api', require('./routes/salesforce-route'))
 app.use('/api', require('./routes/forms-route'))
 app.use('/api', require('./routes/users-route'));
 

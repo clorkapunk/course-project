@@ -29,7 +29,7 @@ type Field = |
         onCheckedChange: (value: boolean) => void;
         ariaLabel?: string;
         align?: "right" | 'left' | 'center';
-        width?: number;
+        className?: ComponentProps<'div'>['className'];
         cellComponent?: (item?: any) => ReactNode;
     } |
     {
@@ -38,7 +38,7 @@ type Field = |
         text: string;
         onClick: () => void;
         align?: "right" | 'left' | 'center';
-        width?: number;
+        className?: ComponentProps<'div'>['className'];
         cellComponent?: (item?: any) => ReactNode;
     } |
     {
@@ -46,7 +46,7 @@ type Field = |
         name: string;
         text: string;
         align?: "right" | 'left' | 'center';
-        width?: number;
+        className?: ComponentProps<'div'>['className'];
         cellComponent?: (item?: any) => ReactNode;
     }
 
@@ -149,7 +149,7 @@ const SortableTable = ({
                                     if (field.type === 'select') {
                                         return (<TableHead
                                             key={field.name}
-                                            className={`${styles.tableHead} w-[${field.width}px] min-w-fit bg-accent text-primary`}
+                                            className={`${styles.tableHead} ${field.className} min-w-fit bg-accent text-primary`}
                                         >
                                             <Checkbox
                                                 className={styles.checkbox}
@@ -160,7 +160,7 @@ const SortableTable = ({
                                         </TableHead>)
                                     } else if (field.type === 'button') {
                                         return (<TableHead key={field.name}
-                                                           className={`${styles.tableHead} w-[${field.width?.toString()}px] min-w-fit bg-accent text-primary`}
+                                                           className={`${styles.tableHead} ${field.className} min-w-fit bg-accent text-primary`}
                                         >
                                             <Button
 
@@ -175,7 +175,7 @@ const SortableTable = ({
                                     } else {
                                         return (<TableHead
                                             key={field.name}
-                                            className={`${styles.tableHead} w-[${field.width}px] bg-accent  min-w-fit text-primary`}
+                                            className={`${styles.tableHead} ${field.className} bg-accent  min-w-fit text-primary`}
                                         >
                                             {field.text}
                                         </TableHead>)
@@ -214,7 +214,9 @@ const SortableTable = ({
                                                             return (
                                                                 <TableCell key={field.name}
                                                                            className={`${styles.tableCell} `}
-                                                                           align={field.align ? field.align : "left"}>
+                                                                           align={field.align ? field.align : "left"}
+                                                                           title={item[field.name]}
+                                                                >
                                                                     {field.cellComponent
                                                                         ? field.cellComponent(item)
                                                                         : item[field.name]

@@ -4,6 +4,7 @@ export type UserData = {
     role: number;
     username: string;
     email: string;
+    salesforceAccountId?: string
 }
 
 export type ApiErrorResponse = {
@@ -114,5 +115,40 @@ export type FormData = {
         user: UserData,
     },
     questions: AnsweredQuestionData[]
+}
+
+export type SalesforceData = {
+    id: string;
+    firstname: string,
+    lastname: string,
+    email: string,
+    dob: Date,
+    phone: string,
+    accountId: string
+}
+
+export type TicketData = {
+    id: string,
+    key: string;
+    url: string;
+    fields: {
+        summary: string;
+        reportedBy: {
+            accountId: string;
+            displayName: string;
+            active: boolean;
+        };
+        priority: {
+            iconUrl: string;
+            name: string;
+        }
+        templateTitle: string;
+        link: string;
+        status: {
+            key: string;
+            updatedAt: Date;
+        };
+    };
+    createdAt: Date;
 }
 

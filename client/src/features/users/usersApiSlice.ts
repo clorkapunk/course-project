@@ -96,7 +96,31 @@ export const usersApiSlice = apiSlice.injectEndpoints({
                 method: 'DELETE',
                 body: {ids}
             })
-        })
+        }),
+        editUser: builder.mutation({
+            query: ({username, oldPassword, newPassword}) => ({
+                url: 'api/user',
+                method: 'PATCH',
+                body: {username, oldPassword, newPassword}
+            })
+        }),
+        adminEditUser: builder.mutation({
+            query: ({id, username, oldPassword, newPassword}) => ({
+                url: 'api/user',
+                method: 'PATCH',
+                body: {id, username, oldPassword, newPassword}
+            })
+        }),
+        getUser: builder.query<
+            UserData,
+            {
+                userId: number
+            }
+        >({
+            query: ({userId}) => {
+                return `api/user/${userId}`
+            },
+        }),
     })
 })
 
@@ -106,5 +130,9 @@ export const {
     useUpdateUsersRoleMutation,
     useUpdateUsersStatusMutation,
     useGetHistoryQuery,
-    useDeleteUsersMutation
+    useDeleteUsersMutation,
+    useEditUserMutation,
+    useAdminEditUserMutation,
+    useGetUserQuery,
+    useLazyGetUserQuery
 } = usersApiSlice

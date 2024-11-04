@@ -10,7 +10,7 @@ import {
     useLazyGetUserFormByTemplateQuery,
     useSubmitFormMutation
 } from "@/features/forms/formsApiSlice.ts";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {selectAuthState} from "@/features/auth/authSlice.ts";
 import ViewQuestionCard from "@/components/ViewQuestionCard.tsx";
 import toast from "react-hot-toast";
@@ -18,6 +18,8 @@ import {useTranslation} from "react-i18next";
 import ResponseErrorCodes from "@/utils/response-error-codes.ts";
 import Loading from "@/components/Loading.tsx";
 import catchApiErrors from "@/utils/catch-api-errors.ts";
+import {setIsDialogOpened} from "@/features/jira/ticketSlice.ts";
+import {FaHeart, FaTriangleExclamation} from "react-icons/fa6";
 
 export interface AnsweredQuestionDataWithId extends AnsweredQuestionData {
     id: string;
@@ -34,7 +36,7 @@ const FillTemplate = () => {
 
     const {data, isLoading, error} = useGetTemplateByIdQuery({id: parseInt(id)})
 
-
+    const dispatch = useDispatch()
     const authState = useSelector(selectAuthState)
     const [fetchFormData, {data: formData, isLoading: isFormDataLoading}] = useLazyGetUserFormByTemplateQuery()
 
@@ -79,6 +81,10 @@ const FillTemplate = () => {
         }
     }
 
+    const handleOpenTicketDialog  = () => {
+        dispatch(setIsDialogOpened({isOpen: true, templateTitle: data?.title}))
+    }
+
     useEffect(() => {
         if (!data && !isLoading) {
             const responseError = error as ApiErrorResponse
@@ -116,9 +122,10 @@ const FillTemplate = () => {
     }, [authState?.id, data?.id]);
 
     useEffect(() => {
-
         if (formData?.id) navigate(EDIT_FORM_ROUTE + `/${formData.id}`)
     }, [formData]);
+
+
 
 
     return (
@@ -130,7 +137,28 @@ const FillTemplate = () => {
                     {
                         (!isLoading && !isFormDataLoading) &&
                         <>
-                            <div className={'flex flex-col sm:items-center gap-1 w-full'}>
+                            {
+                                authState?.token &&
+                                <div className={'hidden md:flex gap-2 md:absolute top-50 ml-4 left-0 '}>
+                                    <Button
+                                        variant={'ghost'}
+                                        size={'icon'}
+                                        className={'hidden md:flex hover:bg-primary-foreground'}
+                                        // onClick={handleOpenTicketDialog}
+                                    >
+                                        <FaHeart/>
+                                    </Button>
+                                    <Button
+                                        variant={'ghost'}
+                                        size={'icon'}
+                                        className={'hover:bg-red-800'}
+                                        onClick={handleOpenTicketDialog}
+                                    >
+                                        <FaTriangleExclamation/>
+                                    </Button>
+                                </div>
+                            }
+                                <div className={'flex flex-col sm:items-center gap-1 w-full'}>
 
                                     <p className={"text-sm md:text-base leading-none text-center"}>
                                         {
@@ -139,13 +167,13 @@ const FillTemplate = () => {
                                         }
                                     </p>
 
-                                <h1 className={"text-lg md:text-xl leading-none text-center truncate w-full"}>{data?.title}</h1>
-                            </div>
-                            {
-                                authState?.token &&
-                                <Button
-                                    variant={'default'}
-                                    className={'hidden md:block md:fixed top-50 mr-4 right-0 hover:bg-green-600'}
+                                    <h1 className={"text-lg md:text-xl leading-none text-center truncate w-full"}>{data?.title}</h1>
+                                </div>
+                                {
+                                    authState?.token &&
+                                    <Button
+                                        variant={'default'}
+                                        className={'hidden md:block md:fixed top-50 mr-4 right-0 hover:bg-green-600'}
                                     disabled={answeredAmount !== answersData.length}
                                     onClick={handleSubmit}
                                 >
@@ -179,7 +207,7 @@ const FillTemplate = () => {
                             </ul>
                             {
                                 authState?.token &&
-                                <div className={'p-2 md:p-4 2xl:p-8 w-full'}>
+                                <div className={'p-2 md:p-4 2xl:p-8 w-full flex flex-col gap-2'}>
                                     <Button
                                         variant={'default'}
                                         className={'md:hidden block w-full hover:bg-green-600'}
@@ -188,6 +216,25 @@ const FillTemplate = () => {
                                     >
                                         {t('finish')}
                                     </Button>
+                                    <div className={'flex gap-2'}>
+                                        <Button
+                                            variant={'ghost'}
+                                            size={'icon'}
+                                            className={'flex md:hidden'}
+                                            // onClick={handleOpenTicketDialog}
+                                        >
+                                            <FaHeart/>
+                                        </Button>
+                                        <Button
+                                            variant={'ghost'}
+                                            size={'icon'}
+                                            className={'md:hidden flex-shrink-0 hover:bg-red-800'}
+                                            onClick={handleOpenTicketDialog}
+                                        >
+                                            <FaTriangleExclamation/>
+                                        </Button>
+                                    </div>
+
                                 </div>
                             }
                         </>

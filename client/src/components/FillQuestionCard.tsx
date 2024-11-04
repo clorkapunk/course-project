@@ -4,6 +4,7 @@ import {Checkbox} from "@/components/ui/checkbox.tsx";
 import {useEffect, useState} from "react";
 import {AnsweredQuestionDataWithId} from "@/pages/FillTemplate.tsx";
 import {useTranslation} from "react-i18next";
+import MarkdownTextarea from "@/components/MarkdownTextarea.tsx";
 
 const FillQuestionCard = ({item, handleChange, disabled = false}: {
     item: AnsweredQuestionDataWithId,
@@ -23,8 +24,8 @@ const FillQuestionCard = ({item, handleChange, disabled = false}: {
     return (
         <li className={`bg-accent rounded-md flex flex-col overflow-hidden gap-4`}>
             <div className={'flex flex-col gap-1 md:gap-2 p-4 2xl:p-8 pb-0'}>
-                <h3 className={'text-xl text-wrap text-center md:text-left'}>{item.question}</h3>
-                <p className={'text-md opacity-90 text-wrap text-center md:text-left'}>{item.description}</p>
+                <h3 className={'px-4 text-xl text-wrap text-center md:text-left'}>{item.question}</h3>
+                <MarkdownTextarea  className={'text-md opacity-90 text-wrap text-center md:text-left'} value={item.description}/>
             </div>
 
             <div className={'p-4 md:p-8 pt-2 md:pt-4 relative'}>

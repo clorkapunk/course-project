@@ -15,11 +15,11 @@ import {
     PROFILE_ROUTE,
     EDIT_TEMPLATE_ROUTE,
     EDIT_FORM_ROUTE,
-    ADMIN_TEMPLATES_ROUTE, ADMIN_FORMS_ROUTE,
+    ADMIN_TEMPLATES_ROUTE, ADMIN_FORMS_ROUTE, MANAGE_CONTENT_ROUTE,
 } from "@/utils/routes.ts";
 import Register from "@/pages/Register.tsx";
 import RequireAuth from "@/components/RequireAuth.tsx";
-import Main from "@/pages/Main/Main.tsx";
+import Main from "@/pages/Main.tsx";
 import Unauthorized from "@/pages/Unauthorized.tsx";
 import PersistLogin from "@/components/PersistLogin.tsx";
 import OAuthGoogleCallback from "@/pages/OAuthGoogleCallback.tsx";
@@ -30,11 +30,12 @@ import AdminHistory from "@/pages/AdminHistory/AdminHistory.tsx";
 import CreateTemplate from "@/pages/CreateTemplate.tsx";
 import FillTemplate from "@/pages/FillTemplate.tsx";
 import SearchTemplates from "@/pages/SearchTemplates.tsx";
-import Profile from "@/pages/Profile.tsx";
+import ManageContent from "@/pages/ManageContent.tsx";
 import EditTemplate from "@/pages/EditTemplate.tsx";
 import EditForm from "@/pages/EditForm.tsx";
 import AdminForms from "@/pages/AdminForms.tsx";
 import AdminTemplates from "@/pages/AdminTemplates.tsx";
+import Profile from "@/pages/Profile.tsx";
 
 const App = () => {
     return (
@@ -59,6 +60,7 @@ const App = () => {
                         <Route path={EDIT_FORM_ROUTE + "/:id"} element={<EditForm/>}/>
                         <Route path={CREATE_TEMPLATE_ROUTE} element={<CreateTemplate/>}/>
                         <Route path={PROFILE_ROUTE} element={<Profile/>}/>
+                        <Route path={MANAGE_CONTENT_ROUTE} element={<ManageContent/>}/>
                     </Route>
 
 
@@ -67,6 +69,7 @@ const App = () => {
                         <Route path={ADMIN_TEMPLATES_ROUTE} element={<AdminTemplates/>}/>
                         <Route path={ADMIN_FORMS_ROUTE} element={<AdminForms/>}/>
                         <Route path={ADMIN_HISTORY_ROUTE} element={<AdminHistory/>}/>
+                        <Route path={PROFILE_ROUTE + '/:id'} element={<Profile/>}/>
                     </Route>
                 </Route>
 

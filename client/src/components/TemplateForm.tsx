@@ -87,11 +87,8 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
     const [title, setTitle] = useState(existingData?.title || '')
     const [description, setDescription] = useState(existingData?.description || "")
     const [topicId, setTopicId] = useState<string | null>(existingData?.topic.id.toString() || null)
-    const [isPublicMode, setIsPublicMode] = useState<boolean>(
-        existingData ? (existingData?.mode === 'public') : true
-    )
-    const [allowedUsers, setAllowedUsers] = useState<UserData[]>([])
-
+    const [isPublicMode, setIsPublicMode] = useState<boolean>(existingData ? (existingData?.mode === 'public') : true)
+    const [allowedUsers, setAllowedUsers] = useState<UserData[]>(existingData?.allowedUsers || [])
     const [questions, setQuestions] = useState<QuestionDataWithId[]>(
         existingData?.questions?.map(q => ({...q, id: uuidv4()}))
         || [{id: uuidv4(), type: "string", question: "", description: ""}]
@@ -106,7 +103,6 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
     }
 
     const handleFileChange = (file: File) => {
-        console.log(file.type)
         if (file && file.type === "image/png" || file.type === 'image/jpeg') {
             setImage(file);
         } else {
@@ -126,7 +122,6 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                 prevState[index].description = value;
             }
 
-            console.log('done')
             setErrors(prev => ({
                 ...prev,
                 questions: !!prevState.find(q => {
@@ -561,7 +556,6 @@ const TemplateForm = ({handleSubmit, existingData, submitButtonText}: Props) => 
                     }}
                 />
             </div>
-
 
         </section>
     );

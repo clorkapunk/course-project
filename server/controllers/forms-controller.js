@@ -10,7 +10,8 @@ class FormsController {
 
     async getFormById(req, res, next) {
         try {
-            checkValidationErrors(req, next);
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const id = parseInt(req.params.id)
             const userId = req.user.id
@@ -28,7 +29,8 @@ class FormsController {
 
     async getFormAnswersByUserId(req, res, next) {
         try {
-            checkValidationErrors(req, next);
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const userId = parseInt(req.query.uid)
             const templateId = parseInt(req.query.tid)
@@ -47,7 +49,8 @@ class FormsController {
 
     async getUserForms(req, res, next) {
         try {
-            checkValidationErrors(req, next);
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const {id} = req.user
             const limit = parseInt(req.query.limit) || 10;
@@ -82,7 +85,8 @@ class FormsController {
 
     async createForm(req, res, next) {
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const {templateId, answers} = req.body
 
@@ -100,7 +104,8 @@ class FormsController {
 
     async deleteForms(req, res, next){
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const formsIds = req.body.ids
             const {id, role} = req.user
@@ -124,7 +129,8 @@ class FormsController {
 
     async updateForm(req, res, next){
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const formId = parseInt(req.params.id)
             const answers = req.body.answers
@@ -146,7 +152,8 @@ class FormsController {
 
     async getFormByTemplate(req, res, next){
         try{
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const userId = parseInt(req.query.uid)
             const templateId = parseInt(req.query.tid)
@@ -161,7 +168,8 @@ class FormsController {
 
     async getUserTemplatesForms(req, res,next){
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const {id, role} = req.user
             const userId = parseInt(req.params.id)
@@ -201,7 +209,8 @@ class FormsController {
 
     async getFormsByTemplate(req, res, next){
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const templateId = parseInt(req.params.id)
             const limit = parseInt(req.query.limit) || 10;
@@ -235,7 +244,8 @@ class FormsController {
 
     async getForms(req, res,next){
         try{
-            checkValidationErrors(req,next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const limit = parseInt(req.query.limit) || 10;
             const page = parseInt(req.query.page) || 1;

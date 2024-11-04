@@ -2,10 +2,12 @@ import {Card, CardHeader, CardTitle, CardContent} from "@/components/ui/card.tsx
 import React, {useEffect, useState} from "react";
 import {Input} from "@/components/ui/input.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Textarea} from "@/components/ui/textarea.tsx";
 import {FaTrash} from "react-icons/fa6";
 import {QuestionDataWithId} from "@/components/TemplateForm.tsx";
 import {useTranslation} from "react-i18next";
+import 'react-quill/dist/quill.snow.css';
+import TextEditor from "@/components/TextEditor/TextEditor.tsx";
+
 
 type Props = {
     index: number | undefined;
@@ -42,10 +44,9 @@ const CreateQuestionCard = ({otherProps, index, item, handleChange, handleDelete
     useEffect(() => {
         setErrors({
             question: question === '',
-            description: description === ''
+            description: description.replace(/<[^>]*>/g, '').trim() === ''
         })
     }, [question, description]);
-
 
     return (
         <Card {...otherProps} className={'bg-accent border-none mb-2 hover:cursor-move'}>
@@ -70,7 +71,11 @@ const CreateQuestionCard = ({otherProps, index, item, handleChange, handleDelete
                 </Button>
 
             </CardHeader>
-            <CardContent>
+            <CardContent
+                onMouseDown={(e) => {
+                    e.stopPropagation();
+                }}
+            >
                 <Input
                     placeholder={`${t('enter-question')}...`}
                     type={'text'}
@@ -78,13 +83,25 @@ const CreateQuestionCard = ({otherProps, index, item, handleChange, handleDelete
                     className={`mb-2 bg-primary-foreground ${errors.question && "border-red-600 border-x-0 border-t-0 border-b"}`}
                     onChange={(e) => setQuestion(e.target.value)}
                     name={'question'}/>
-                <Textarea
-                    placeholder={`${t('enter-question-description')}...`}
+
+                <TextEditor
                     value={description}
-                    className={`bg-primary-foreground ${errors.description && "border-red-600 border-x-0 border-t-0 border-b"}`}
-                    onChange={(e) => setDescription(e.target.value)}
-                    name={'description'}
+                    classNames={{
+                        editor: `${errors.description ? "border-red-600" : "border-green-600"}`,
+                        toolbar: ''
+                    }}
+                    handleChange={setDescription}
                 />
+
+
+                {/*<Textarea*/}
+                {/*    placeholder={`${t('enter-question-description')}...`}*/}
+                {/*    value={description}*/}
+                {/*    className={`bg-primary-foreground ${errors.description && "border-red-600 border-x-0 border-t-0 border-b"}`}*/}
+                {/*    onChange={(e) => setDescription(e.target.value)}*/}
+                {/*    name={'description'}*/}
+                {/*/>*/}
+
             </CardContent>
         </Card>
     );

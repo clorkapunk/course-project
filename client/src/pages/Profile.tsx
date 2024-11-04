@@ -1,552 +1,739 @@
-import {Tabs, TabsContent, TabsTrigger} from "@/components/ui/tabs";
-import {TabsList} from "@/components/ui/tabs.tsx";
-import SortableTable from "@/components/SortableTable/SortableTable.tsx";
-import {TableFormData, TemplateData} from "@/types";
-import { useEffect, useState} from "react";
-import {
-    useDeleteTemplatesMutation,
-    useLazyGetUserTemplatesQuery
-} from "@/features/templates/templatesApiSlice.ts";
-import {useSelector} from "react-redux";
-import {selectAuthState} from "@/features/auth/authSlice.ts";
-import {useTranslation} from "react-i18next";
-import SelectableSearch from "@/components/SelectableSearch/SelectableSearch.tsx";
-import {FaTrash} from "react-icons/fa6";
+import {Input} from "@/components/ui/input.tsx";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Button} from "@/components/ui/button.tsx";
+import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs.tsx";
+import {useTranslation} from "react-i18next";
+import {useEffect, useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
+import {selectAuthState, setCredentials} from "@/features/auth/authSlice.ts";
+import {FaPenToSquare, FaTrash, FaXmark} from "react-icons/fa6";
 import toast from "react-hot-toast";
-import {Link} from "react-router-dom";
-import {EDIT_FORM_ROUTE, EDIT_TEMPLATE_ROUTE} from "@/utils/routes.ts";
-import {
-    useDeleteFormsMutation,
-    useLazyGetUserFormsQuery, useLazyGetUserTemplatesFormsQuery
-} from "@/features/forms/formsApiSlice.ts";
 import catchApiErrors from "@/utils/catch-api-errors.ts";
+import {
+    useAdminEditUserMutation,
+    useEditUserMutation,
+    useGetUserQuery,
+} from "@/features/users/usersApiSlice.ts";
+import {
+    useCreateSalesforceMutation,
+    useEditSalesforceMutation,
+    useGetSalesforceDataQuery,
+} from "@/features/salesforce/salesforceApiSlice.ts";
+import {useForm} from "react-hook-form";
+import {z} from "zod";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {isValidPhoneNumber} from "react-phone-number-input/min";
+import {Form, FormControl, FormField, FormItem, FormLabel} from "@/components/ui/form.tsx";
+import {PhoneInput} from "@/components/ui/phone-input.tsx";
+import {ReloadIcon} from "@radix-ui/react-icons";
+import {format} from 'date-fns';
+import {LoadingSpinner} from "@/components/LoadingSpinner.tsx";
+import {Link, useLocation, useNavigate, useParams} from "react-router-dom";
+import {HOME_ROUTE} from "@/utils/routes.ts";
+import SortableTable from "@/components/SortableTable/SortableTable.tsx";
+import {TicketData} from "@/types";
+import {
+    useDeleteTicketsMutation,
+    useLazyGetUserTicketsQuery
+} from "@/features/jira/jiraApiSlice.ts";
+import {Badge} from "@/components/ui/badge.tsx";
+import {selectIsDialogOpen} from "@/features/jira/ticketSlice.ts";
+
+
+const salesforceSchema = z.object({
+    firstname: z.string().min(1),
+    lastname: z.string().min(1),
+    email: z.string().email(),
+    dob: z.string().min(1),
+    phone: z
+        .string()
+        .refine(isValidPhoneNumber, {message: "Invalid phone number"}),
+})
+
 
 const Profile = () => {
     const {t} = useTranslation()
+
+    const {id} = useParams()
+    const navigate = useNavigate()
     const authState = useSelector(selectAuthState)
-    const [tab, setTab] = useState('templates')
+    const dispatch = useDispatch()
+    const location = useLocation()
+    const isDialogOpen = useSelector(selectIsDialogOpen)
 
-    const [fetchTemplates, {data: templatesData, isFetching: isTemplatesLoading}] = useLazyGetUserTemplatesQuery()
-    const [deleteTemplates] = useDeleteTemplatesMutation()
-    const [templatesSelectedRows, setTemplatesSelectedRows] = useState<number[]>([]);
-    const [templatesTableParams, setTemplatesTableParams] = useState({
-        page: 1,
-        limit: 10,
-        sort: 'desc',
-        orderBy: 'createdAt',
-        searchBy: 'title',
-        search: ''
+    if (id && isNaN(parseInt(id))) {
+        navigate(HOME_ROUTE)
+    }
+
+
+    const [userId, setUserId] = useState<number>(id ? parseInt(id) : authState.id!)
+    const [isOtherProfile, setIsOtherProfile] = useState(id ? parseInt(id) !== authState.id : false)
+    const {data: accountData, isLoading: isAccountDataLoading, refetch: refetchAccountData} = useGetUserQuery({userId})
+    const {
+        data: salesforceData,
+        isLoading: isSalesforceLoading,
+        refetch: refetchSalesforceData
+    } = useGetSalesforceDataQuery({userId})
+    const [editSalesforce, {isLoading: isEditSalesforceLoading}] = useEditSalesforceMutation()
+    const [createSalesforce, {isLoading: isCreateSalesforceLoading}] = useCreateSalesforceMutation()
+    const [editAccount, {isLoading: isEditAccountLoading}] = useEditUserMutation()
+    const [adminEditAccount, {isLoading: isAdminEditAccountLoading}] = useAdminEditUserMutation()
+
+    const [tab, setTab] = useState('account')
+
+    const [isUsernameEdit, setIsUsernameEdit] = useState(false)
+    const [isPasswordEdit, setIsPasswordEdit] = useState(false)
+    const accountSchema = z.object({
+        username: z.string().optional(),
+        newPassword: z.string().optional(),
+        repeatPassword: z.string().optional(),
+        oldPassword: z.string().optional(),
     })
-    const refetchTemplates = () => {
-        fetchTemplates({
-            userId: authState.id!,
-            ...templatesTableParams
-        })
-    }
-    const handleTemplatesChangeSort = (field: string) => {
-        setTemplatesTableParams(prev => {
-            if (prev.orderBy === field) {
-                return {
-                    ...prev,
-                    sort: prev.sort === 'asc' ? 'desc' : 'asc'
-                }
+        .refine((data) => {
+            if (isUsernameEdit) {
+                return data.username && data.username.trim().length > 0;
             }
+            return true;
+        }, {path: ['username']})
+        .refine((data) => {
+            if (isPasswordEdit) {
+                return data.newPassword && data.newPassword.trim().length > 0;
+            }
+            return true;
+        }, {path: ['newPassword']})
+        .refine((data) => {
+            if (isPasswordEdit) {
+                return data.repeatPassword && data.repeatPassword === data.newPassword;
+            }
+            return true;
+        }, {path: ['repeatPassword']})
+        .refine((data) => {
+            if (isPasswordEdit) {
+                return data.oldPassword && data.oldPassword.trim().length > 0;
+            }
+            return true;
+        }, {path: ['oldPassword']});
 
-            return {
-                ...prev,
-                orderBy: field,
-                sort: prev.sort === 'asc' ? 'desc' : 'asc'
-            }
+    const accountForm = useForm<z.infer<typeof accountSchema>>({
+        resolver: zodResolver(accountSchema),
+        defaultValues: {
+            username: '',
+            newPassword: '',
+            repeatPassword: '',
+            oldPassword: ''
+        },
+        values: {
+            username: accountData?.username || '',
+            newPassword: '',
+            repeatPassword: '',
+            oldPassword: ''
+        }
+    })
+
+    const salesforceForm = useForm<z.infer<typeof salesforceSchema>>({
+        resolver: zodResolver(salesforceSchema),
+        defaultValues: {
+            firstname: "",
+            lastname: '',
+            email: accountData?.email || '',
+            dob: '',
+            phone: ''
+        },
+        values: {
+            firstname: salesforceData?.firstname || '',
+            lastname: salesforceData?.lastname || '',
+            email: salesforceData?.email || accountData?.email || '',
+            dob: salesforceData?.dob ? format(new Date(salesforceData.dob), 'yyyy-MM-dd') : '',
+            phone: salesforceData?.phone || ''
+        }
+    })
+
+    const [ticketsSelectedRows, setTicketsSelectedRows] = useState<string[]>([])
+    const [ticketsTableParams, setTicketsTableParams] = useState({
+        page: 1,
+        limit: 10
+    })
+    const [fetchTickets, {data: ticketsData, isFetching: isTicketsFetching}] = useLazyGetUserTicketsQuery()
+    const [deleteTickets, {isLoading: isDeleteTicketsLoading}] = useDeleteTicketsMutation()
+
+    const refetchTickets = () => {
+        fetchTickets({
+            userId,
+            ...ticketsTableParams
         })
     }
-    const handleDeleteTemplates = async () => {
+
+    const handleDeleteTickets = async () => {
         try {
-            const ids = templatesSelectedRows
+            const ids = ticketsSelectedRows
             if (ids.length === 0) {
                 toast.error(t('no-selected-rows'))
                 return;
             }
 
             await toast.promise(
-                deleteTemplates({templatesIds: ids}).unwrap(),
+                deleteTickets(ids),
                 {
                     loading: `${t('saving')}...`,
                     success: <>{t('action-successfully-completed')}</>,
                     error: <>{t("error-occurred")}</>,
                 }
             )
-            refetchTemplates()
-            setTemplatesSelectedRows([])
+
+            refetchTickets()
+            setTicketsSelectedRows([])
         } catch (err) {
             catchApiErrors(err, t)
         }
     }
 
-    const [fetchUserForms, {data: userFormsData, isFetching: isUserFormsLoading}] = useLazyGetUserFormsQuery()
-    const [deleteForms] = useDeleteFormsMutation()
-    const [userFormsSelectedRows, setUserFormsSelectedRows] = useState<number[]>([]);
-    const [userFormsTableParams, setUserFormsTableParams] = useState({
-        page: 1,
-        limit: 10,
-        sort: 'desc',
-        orderBy: 'createdAt',
-        searchBy: 'title',
-        search: ''
-    })
-    const refetchUserForms = () => {
-        fetchUserForms({
-            userId: authState.id!,
-            ...userFormsTableParams
-        })
+    const toggleUsernameEdit = (value?: boolean) => {
+        if (value !== undefined) {
+            if (!value) accountForm.setValue("username", accountData?.username)
+            setIsUsernameEdit(value)
+        } else {
+            if (isUsernameEdit) accountForm.setValue("username", accountData?.username)
+            setIsUsernameEdit(prev => !prev)
+        }
     }
-    const handleUserFormsChangeSort = (field: string) => {
-        setUserFormsTableParams(prev => {
-            if (prev.orderBy === field) {
-                return {
-                    ...prev,
-                    sort: prev.sort === 'asc' ? 'desc' : 'asc'
-                }
-            }
 
-            return {
-                ...prev,
-                orderBy: field,
-                sort: prev.sort === 'asc' ? 'desc' : 'asc'
+    const togglePasswordEdit = (value?: boolean) => {
+        if (value !== undefined) {
+            if (!value) {
+                accountForm.setValue("newPassword", '')
+                accountForm.setValue("oldPassword", '')
+                accountForm.setValue("repeatPassword", '')
             }
-        })
+            setIsPasswordEdit(value)
+        } else {
+            if (isPasswordEdit) {
+                accountForm.setValue("newPassword", '')
+                accountForm.setValue("oldPassword", '')
+                accountForm.setValue("repeatPassword", '')
+            }
+            setIsPasswordEdit(prev => !prev)
+        }
     }
-    const handleDeleteUserForms = async () => {
+
+    const onSubmitAccount = async (values: z.infer<typeof accountSchema>) => {
         try {
-            const ids = userFormsSelectedRows
-            if (ids.length === 0) {
-                toast.error(t('no-selected-rows'))
-                return;
+
+            if (!isUsernameEdit && !isPasswordEdit) return
+
+            let promise;
+            if (isOtherProfile) {
+                promise = adminEditAccount({id: userId, ...values}).unwrap()
+            } else {
+                promise = editAccount({...values}).unwrap()
             }
 
             await toast.promise(
-                deleteForms({ids}).unwrap(),
+                promise,
                 {
                     loading: `${t('saving')}...`,
-                    success: <>{t('action-successfully-completed')}</>,
+                    success: (response) => {
+                        if (!isOtherProfile) {
+                            dispatch(setCredentials({accessToken: response.accessToken}))
+                        }
+                        refetchAccountData().then(() => {
+                            toggleUsernameEdit(false)
+                            togglePasswordEdit(false)
+                        })
+                        return <>{t('action-successfully-completed')}</>
+                    },
                     error: <>{t("error-occurred")}</>,
                 }
             )
-            refetchUserForms()
-            setUserFormsSelectedRows([])
         } catch (err) {
             catchApiErrors(err, t)
         }
     }
 
-    const [fetchFilledTemplates, {data: filledTemplatesData, isFetching: isFilledTemplatesLoading}] = useLazyGetUserTemplatesFormsQuery()
-    // const [deleteForms] = useDeleteFormsMutation()
-    const [filledTemplatesSelectedRows, setFilledTemplatesSelectedRows] = useState<number[]>([]);
-    const [filledTemplatesTableParams, setFilledTemplatesTableParams] = useState({
-        page: 1,
-        limit: 10,
-        sort: 'desc',
-        orderBy: 'createdAt',
-        searchBy: 'title',
-        search: ''
-    })
-    const refetchFilledTemplates = () => {
-        fetchFilledTemplates({
-            userId: authState.id!,
-            ...filledTemplatesTableParams
-        })
-    }
-    const handleFilledTemplatesChangeSort = (field: string) => {
-        setFilledTemplatesTableParams(prev => {
-            if (prev.orderBy === field) {
-                return {
-                    ...prev,
-                    sort: prev.sort === 'asc' ? 'desc' : 'asc'
-                }
-            }
-            return {
-                ...prev,
-                orderBy: field,
-                sort: prev.sort === 'asc' ? 'desc' : 'asc'
-            }
-        })
-    }
-
-    const handleDeleteFilledTemplates = async () => {
+    const onSubmitSalesforce = async (values: z.infer<typeof salesforceSchema>) => {
         try {
-            const ids = filledTemplatesSelectedRows
-            if (ids.length === 0) {
-                toast.error(t('no-selected-rows'))
-                return;
+            let promise
+            if (salesforceData) {
+                promise = editSalesforce({
+                    id: isOtherProfile ? userId : undefined,
+                    accountId: salesforceData.accountId,
+                    contactId: salesforceData.id,
+                    ...values
+                }).unwrap()
+            } else {
+                promise = createSalesforce({
+                    id: isOtherProfile ? userId : undefined,
+                    ...values
+                }).unwrap()
             }
 
             await toast.promise(
-                deleteForms({ids}).unwrap(),
+                promise,
                 {
                     loading: `${t('saving')}...`,
-                    success: <>{t('action-successfully-completed')}</>,
+                    success: () => {
+                        refetchSalesforceData()
+                        return <>{t('action-successfully-completed')}</>
+                    },
                     error: <>{t("error-occurred")}</>,
                 }
             )
-            refetchFilledTemplates()
-            setFilledTemplatesSelectedRows([])
         } catch (err) {
             catchApiErrors(err, t)
         }
+
     }
 
-
     useEffect(() => {
-        console.log(filledTemplatesTableParams)
-    }, [filledTemplatesTableParams]);
-
-
-    // templates table change listeners
-    useEffect(() => {
-        refetchTemplates()
-    }, [templatesTableParams.page, templatesTableParams.limit, templatesTableParams.orderBy, templatesTableParams.sort, templatesTableParams.searchBy]);
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            refetchTemplates()
-        }, 500);
-
-        return () => {
-            clearTimeout(timer);
-        };
-    }, [templatesTableParams.search]);
-
-    // users forms table change listeners
-    useEffect(() => {
-        refetchUserForms()
-    }, [userFormsTableParams.page, userFormsTableParams.limit, userFormsTableParams.orderBy, userFormsTableParams.sort, userFormsTableParams.searchBy]);
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            refetchUserForms()
-        }, 500);
-
-        return () => {
-            clearTimeout(timer);
-        };
-    }, [userFormsTableParams.search]);
-
-    // filled templates table change listeners
-    useEffect(() => {
-        refetchFilledTemplates()
-    }, [filledTemplatesTableParams.page, filledTemplatesTableParams.limit, filledTemplatesTableParams.orderBy, filledTemplatesTableParams.sort, filledTemplatesTableParams.searchBy]);
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            refetchFilledTemplates()
-        }, 500);
-
-        return () => {
-            clearTimeout(timer);
-        };
-    }, [filledTemplatesTableParams.search]);
-
-    // update data when tab changed
-    useEffect(() => {
-        if(tab === 'templates') {
-            refetchTemplates()
-        }
-        else if(tab === 'my-forms') {
-            refetchUserForms()
-        }
-        else if(tab === 'filled-templates'){
-            refetchFilledTemplates()
+        if (tab === 'jira-tickets' && !ticketsData?.data) {
+            refetchTickets()
         }
     }, [tab]);
 
+    useEffect(() => {
+        refetchTickets()
+    }, [ticketsTableParams.page, ticketsTableParams.limit, userId])
 
-    const tableHeader = ({handleDelete, setSearchBy, searchBy, search, setSearch, fields}:
-                             {
-                                 handleDelete: () => void;
-                                 setSearchBy:(value: string) => void;
-                                 setSearch: (value: string) => void;
-                                 searchBy: string;
-                                 search: string;
-                                 fields: { label: string; value: string }[]
-                             }) => {
-        return (<div className={'flex justify-between gap-2'}>
-            <Button
-                className={'flex-shrink-0'}
-                variant={'secondary'}
-                size={'icon'}
-                onClick={handleDelete}
-            >
-                <FaTrash/>
-            </Button>
-            <SelectableSearch
-                setSearchBy={setSearchBy}
-                searchBy={searchBy}
-                setSearch={setSearch}
-                search={search}
-                fields={fields}
-            />
-        </div>)
-    }
+    useEffect(() => {
+        if(!isDialogOpen) refetchTickets()
+    }, [isDialogOpen]);
+
+    useEffect(() => {
+        setUserId(id ? parseInt(id) : authState.id!)
+        setIsOtherProfile(id ? parseInt(id) !== authState.id : false)
+    }, [location.pathname])
 
     return (
-        <section className={'p-4 pt-[72px] md:pt-4'}>
-
-            <Tabs value={tab} className="w-full" orientation={'vertical'} onValueChange={(value) => setTab(value)}>
-                <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 h-fit">
-                    <TabsTrigger value="templates">{t('templates')}</TabsTrigger>
-                    <TabsTrigger value="my-forms">{t('my-forms')}</TabsTrigger>
-                    <TabsTrigger value="filled-templates">{t('filled-templates')}</TabsTrigger>
+        <section className={'flex p-2 lg:p-4 2xl:p-8'}>
+            <Tabs defaultValue="account" value={tab} onValueChange={(value) => setTab(value)}
+                  className="flex flex-col lg:flex-row w-full items-start gap-4">
+                <TabsList className="grid grid-cols-1 max-w-full lg:max-w-[250px] w-full h-fit">
+                    <TabsTrigger value="account">Account</TabsTrigger>
+                    <TabsTrigger value="salesforce">Salesforce</TabsTrigger>
+                    <TabsTrigger value="jira-tickets">Jira Tickets</TabsTrigger>
                 </TabsList>
-                <TabsContent value="templates">
-                    <SortableTable
-                        header={tableHeader({
-                            handleDelete: handleDeleteTemplates,
-                            setSearchBy: (searchBy) => setTemplatesTableParams(prev => ({...prev, searchBy})),
-                            searchBy: templatesTableParams.searchBy,
-                            search: templatesTableParams.search,
-                            setSearch: (search) => setTemplatesTableParams(prev => ({...prev, search})),
-                            fields: [
-                                {label: t('title'), value: 'title'},
-                                {label: t('description'), value: 'description'}
-                            ]
-                        })}
-                        fields={[
-                            {
-                                type: "select",
-                                name: "select",
-                                checked: templatesSelectedRows.length === templatesData?.data?.length && templatesData?.data?.length !== 0,
-                                partiallyChecked: templatesSelectedRows.length > 0,
-                                onCheckedChange: (value) => {
-                                    if (!templatesData?.data) return
-                                    if (value) setTemplatesSelectedRows(templatesData?.data.map((item: TemplateData) => item.id))
-                                    else setTemplatesSelectedRows([])
-                                },
-                            },
-                            {
-                                type: 'button',
-                                name: "title",
-                                onClick: () => handleTemplatesChangeSort("title"),
-                                cellComponent:  (item: TemplateData) => <Link className={'hover:underline'} to={EDIT_TEMPLATE_ROUTE + `/${item.id}`}>
-                                    {item['title']}
-                                </Link>,
-                                text: t('title')
-                            },
-                            {
-                                type: 'button',
-                                name: "createdAt",
-                                onClick: () => handleTemplatesChangeSort("createdAt"),
-                                text: t('published-at')
-                            },
-                            {
-                                type: 'default',
-                                name: "mode",
-                                text: t('mode')
-                            },
-                            {
-                                type: 'default',
-                                name: "topic",
-                                text: t('topic')
-                            },
-                            {
-                                type: 'button',
-                                name: 'formsCount',
-                                onClick: () => handleTemplatesChangeSort('form'),
-                                text: t('filled-forms'),
-                                width: 100
-                            }
-                        ]}
-                        data={templatesData?.data ? templatesData?.data?.map(item => ({
-                            id: item.id,
-                            title: item.title,
-                            createdAt: new Date(item.createdAt).toLocaleString(),
-                            mode: item.mode.toUpperCase(),
-                            topic: item.topic.name,
-                            formsCount: item._count!.form,
-                            dataState: !!templatesSelectedRows.find(id => id === item.id),
-                            onCheckedChange: (value) => {
-                                if (value) setTemplatesSelectedRows(prev => ([...prev, item.id]))
-                                else setTemplatesSelectedRows(prev => (prev.filter(email => email !== item.id)))
-                            },
-                            checked: !!templatesSelectedRows.find(id => id === item.id)
-                        })) : []}
-                        pagination={{
-                            limit: templatesData?.limit || 10,
-                            page: templatesData?.page || 1,
-                            pages: templatesData?.pages || 1,
-                            total: templatesData?.total || 0,
-                            setLimit: (limit) => setTemplatesTableParams(prev => ({...prev, limit})),
-                            setPage: (page) => setTemplatesTableParams(prev => ({...prev, page})),
-                        }}
-                        isFetching={isTemplatesLoading}
-                    />
+                <TabsContent value="account" className={'w-full mt-0'}>
+                    <Card className={'relative overflow-hidden'}>
+                        {
+                            isAccountDataLoading &&
+                            <div className={'absolute w-full h-full bg-primary/10 flex items-center justify-center'}>
+                                <LoadingSpinner/>
+                            </div>
+                        }
+                        <CardHeader>
+                            <CardTitle>{t('account')}</CardTitle>
+                            <CardDescription>
+                                {t('account-profile-description')}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            <Form {...accountForm}>
+                                <form onSubmit={accountForm.handleSubmit(onSubmitAccount)}
+                                      className={'flex flex-col gap-4'}>
+                                    <FormField
+                                        control={accountForm.control}
+                                        name="username"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>{t('username')}</FormLabel>
+                                                <div className={'flex gap-2'}>
+                                                    <FormControl>
+                                                        <Input id={'username'} disabled={!isUsernameEdit}  {...field} />
+                                                    </FormControl>
+                                                    <FormControl>
+                                                        <Button
+                                                            type={'button'}
+                                                            onClick={() => toggleUsernameEdit()}
+                                                            className={'flex-shrink-0'} size={'icon'}
+                                                            variant={'ghost'}
+                                                        >
+                                                            {
+                                                                isUsernameEdit
+                                                                    ? <FaXmark/>
+                                                                    : <FaPenToSquare/>
+                                                            }
+                                                        </Button>
+                                                    </FormControl>
+                                                </div>
+
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={accountForm.control}
+                                        name="newPassword"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>{t('new-password')}</FormLabel>
+                                                <div className={'flex gap-2'}>
+                                                    <FormControl>
+                                                        <Input id={'new-password'} type={'password'}
+                                                               disabled={!isPasswordEdit}  {...field} />
+                                                    </FormControl>
+                                                    <FormControl>
+                                                        <Button
+                                                            type={'button'}
+                                                            onClick={() => togglePasswordEdit()}
+                                                            className={'flex-shrink-0'} size={'icon'}
+                                                            variant={'ghost'}
+                                                        >
+                                                            {
+                                                                isPasswordEdit
+                                                                    ? <FaXmark/>
+                                                                    : <FaPenToSquare/>
+                                                            }
+                                                        </Button>
+                                                    </FormControl>
+                                                </div>
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    {
+                                        isPasswordEdit &&
+                                        <>
+                                            <FormField
+                                                control={accountForm.control}
+                                                name="repeatPassword"
+                                                render={({field}) => (
+                                                    <FormItem>
+                                                        <FormLabel>{t('new-password-repeat')}</FormLabel>
+                                                        <FormControl>
+                                                            <Input type={'password'} {...field} />
+                                                        </FormControl>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                            <FormField
+                                                control={accountForm.control}
+                                                name="oldPassword"
+                                                render={({field}) => (
+                                                    <FormItem>
+                                                        <FormLabel>{t('old-password')}</FormLabel>
+                                                        <FormControl>
+                                                            <Input type={'password'} {...field} />
+                                                        </FormControl>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </>
+                                    }
+
+
+                                    <div>
+                                        <Button
+                                            type="submit"
+                                            className={'mt-4'}
+                                            disabled={isEditAccountLoading || isAdminEditAccountLoading || (!isUsernameEdit && !isPasswordEdit)}
+                                        >
+                                            {
+                                                (isEditAccountLoading || isAdminEditAccountLoading)
+                                                    ? (<>
+                                                        <ReloadIcon className="mr-2 h-4 w-4 animate-spin"/>
+                                                        {t("processing")}
+                                                    </>)
+                                                    :
+                                                    t('save-changes')
+
+                                            }
+                                        </Button>
+                                    </div>
+                                </form>
+                            </Form>
+                        </CardContent>
+                    </Card>
                 </TabsContent>
-                <TabsContent value="my-forms">
-                    <SortableTable
-                        header={tableHeader({
-                            handleDelete: handleDeleteUserForms,
-                            setSearchBy: (searchBy) => setUserFormsTableParams(prev => ({...prev, searchBy})),
-                            searchBy: userFormsTableParams.searchBy,
-                            search: userFormsTableParams.search,
-                            setSearch: (search) => setUserFormsTableParams(prev => ({...prev, search})),
-                            fields: [
-                                {label: t('title'), value: 'title'},
-                                {label: t('email'), value: 'email'},
-                                {label: t('username'), value: 'username'},
-                            ]
-                        })}
-                        fields={[
-                            {
-                                type: "select",
-                                name: "select",
-                                checked: userFormsSelectedRows.length === userFormsData?.data?.length && userFormsData?.data?.length !== 0,
-                                partiallyChecked: userFormsSelectedRows.length > 0,
-                                onCheckedChange: (value) => {
-                                    if (!userFormsData?.data) return
-                                    if (value) setUserFormsSelectedRows(userFormsData?.data.map((item: TableFormData) => item.id))
-                                    else setUserFormsSelectedRows([])
-                                },
-                            },
-                            {
-                                type: 'button',
-                                name: "title",
-                                onClick: () => handleUserFormsChangeSort("title"),
-                                cellComponent:  (item: TableFormData) => {
-                                    return <Link className={'hover:underline'} to={EDIT_FORM_ROUTE + `/${item.id}`}>
-                                        {item['template']['title']}
-                                    </Link>
-                                },
-                                text: t('title')
-                            },
-                            {
-                                type: 'button',
-                                name: "createdAt",
-                                onClick: () => handleUserFormsChangeSort("createdAt"),
-                                text: t('filled-at')
-                            },
-                            {
-                                type: 'button',
-                                name: 'author',
-                                onClick: () => handleUserFormsChangeSort("email"),
-                                text: t('author')
-                            },
-                            {
-                                type: 'default',
-                                name: 'authorUsername',
-                                text: t('author')
-                            }
-                        ]}
-                        data={userFormsData?.data ? userFormsData?.data?.map(item => ({
-                            ...item,
-                            id: item.id,
-                            title: item.template.title,
-                            createdAt: new Date(item.createdAt).toLocaleString(),
-                            author: item.template.user.email,
-                            authorUsername: item.template.user.username,
-                            dataState: !!userFormsSelectedRows.find(id => id === item.id),
-                            onCheckedChange: (value) => {
-                                if (value) setUserFormsSelectedRows(prev => ([...prev, item.id]))
-                                else setUserFormsSelectedRows(prev => (prev.filter(id => id !== item.id)))
-                            },
-                            checked: !!userFormsSelectedRows.find(id => id === item.id)
-                        })) : []}
-                        pagination={{
-                            limit: userFormsData?.limit || 10,
-                            page: userFormsData?.page || 1,
-                            pages: userFormsData?.pages || 1,
-                            total: userFormsData?.total || 0,
-                            setLimit: (limit) => setUserFormsTableParams(prev => ({...prev, limit})),
-                            setPage: (page) => setUserFormsTableParams(prev => ({...prev, page})),
-                        }}
-                        isFetching={isUserFormsLoading}
-                    />
-                </TabsContent>
-                <TabsContent value="filled-templates">
-                    <SortableTable
-                        header={tableHeader({
-                            handleDelete: handleDeleteFilledTemplates,
-                            setSearchBy: (searchBy) => setFilledTemplatesTableParams(prev => ({...prev, searchBy})),
-                            searchBy: filledTemplatesTableParams.searchBy,
-                            search: filledTemplatesTableParams.search,
-                            setSearch: (search) => setFilledTemplatesTableParams(prev => ({...prev, search})),
-                            fields: [
-                                {label: t('title'), value: 'title'},
-                                {label: t('email'), value: 'email'},
-                                {label: t('username'), value: 'username'},
-                            ]
-                        })}
-                        fields={[
-                            {
-                                type: "select",
-                                name: "select",
-                                checked: userFormsSelectedRows.length === userFormsData?.data?.length && userFormsData?.data?.length !== 0,
-                                partiallyChecked: userFormsSelectedRows.length > 0,
-                                onCheckedChange: (value) => {
-                                    if (!userFormsData?.data) return
-                                    if (value) setFilledTemplatesSelectedRows(userFormsData?.data.map((item: TableFormData) => item.id))
-                                    else setFilledTemplatesSelectedRows([])
+                <TabsContent value="salesforce" className={'w-full mt-0'}>
+                    <Card className={'relative overflow-hidden'}>
+                        {
+                            isSalesforceLoading &&
+                            <div className={'absolute w-full h-full bg-primary/10 flex items-center justify-center'}>
+                                <LoadingSpinner/>
+                            </div>
+                        }
+                        <CardHeader>
+                            <CardTitle>{t('salesforce-account')}</CardTitle>
+                            <CardDescription>
+                                {
+                                    salesforceData
+                                        ? t('profile-salesforce-description-edit')
+                                        : t('profile-salesforce-description-create')
                                 }
-                            },
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Form {...salesforceForm}>
+                                <form onSubmit={salesforceForm.handleSubmit(onSubmitSalesforce)}
+                                      className={'flex flex-col gap-4'}>
+                                    <div className={'flex gap-2 w-full'}>
+                                        <FormField
+                                            control={salesforceForm.control}
+                                            name="firstname"
+                                            render={({field}) => (
+                                                <FormItem className={'w-full'}>
+                                                    <FormLabel>{t('firstname')}</FormLabel>
+                                                    <FormControl>
+                                                        <Input {...field} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <FormField
+                                            control={salesforceForm.control}
+                                            name="lastname"
+                                            render={({field}) => (
+                                                <FormItem className={'w-full'}>
+                                                    <FormLabel>{t('lastname')}</FormLabel>
+                                                    <FormControl>
+                                                        <Input {...field} />
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
 
-                            {
-                                type: 'button',
-                                onClick: () => handleFilledTemplatesChangeSort('email'),
-                                name: "userEmail",
-                                text: t('email'),
-                            },
-                            {
-                                type: 'button',
-                                onClick: () => handleFilledTemplatesChangeSort('username'),
-                                name: "userUsername",
-                                text: t('username'),
-                            },
-                            {
-                                type: 'button',
-                                onClick: () => handleFilledTemplatesChangeSort('createdAt'),
-                                name: "createdAt",
-                                text: t('date-and-time'),
-                            },
-                            {
-                                type: 'button',
-                                onClick: () => handleFilledTemplatesChangeSort('title'),
-                                name: "title",
-                                text: t('title'),
-                            },
-                            {
-                                type: 'default',
-                                name: 'edit',
-                                cellComponent: (item: TableFormData) => {
-                                    return <Link to={EDIT_FORM_ROUTE + `/${item.id}`} className={'underline'}>
-                                        View
-                                    </Link>
-                                },
-                                text: ''
-                            }
+                                    <FormField
+                                        control={salesforceForm.control}
+                                        name="email"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>{t('email')}</FormLabel>
+                                                <FormControl>
+                                                    <Input readOnly={field.value !== ''} {...field} />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
 
-                        ]}
-                        data={filledTemplatesData?.data ? filledTemplatesData?.data?.map(item => ({
-                            ...item,
-                            id: item.id,
-                            userEmail: item.user.email,
-                            userUsername: item.user.username,
-                            title: item.template.title,
-                            createdAt: new Date(item.createdAt).toLocaleString(),
-                            dataState: !!filledTemplatesSelectedRows.find(id => id === item.id),
-                            onCheckedChange: (value) => {
-                                if (value) setFilledTemplatesSelectedRows(prev => ([...prev, item.id]))
-                                else setFilledTemplatesSelectedRows(prev => (prev.filter(id => id !== item.id)))
-                            },
-                            checked: !!filledTemplatesSelectedRows.find(id => id === item.id)
-                        })) : []}
-                        pagination={{
-                            limit: filledTemplatesData?.limit || 10,
-                            page: filledTemplatesData?.page || 1,
-                            pages: filledTemplatesData?.pages || 1,
-                            total: filledTemplatesData?.total || 0,
-                            setLimit: (limit) => setFilledTemplatesTableParams(prev => ({...prev, limit})),
-                            setPage: (page) => setFilledTemplatesTableParams(prev => ({...prev, page})),
-                        }}
-                        isFetching={isFilledTemplatesLoading}
-                    />
+                                    <FormField
+                                        control={salesforceForm.control}
+                                        name="dob"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>{t('date-of-birth')}</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        type={'date'}
+                                                        {...field}
+                                                        // value={undefined}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={salesforceForm.control}
+                                        name="phone"
+                                        render={({field}) => (
+                                            <FormItem>
+                                                <FormLabel>{t('mobile-phone')}</FormLabel>
+                                                <FormControl>
+
+                                                    <PhoneInput
+                                                        defaultCountry={'US'}
+                                                        international={true}
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <div>
+                                        <Button
+                                            type="submit"
+                                            className={'mt-4'}
+                                            disabled={isCreateSalesforceLoading || isEditSalesforceLoading}
+                                        >
+                                            {
+                                                (isCreateSalesforceLoading || isEditSalesforceLoading)
+                                                    ? (<>
+                                                        <ReloadIcon className="mr-2 h-4 w-4 animate-spin"/>
+                                                        {t("processing")}
+                                                    </>)
+                                                    :
+                                                    salesforceData
+                                                        ? t('edit')
+                                                        : t("create")
+                                            }
+                                        </Button>
+                                    </div>
+                                </form>
+                            </Form>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="jira-tickets" className={'w-full mt-0'}>
+                    <Card className={'relative overflow-hidden '}>
+                        <CardHeader>
+                            <CardTitle>{t('your-jira-tickets')}</CardTitle>
+                            <CardDescription>
+                                {t('profile-jira-tickets-description')}
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className={'p-0'}>
+                            <SortableTable
+                                header={<div className={'flex gap-2'}>
+                                    <Button variant={'secondary'} size={'icon'} onClick={handleDeleteTickets}>
+                                        {
+                                            isDeleteTicketsLoading
+                                                ? <ReloadIcon className="mr-2 h-4 w-4 animate-spin"/>
+                                                : <FaTrash/>
+                                        }
+                                    </Button>
+
+                                    {/*<Button*/}
+                                    {/*    variant={'secondary'}*/}
+                                    {/*    onClick={() => handleOpenDialog()}*/}
+                                    {/*>*/}
+                                    {/*    Open*/}
+                                    {/*</Button>*/}
+                                </div>
+                                }
+                                containerClassName={'p-4 border-none'}
+                                fields={[
+                                    {
+                                        type: "select",
+                                        name: "select",
+                                        checked: ticketsSelectedRows.length === ticketsData?.data?.length && ticketsData?.data?.length !== 0,
+                                        partiallyChecked: ticketsSelectedRows.length > 0,
+                                        onCheckedChange: (value) => {
+                                            if (!ticketsData?.data) return
+                                            if (value) setTicketsSelectedRows(ticketsData?.data.map((template: TicketData) => template.id))
+                                            else setTicketsSelectedRows([])
+                                        },
+                                    },
+                                    {
+                                        type: 'default',
+                                        name: "templateTitle",
+                                        cellComponent: (item: TicketData) => {
+                                            return (<p
+                                                title={item.fields.summary}
+                                                className={'line-clamp-2'}
+                                            >
+                                                {item.fields.templateTitle}
+                                            </p>)
+                                        },
+                                        text: t("template")
+                                    },
+                                    {
+                                        type: 'default',
+                                        name: "summary",
+                                        cellComponent: (item: TicketData) => {
+                                            return (<p
+                                                title={item.fields.summary}
+                                                className={'line-clamp-2'}
+                                            >
+                                                {item.fields.summary}
+                                            </p>)
+                                        },
+                                        text: t("summary")
+                                    },
+                                    {
+                                        type: 'default',
+                                        name: "priority",
+                                        cellComponent: (item: TicketData) => {
+                                            return (<Badge
+                                                variant={'outline'}
+                                                className={`rounded-md flex justify-center gap-1 h-[24px] `}
+                                            >
+                                                <img
+                                                    className={'w-[18px]'}
+                                                    src={item.fields.priority.iconUrl}
+                                                    alt={''}
+                                                />
+                                                <p>
+                                                    {item.fields.priority.name}
+                                                </p>
+                                            </Badge>)
+                                        },
+                                        text: t("priority")
+                                    },
+                                    {
+                                        type: 'default',
+                                        name: "status",
+                                        cellComponent: (item: TicketData) => {
+                                            let style = ''
+                                            if (item.fields.status.key === 'done') style = 'dark:bg-green-800 dark:hover:bg-green-800/80 bg-green-600 hover:bg-green-600/80'
+                                            if (item.fields.status.key === 'indeterminate') style = 'dark:bg-blue-800 dark:hover:bg-blue-800/80 bg-blue-600 hover:bg-blue-600/80'
+
+                                            return (<Badge
+                                                variant={'secondary'}
+                                                className={`rounded-md flex justify-center gap-2 h-[24px] text-nowrap ${style}`}
+                                            >
+
+                                                {t(`status-${item.fields.status.key}`)}
+
+                                            </Badge>)
+                                        },
+                                        text: t("status")
+                                    },
+                                    // {
+                                    //     type: 'default',
+                                    //     name: "statusUpdatedAt",
+                                    //     text: t("updated-at")
+                                    // },
+                                    {
+                                        type: 'default',
+                                        name: "createdAt",
+                                        text: t("created-at")
+                                    },
+                                    {
+                                        type: 'default',
+                                        name: "ticketLink",
+                                        cellComponent: (item: TicketData) =>
+                                            (<Link
+                                                className={'hover:underline w-fit lg:pr-2'}
+                                                to={`${item.url}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                {t("link")}
+                                            </Link>),
+                                        text: ''
+                                    },
+                                ]}
+                                data={ticketsData?.data ? ticketsData?.data?.map(item => ({
+                                    ...item,
+                                    id: item.id,
+                                    templateTitle: item.fields.templateTitle,
+                                    summary: item.fields.summary,
+                                    priority: item.fields.priority.name,
+                                    status: item.fields.status.key,
+                                    statusUpdatedAt: new Date(item.fields.status.updatedAt).toLocaleString(),
+                                    createdAt: new Date(item.createdAt).toLocaleString(),
+                                    dataState: !!ticketsSelectedRows.find(id => id === item.id),
+                                    onCheckedChange: (value) => {
+                                        if (value) setTicketsSelectedRows(prev => ([...prev, item.id]))
+                                        else setTicketsSelectedRows(prev => (prev.filter(id => id !== item.id)))
+                                    },
+                                    checked: !!ticketsSelectedRows.find(id => id === item.id)
+                                })) : []}
+                                pagination={{
+                                    limit: ticketsData?.limit || 10,
+                                    page: ticketsData?.page || 1,
+                                    pages: ticketsData?.pages || 1,
+                                    total: ticketsData?.total || 0,
+                                    setPage: (page: number) => {
+                                        setTicketsTableParams(prev => ({
+                                            ...prev,
+                                            page,
+                                        }))
+                                    },
+                                    setLimit: (limit: number) => {
+                                        setTicketsTableParams(prev => ({
+                                            ...prev,
+                                            limit,
+                                        }))
+                                    }
+                                }}
+                                isFetching={isTicketsFetching}
+                            />
+
+                        </CardContent>
+                    </Card>
                 </TabsContent>
             </Tabs>
-
         </section>
     );
 };

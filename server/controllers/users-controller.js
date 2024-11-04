@@ -3,12 +3,29 @@ const {validationResult} = require("express-validator");
 const ApiError = require("../exceptions/api-errors");
 const {prisma} = require("../prisma/prisma-client");
 const {checkValidationErrors} = require("../check-validation-errors");
-
+const tokenService = require("../services/token-service");
+const authService = require("../services/auth-service");
+const Roles = require("../config/roles");
 
 class UsersController {
+    async getUser(req, res, next){
+        try {
+            const error = checkValidationErrors(req, next);
+            if (error) return;
+
+            const id = parseInt(req.params.id)
+            const user = await usersService.getById(id)
+
+            return res.json(user)
+        }catch (err){
+            next(err)
+        }
+    }
+
     async getUsers(req, res, next) {
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
@@ -46,7 +63,8 @@ class UsersController {
     async getHistory(req, res, next) {
         try {
 
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const limit = 20
             const page = parseInt(req.query.page) ||  1
@@ -96,8 +114,9 @@ class UsersController {
     async updateUsersRole(req, res, next) {
         try {
 
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
-            checkValidationErrors(req, next)
             const {ids, role} = req.body
 
 
@@ -113,7 +132,9 @@ class UsersController {
 
     async updateUsersStatus(req, res, next) {
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
+
             const {ids, status} = req.body
 
 
@@ -127,13 +148,63 @@ class UsersController {
 
     async deleteUsers(req, res, next){
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const ids = req.body.ids
 
             const users = await usersService.deleteMany(ids)
 
             return res.json(users)
+        }
+        catch (err){
+            next(err)
+        }
+    }
+
+    async changeUser(req, res, next){
+        try {
+            const error = checkValidationErrors(req, next);
+            if (error) return;
+
+            let id = req.user.id
+            const {role} = req.user
+
+
+            if(req.body.id && role !== Roles.Admin){
+                return next(ApiError.ForbiddenError())
+            }
+
+            if(req.body.id){
+                id = req.body.id
+            }
+
+            const username = req.body.username
+            const oldPassword = req.body.oldPassword
+            const newPassword = req.body.newPassword
+
+            let userDto;
+
+            if(oldPassword && newPassword){
+                userDto = await usersService.changePassword(id, oldPassword, newPassword)
+            }
+            if(username) {
+                userDto = await usersService.changeUsername(id, username)
+            }
+
+            if(req.body.id){
+                const tokens = tokenService.generateTokens({...userDto})
+                await tokenService.saveToken(userDto.id, tokens.refreshToken)
+                return res.json();
+            }
+            else{
+                const tokens = tokenService.generateTokens({...userDto})
+                await tokenService.saveToken(userDto.id, tokens.refreshToken)
+                authService.setCookie(res, 'refreshToken', tokens.refreshToken)
+                return res.json({
+                    accessToken: tokens.accessToken
+                });
+            }
         }
         catch (err){
             next(err)

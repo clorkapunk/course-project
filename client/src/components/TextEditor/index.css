@@ -1,0 +1,17 @@
+.ql-container {
+    border: none !important;
+}
+
+.ql-header{
+    background: red !important;
+}
+
+.ql-toolbar.ql-snow{
+    border: none;
+    border-bottom: 1px solid theme("colors.border");
+}
+
+.ql-blank[data-placeholder]::before {
+    color: theme("colors.muted.foreground");
+    font-style: normal;
+}

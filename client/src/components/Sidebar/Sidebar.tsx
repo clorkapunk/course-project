@@ -5,20 +5,20 @@ import {
     LOGIN_ROUTE,
     ADMIN_USERS_ROUTE,
     ADMIN_HISTORY_ROUTE,
-    CREATE_TEMPLATE_ROUTE, PROFILE_ROUTE, ADMIN_TEMPLATES_ROUTE, ADMIN_FORMS_ROUTE
+    CREATE_TEMPLATE_ROUTE, PROFILE_ROUTE, ADMIN_TEMPLATES_ROUTE, ADMIN_FORMS_ROUTE, MANAGE_CONTENT_ROUTE
 } from "@/utils/routes.ts";
 import logo from '@/assets/react.svg'
 import {
     FaAnglesLeft,
     FaGlobe,
-    FaHouse, FaListCheck, FaMoon,
+    FaHouse, FaListCheck, FaMoon, FaPenToSquare,
     FaRightFromBracket,
-    FaRightToBracket, FaSquarePlus, FaSun, FaTableList, FaUserGear,
+    FaRightToBracket, FaSquarePlus, FaSun, FaTableList, FaTriangleExclamation, FaUserGear,
     FaUsersGear
 } from "react-icons/fa6";
 import {Separator} from "@/components/ui/separator.tsx";
 import React, {useState} from "react";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {selectAuthState} from "@/features/auth/authSlice.ts";
 import Roles from "@/utils/roles.ts";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
@@ -34,6 +34,7 @@ import {
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
 import {useTheme} from "@/components/ThemeProvider.tsx";
+import {setIsDialogOpened} from "@/features/jira/ticketSlice.ts";
 
 
 const availableLanguages = ['en', 'ru']
@@ -46,6 +47,7 @@ const Sidebar = () => {
     const [logout] = useLogoutMutation()
     const {theme, setTheme} = useTheme()
     const location = useLocation()
+    const dispatch = useDispatch()
 
     const sidebarItems = [
         {
@@ -71,6 +73,12 @@ const Sidebar = () => {
                     route: CREATE_TEMPLATE_ROUTE,
                     label: t('create-template'),
                     icon: <FaSquarePlus/>
+                },
+                {
+                  type:'button',
+                  route: MANAGE_CONTENT_ROUTE,
+                  label: t('management'),
+                  icon: <FaPenToSquare/>
                 },
                 {
                     type: "button",
@@ -118,6 +126,10 @@ const Sidebar = () => {
     const signOut = async () => {
         await logout({})
         navigate(LOGIN_ROUTE)
+    }
+
+    const openTicketDialog = () => {
+        dispatch(setIsDialogOpened({isOpen: true}))
     }
 
     return (
@@ -197,6 +209,8 @@ const Sidebar = () => {
 
                <TooltipProvider>
                    <div className={'flex flex-col gap-2'}>
+
+
                        <DropdownMenu>
                            <Tooltip>
                                <TooltipTrigger asChild>
@@ -250,6 +264,21 @@ const Sidebar = () => {
                            </TooltipTrigger>
                            <TooltipContent side={'right'} hidden={isOpened}>
                                <p>{t('theme')}</p>
+                           </TooltipContent>
+                       </Tooltip>
+
+                       <Tooltip>
+                           <TooltipTrigger asChild>
+                               <Button
+                                   variant={'secondary'}
+                                   size={'sm'}
+                                   onClick={openTicketDialog}
+                               >
+                                   <FaTriangleExclamation/>
+                               </Button>
+                           </TooltipTrigger>
+                           <TooltipContent side={'right'} hidden={isOpened}>
+                               <p>{t('complaints-and-suggestions')}</p>
                            </TooltipContent>
                        </Tooltip>
                    </div>

@@ -9,7 +9,8 @@ const {checkValidationErrors} = require("../check-validation-errors");
 class AuthController {
     async registration(req, res, next) {
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const {username, email, password} = req.body
 
@@ -26,7 +27,8 @@ class AuthController {
 
     async login(req, res, next) {
         try {
-            checkValidationErrors(req, next)
+            const error = checkValidationErrors(req, next);
+            if (error) return;
 
             const {email, password} = req.body
 

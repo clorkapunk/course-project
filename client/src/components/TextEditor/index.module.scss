@@ -1,0 +1,11 @@
+.input {
+  border-top: none;
+  border-inline: none;
+  border-bottom: 1px solid;
+  background-color: theme('colors.primary.foreground');
+  border-radius: theme('borderRadius.md');
+
+  &::placeholder {
+    color: red !important;
+  }
+}

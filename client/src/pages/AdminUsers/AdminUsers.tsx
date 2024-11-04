@@ -20,6 +20,8 @@ import {FaChevronDown} from "react-icons/fa6";
 import SortableTable from "@/components/SortableTable/SortableTable.tsx";
 import SelectableSearch from "@/components/SelectableSearch/SelectableSearch.tsx";
 import catchApiErrors from "@/utils/catch-api-errors.ts";
+import {Link} from "react-router-dom";
+import { PROFILE_ROUTE} from "@/utils/routes.ts";
 
 
 export function getRoleName(value: number) {
@@ -137,10 +139,6 @@ const AdminUsers = () => {
     }
 
     useEffect(() => {
-        console.log(tableParams)
-    }, [tableParams])
-
-    useEffect(() => {
         fetchUsers({
             ...tableParams
         })
@@ -248,6 +246,11 @@ const AdminUsers = () => {
                     {
                         type: 'button',
                         name: "username",
+                        cellComponent: (item: UserData) => {
+                          return <Link className={'hover:underline'} to={PROFILE_ROUTE + `/${item.id}`}>
+                              {item.username}
+                          </Link>
+                        },
                         onClick: () => handleChangeSort("username"),
                         text: t('username')
                     },

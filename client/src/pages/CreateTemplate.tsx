@@ -6,8 +6,6 @@ import {HOME_ROUTE} from "@/utils/routes.ts";
 import {useNavigate} from "react-router-dom";
 import catchApiErrors from "@/utils/catch-api-errors.ts";
 
-
-
 const CreateTemplate = () => {
     const {t} = useTranslation()
     const [createTemplate] = useCreateTemplateMutation()
@@ -36,6 +34,9 @@ const CreateTemplate = () => {
                 submitButtonText={t('publish')}
                 handleSubmit={handleSubmit}
             />
+
+
+
         </section>
 
     );

@@ -716,7 +716,7 @@ class TemplatesService {
             )
         }
 
-        if(template.mode === 'private'){
+        if(template.mode === 'private' && userId){
             const users = this.formatAllowedUsersFromDB(template?.allowedUsers)
             console.log(userId, users.map(user => user.id))
             if(!users.find(user => user.id === userId) && template.user.id !== userId){
@@ -931,6 +931,8 @@ class TemplatesService {
             template = await this.getById(templateId)
         }
 
+        console.log(template)
+
 
         if (!template) {
             return null;
@@ -957,7 +959,14 @@ class TemplatesService {
             ...this.formatQuestionsForDB(data.questions, "text"),
         }
 
-        console.log(templateQuestions)
+
+        const usersToDisconnect = [...template.allowedUsers].filter(user => {
+            return !data.allowedUsers.map(u => u.id).includes(user.id)
+        })
+        let usersToConnect = [...data.allowedUsers].filter(user => !template.allowedUsers.map(i => i.id).includes(user.id))
+
+        console.log("usersToDisconnect:", usersToDisconnect)
+        console.log("usersToConnect:", usersToConnect)
 
         let updateData = {
             title: data.title,
@@ -1007,7 +1016,17 @@ class TemplatesService {
         return prisma.template.update({
             ...filter,
             data: {
-                ...updateData
+                ...updateData,
+                allowedUsers: {
+                    deleteMany: {
+                        userId: {
+                            in: usersToDisconnect.map(i => i.id), // Указываем теги, которые нужно удалить
+                        },
+                    },
+                    create: usersToConnect.map(id => ({
+                        userId: id
+                    })),
+                }
             },
             include: {
                 tags: {

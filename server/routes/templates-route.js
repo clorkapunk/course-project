@@ -144,7 +144,8 @@ router.patch(
         topicId: {optional: true, isInt: true},
         mode: {optional: true, isString: true, isIn: {options: [['public', 'private']]}},
         questions: {optional: true},
-        tags: {optional: true}
+        tags: {optional: true},
+        allowedUsers: {optional: true}
     }),
     templatesController.updateTemplate
 )

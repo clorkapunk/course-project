@@ -3,7 +3,7 @@ import {Input} from "@/components/ui/input.tsx";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
 import {useEffect, useRef, useState} from "react";
-import {HOME_ROUTE, SEARCH_TEMPLATES_ROUTE} from "@/utils/routes.ts";
+import {HOME_ROUTE, PROFILE_ROUTE, SEARCH_TEMPLATES_ROUTE} from "@/utils/routes.ts";
 import {useTranslation} from "react-i18next";
 
 const GlobalSearch = () => {
@@ -15,6 +15,7 @@ const GlobalSearch = () => {
     const [routes, _setRoutes] = useState([
         HOME_ROUTE,
         SEARCH_TEMPLATES_ROUTE,
+        PROFILE_ROUTE
     ])
     const {t} = useTranslation()
 
