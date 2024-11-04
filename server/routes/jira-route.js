@@ -8,10 +8,10 @@ router.post(
     '/jira',
     checkSchema({
         // id: {notEmpty: true, isInt: true},
-        summary: {notEmpty: true, isString: true},
-        link: {notEmpty: true, isString: true},
-        priority: {notEmpty: true, isIn: {options: [["High", 'Average', "Low"]]}},
-        template: {optional: true, isString: true},
+        summary: {in: ['body'],notEmpty: true, isString: true},
+        link: {in: ['body'],notEmpty: true, isString: true},
+        priority: {in: ['body'], notEmpty: true, isIn: {options: [["High", 'Average', "Low"]]}},
+        template: {in: ['body'],optional: true, isString: true},
     }),
     jiraController.createTicket
 )
