@@ -63,20 +63,23 @@ const TemplateCard = ({template}: { template: TemplateData }) => {
                 <AspectRatio
                     ratio={16 / 9}
                     className="p-2 relative bg-primary-foreground rounded-md overflow-hidden justify-center  flex flex-col items-center">
-                    <div className={'absolute top-1 left-1 z-20 pointer-events-auto'}>
-                        <Button
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                e.preventDefault()
-                                openTicketDialog()
-                            }}
-                            size={'icon'}
-                            variant={'ghost'}
-                            className={'bg-primary-foreground/50'}
-                        >
-                            <FaTriangleExclamation className={'w-[30px] h-[30px]'}/>
-                        </Button>
-                    </div>
+                    {
+                        authState?.token &&
+                        <div className={'absolute top-1 left-1 z-20 pointer-events-auto'}>
+                            <Button
+                                onClick={(e) => {
+                                    e.stopPropagation()
+                                    e.preventDefault()
+                                    openTicketDialog()
+                                }}
+                                size={'icon'}
+                                variant={'ghost'}
+                                className={'bg-primary-foreground/50'}
+                            >
+                                <FaTriangleExclamation className={'w-[30px] h-[30px]'}/>
+                            </Button>
+                        </div>
+                    }
                     {
                         template.image ?
                             <img
