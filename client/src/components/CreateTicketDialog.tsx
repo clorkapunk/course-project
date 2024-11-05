@@ -145,7 +145,7 @@ const CreateTicketDialog = () => {
                                             <FormControl>
                                                 <Select {...fields} onValueChange={fields.onChange}>
                                                     <SelectTrigger>
-                                                        <SelectValue placeholder="Select priority"/>
+                                                        <SelectValue placeholder={t('select-priority')}/>
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         <SelectGroup>
@@ -156,7 +156,7 @@ const CreateTicketDialog = () => {
                                                                         src={highIcon}
                                                                         alt={'high-icon'}
                                                                     />
-                                                                    <p>High</p>
+                                                                    <p>{t('high')}</p>
                                                                 </div>
                                                             </SelectItem>
                                                             <SelectItem value="Average">
@@ -166,7 +166,7 @@ const CreateTicketDialog = () => {
                                                                         src={averageIcon}
                                                                         alt={'average-icon'}
                                                                     />
-                                                                    <p>Average</p>
+                                                                    <p>{t('average')}</p>
                                                                 </div>
                                                             </SelectItem>
                                                             <SelectItem value="Low">
@@ -176,7 +176,7 @@ const CreateTicketDialog = () => {
                                                                         src={lowIcon}
                                                                         alt={'low-icon'}
                                                                     />
-                                                                    <p>Low</p>
+                                                                    <p>{t('low')}</p>
                                                                 </div>
                                                             </SelectItem>
                                                         </SelectGroup>

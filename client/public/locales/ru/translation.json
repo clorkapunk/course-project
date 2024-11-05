@@ -154,7 +154,7 @@
   "profile-salesforce-description-edit": "",
   "profile-salesforce-description-create": "",
   "template": "Шаблон",
-  "summary": "Сводка",
+  "summary": "Pезюме",
   "priority": "Приоритет",
   "updated-at": "Обновлено",
   "created-at": "Создано",
@@ -166,5 +166,9 @@
   "profile-jira-tickets-description": "Здесь отображаются ваши запросы, жалобы и вопросы, отправленные в поддержку, с текущими статусами и возможностью отслеживания прогресса.",
   "create-jira-ticket": "Создай Jira билет",
   "create-ticket-dialog-description": "",
-  "complaints-and-suggestions": "Жалобы и предложения"
+  "complaints-and-suggestions": "Жалобы и предложения",
+  "high": "Высокий",
+  "low": "Низкий",
+  "average": "Средний",
+  "select-priority": "Назначьте приоритет"
 }

@@ -151,7 +151,9 @@ const Profile = () => {
     const [ticketsSelectedRows, setTicketsSelectedRows] = useState<string[]>([])
     const [ticketsTableParams, setTicketsTableParams] = useState({
         page: 1,
-        limit: 10
+        limit: 10,
+        orderBy: 'created',
+        sort: 'desc'
     })
     const [fetchTickets, {data: ticketsData, isFetching: isTicketsFetching}] = useLazyGetUserTicketsQuery()
     const [deleteTickets, {isLoading: isDeleteTicketsLoading}] = useDeleteTicketsMutation()
@@ -160,6 +162,23 @@ const Profile = () => {
         fetchTickets({
             userId,
             ...ticketsTableParams
+        })
+    }
+
+    const handleChangeTicketsSort = (field: string) => {
+        setTicketsTableParams(prev => {
+            if (prev.orderBy === field) {
+                return {
+                    ...prev,
+                    sort: prev.sort === 'asc' ? 'desc' : 'asc'
+                }
+            }
+
+            return {
+                ...prev,
+                orderBy: field,
+                sort: prev.sort === 'asc' ? 'desc' : 'asc'
+            }
         })
     }
 
@@ -291,7 +310,7 @@ const Profile = () => {
 
     useEffect(() => {
         refetchTickets()
-    }, [ticketsTableParams.page, ticketsTableParams.limit, userId])
+    }, [userId, ticketsTableParams.page, ticketsTableParams.limit, ticketsTableParams.orderBy, ticketsTableParams.sort])
 
     useEffect(() => {
         if(!isDialogOpen) refetchTickets()
@@ -630,12 +649,13 @@ const Profile = () => {
                                         text: t("summary")
                                     },
                                     {
-                                        type: 'default',
+                                        type: 'button',
                                         name: "priority",
+                                        onClick: () => handleChangeTicketsSort('priority'),
                                         cellComponent: (item: TicketData) => {
                                             return (<Badge
                                                 variant={'outline'}
-                                                className={`rounded-md flex justify-center gap-1 h-[24px] `}
+                                                className={`rounded-md flex justify-center gap-1 h-[24px] max-w-[100px]`}
                                             >
                                                 <img
                                                     className={'w-[18px]'}
@@ -643,15 +663,16 @@ const Profile = () => {
                                                     alt={''}
                                                 />
                                                 <p>
-                                                    {item.fields.priority.name}
+                                                    {t(item.fields.priority.name.toLowerCase())}
                                                 </p>
                                             </Badge>)
                                         },
                                         text: t("priority")
                                     },
                                     {
-                                        type: 'default',
+                                        type: 'button',
                                         name: "status",
+                                        onClick: () => handleChangeTicketsSort('status'),
                                         cellComponent: (item: TicketData) => {
                                             let style = ''
                                             if (item.fields.status.key === 'done') style = 'dark:bg-green-800 dark:hover:bg-green-800/80 bg-green-600 hover:bg-green-600/80'
@@ -659,7 +680,7 @@ const Profile = () => {
 
                                             return (<Badge
                                                 variant={'secondary'}
-                                                className={`rounded-md flex justify-center gap-2 h-[24px] text-nowrap ${style}`}
+                                                className={`rounded-md flex justify-center gap-2 h-[24px] text-nowrap max-w-[100px] ${style}`}
                                             >
 
                                                 {t(`status-${item.fields.status.key}`)}
@@ -674,8 +695,9 @@ const Profile = () => {
                                     //     text: t("updated-at")
                                     // },
                                     {
-                                        type: 'default',
+                                        type: 'button',
                                         name: "createdAt",
+                                        onClick: () => handleChangeTicketsSort('created'),
                                         text: t("created-at")
                                     },
                                     {

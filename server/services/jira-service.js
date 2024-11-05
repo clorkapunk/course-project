@@ -75,7 +75,8 @@ class JiraService {
                         customfield_10048: { id: reporter.accountId }, // Ваше кастомное поле для пользователя
                         customfield_10049: templateTitle || '', // Поле для заголовка шаблона
                         customfield_10052: link, // Поле для ссылки
-                        priority: { name: priority}
+                        priority: { name: priority},
+                        customfield_10010: '2'
                         // customfield_10051: { value: priority } // Поле для приоритета
                     }
                 },
@@ -90,16 +91,13 @@ class JiraService {
             return response.data
         }
         catch (err){
-            console.log(err.response.data)
+            // console.log(err.response.data)
         }
-
-
     }
 
-    async getByUserId({userId, page, limit}){
+    async getByUserId({userId, page, limit, orderBy = 'created', sort = 'DESC'}){
         const user = await usersService.getById(userId)
 
-        console.log(user)
 
         if(!user.jiraAccountId) {
             throw ApiError.BadRequest(
@@ -108,7 +106,7 @@ class JiraService {
             )
         }
 
-        const jqlQuery = `reporter=${user.jiraAccountId}`;
+        const jqlQuery = `reporter=${user.jiraAccountId} ORDER BY ${orderBy} ${sort}`;
         const response = await axios.get(`${process.env.JIRA_BASE_URL}/rest/api/3/search`, {
             auth,
             headers: {
@@ -157,7 +155,7 @@ class JiraService {
         return {
             id: ticket.id,
             key: ticket.key,
-            url: ticket.fields.customfield_10010._links.web,
+            url: ticket.fields.customfield_10010?._links.web || `https://${process.env.JIRA_HOST}/servicedesk/customer/portal/${ticket.fields.customfield_10010?.requestType.portalId}/${ticket.key}`,
             fields: {
                 summary: ticket.fields.summary,
                 reportedBy: {
@@ -178,7 +176,6 @@ class JiraService {
             },
             createdAt: ticket.fields.created
         }
-        return ticket
     }
 }
 

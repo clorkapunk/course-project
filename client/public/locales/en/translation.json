@@ -168,5 +168,9 @@
   "template-title": "Template title",
   "create-jira-ticket": "Create Jira ticket",
   "create-ticket-dialog-description": "",
-  "complaints-and-suggestions": "Complaints and suggestions"
+  "complaints-and-suggestions": "Complaints and suggestions",
+  "high": "High",
+  "low": "Low",
+  "average": "Average",
+  "select-priority": "Select priority"
 }

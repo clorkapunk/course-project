@@ -22,6 +22,8 @@ router.get(
         id: {in: ['params'], notEmpty: true, isInt: true},
         page: {in: ['query'], notEmpty: true, isInt: true},
         limit: {in: ['query'], notEmpty: true, isInt: true},
+        orderBy: {in: ['query'], optional: true, isIn: {options: [['created', 'priority', 'status']]}},
+        sort: {in: ['query'], optional: true, isIn: {options: [['asc', 'desc']]}},
     }),
     jiraController.getUserTickets
 )

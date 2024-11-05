@@ -13,9 +13,10 @@ export const salesforceApiSlice = apiSlice.injectEndpoints({
                 }
             },
         }),
-        getUserTickets: builder.query<{ data: TicketData[], page: number; pages: number; total: number; limit: number;}, {userId: number, page: number; limit: number}>({
-            query: ({userId, page, limit}) => {
-                return `/api/jira/${userId}?page=${page}&limit=${limit}`;
+        getUserTickets: builder.query<{ data: TicketData[], page: number; pages: number; total: number; limit: number;},
+            {userId: number, page: number; limit: number; orderBy: string; sort: string;}>({
+            query: ({userId, page, limit, orderBy, sort}) => {
+                return `/api/jira/${userId}?page=${page}&limit=${limit}&orderBy=${orderBy}&sort=${sort}`;
             }
         }),
         deleteTicket: builder.mutation({

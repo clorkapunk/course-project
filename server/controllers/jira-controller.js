@@ -38,8 +38,16 @@ class JiraController {
             const id = parseInt(req.params.id)
             const page = parseInt(req.query.page) || 1;
             const limit = parseInt(req.query.limit) || 10;
+            const sort = req.query.sort || "desc"
+            const orderBy = req.query.orderBy || 'created'
 
-            const {totalCount, tickets} = await jiraService.getByUserId({userId: id, page, limit})
+            const {totalCount, tickets} = await jiraService.getByUserId({
+                userId: id,
+                page,
+                limit,
+                orderBy,
+                sort
+            })
 
             res.json({
                 pages: Math.ceil(totalCount / limit),
