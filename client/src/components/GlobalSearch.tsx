@@ -2,9 +2,15 @@ import {selectSearch, setSearch} from "@/features/search/searchSlice.ts";
 import {Input} from "@/components/ui/input.tsx";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useDispatch, useSelector} from "react-redux";
-import {useEffect, useRef, useState} from "react";
+import {useEffect, useRef} from "react";
 import {HOME_ROUTE, PROFILE_ROUTE, SEARCH_TEMPLATES_ROUTE} from "@/utils/routes.ts";
 import {useTranslation} from "react-i18next";
+
+const routePatterns = [
+    `^${HOME_ROUTE}$`,
+    `^${SEARCH_TEMPLATES_ROUTE}$`,
+    `^${PROFILE_ROUTE}(/\\d+)?`
+];
 
 const GlobalSearch = () => {
     const location = useLocation();
@@ -12,11 +18,8 @@ const GlobalSearch = () => {
     const dispatch = useDispatch();
     const {search} = useSelector(selectSearch)
     const inputRef = useRef<HTMLInputElement>(null)
-    const [routes, _setRoutes] = useState([
-        HOME_ROUTE,
-        SEARCH_TEMPLATES_ROUTE,
-        PROFILE_ROUTE
-    ])
+
+
     const {t} = useTranslation()
 
     useEffect(() => {
@@ -32,7 +35,11 @@ const GlobalSearch = () => {
         }
     }, [search]);
 
-    if(!routes.includes(location.pathname)){
+    const shouldRender = routePatterns.some(pattern =>
+        new RegExp(pattern).test(location.pathname)
+    );
+
+    if(!shouldRender){
         return <></>
     }
 

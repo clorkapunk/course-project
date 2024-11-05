@@ -65,7 +65,6 @@ const Profile = () => {
         navigate(HOME_ROUTE)
     }
 
-
     const [userId, setUserId] = useState<number>(id ? parseInt(id) : authState.id!)
     const [isOtherProfile, setIsOtherProfile] = useState(id ? parseInt(id) !== authState.id : false)
     const {data: accountData, isLoading: isAccountDataLoading, refetch: refetchAccountData} = useGetUserQuery({userId})
@@ -320,6 +319,10 @@ const Profile = () => {
         setUserId(id ? parseInt(id) : authState.id!)
         setIsOtherProfile(id ? parseInt(id) !== authState.id : false)
     }, [location.pathname])
+
+    useEffect(() => {
+        if(!accountData && !isAccountDataLoading) navigate(HOME_ROUTE)
+    }, [accountData,isAccountDataLoading]);
 
     return (
         <section className={'flex p-2 lg:p-4 2xl:p-8'}>
@@ -751,7 +754,6 @@ const Profile = () => {
                                 }}
                                 isFetching={isTicketsFetching}
                             />
-
                         </CardContent>
                     </Card>
                 </TabsContent>
